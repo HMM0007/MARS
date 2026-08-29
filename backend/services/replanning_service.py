@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from backend.config import (
@@ -247,8 +248,6 @@ class ReplanningService:
         revised_scheduled = int(new_scheduled.sum())
 
         impact = graph_df.get("impact_type", pd.Series(dtype=str)).astype(str).str.upper()
-        direct = int((impact == "DIRECT").sum())
-        indirect = int((impact == "INDIRECT").sum())
         affected = len(getattr(getattr(result, "cascade_group", None), "job_ids", []))
 
         previous_blocks = changes["previous_block"].astype(str)
@@ -299,15 +298,24 @@ class ReplanningService:
 
     @classmethod
     def _serialize_value(cls, value):
-        """Convert pandas/Python values into JSON-safe values."""
+        """Convert pandas/numpy/Python values into JSON-safe values."""
         if value is None:
             return None
         if isinstance(value, pd.Timestamp):
             return value.isoformat()
+        if isinstance(value, np.generic):
+            return cls._serialize_value(value.item())
+        if isinstance(value, np.ndarray):
+            return [cls._serialize_value(v) for v in value.tolist()]
+        if isinstance(value, float) and pd.isna(value):
+            return None
         if isinstance(value, dict):
             return {str(k): cls._serialize_value(v) for k, v in value.items()}
-        if isinstance(value, (list, tuple)):
-            return [cls._serialize_value(v) for v in value]
+        if isinstance(value, (list, tuple, set, frozenset)):
+            values = list(value)
+            if isinstance(value, (set, frozenset)):
+                values = sorted(values, key=str)
+            return [cls._serialize_value(v) for v in values]
         return value
 
     @classmethod
