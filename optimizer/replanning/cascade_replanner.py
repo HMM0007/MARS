@@ -1018,13 +1018,36 @@ class CascadeReplanner:
     # ------------------------------------------------------------------
 
     @staticmethod
+   
     def _build_changes(
         current_plan,
         revised_plan,
         event,
         graph,
     ):
-        """Build job-level cascading change report."""
+        """Build a consistent job-level cascading change report.
+
+        Classification:
+
+        UNCHANGED
+            Same status, block, and start time.
+
+        DROPPED
+            Previously scheduled but no longer scheduled.
+
+        NEWLY_SCHEDULED
+            Previously unscheduled but now scheduled.
+
+        RESCHEDULED
+            Scheduled job moved to a different block.
+
+        MOVED
+            Scheduled job remains in the same block but its
+            start time changed.
+
+        CHANGED
+            Any other unexpected state transition.
+        """
 
         current = current_plan.set_index(
             "job_id",
@@ -1052,30 +1075,22 @@ class CascadeReplanner:
 
             old_status = str(
                 old.plan_status
-            )
+            ).upper()
 
             new_status = str(
                 new.plan_status
-            )
+            ).upper()
 
             old_block = (
                 ""
-                if pd.isna(
-                    old.block_id
-                )
-                else str(
-                    old.block_id
-                )
+                if pd.isna(old.block_id)
+                else str(old.block_id).strip()
             )
 
             new_block = (
                 ""
-                if pd.isna(
-                    new.block_id
-                )
-                else str(
-                    new.block_id
-                )
+                if pd.isna(new.block_id)
+                else str(new.block_id).strip()
             )
 
             old_start = (
@@ -1085,7 +1100,7 @@ class CascadeReplanner:
                 )
                 else str(
                     old.scheduled_start
-                )
+                ).strip()
             )
 
             new_start = (
@@ -1095,8 +1110,12 @@ class CascadeReplanner:
                 )
                 else str(
                     new.scheduled_start
-                )
+                ).strip()
             )
+
+            # ------------------------------------------------------
+            # Impact classification
+            # ------------------------------------------------------
 
             node = graph.nodes.get(
                 job_id
@@ -1104,9 +1123,13 @@ class CascadeReplanner:
 
             impact_type = (
                 node.impact_type
-                if node
+                if node is not None
                 else "UNAFFECTED"
             )
+
+            # ------------------------------------------------------
+            # Change classification
+            # ------------------------------------------------------
 
             if (
                 old_status == new_status
@@ -1127,32 +1150,105 @@ class CascadeReplanner:
             ):
                 change_type = "NEWLY_SCHEDULED"
 
-            elif old_block != new_block:
+            elif (
+                old_status == "SCHEDULED"
+                and new_status == "SCHEDULED"
+                and old_block != new_block
+            ):
                 change_type = "RESCHEDULED"
 
-            elif old_start != new_start:
+            elif (
+                old_status == "SCHEDULED"
+                and new_status == "SCHEDULED"
+                and old_block == new_block
+                and old_start != new_start
+            ):
                 change_type = "MOVED"
 
             else:
                 change_type = "CHANGED"
 
+            # ------------------------------------------------------
+            # Explanation
+            # ------------------------------------------------------
+
             if change_type == "UNCHANGED":
-                reason = "No change required."
 
-            elif impact_type == "DIRECT":
                 reason = (
-                    "Directly affected by disruption."
+                    "No change required."
                 )
 
-            elif impact_type == "INDIRECT":
+            elif change_type == "DROPPED":
+
+                if impact_type == "DIRECT":
+                    reason = (
+                        "Directly affected by disruption "
+                        "and no feasible replacement "
+                        "was selected."
+                    )
+
+                elif impact_type == "INDIRECT":
+                    reason = (
+                        "Dropped during cascading "
+                        "recovery because no feasible "
+                        "replacement was selected."
+                    )
+
+                else:
+                    reason = (
+                        "Dropped during cascading "
+                        "replanning."
+                    )
+
+            elif change_type == "NEWLY_SCHEDULED":
+
                 reason = (
-                    "Moved or reconsidered as part "
-                    "of cascading recovery."
+                    "Previously unscheduled job "
+                    "was selected during cascading "
+                    "recovery."
                 )
+
+            elif change_type == "RESCHEDULED":
+
+                if impact_type == "DIRECT":
+                    reason = (
+                        "Directly affected by disruption "
+                        "and reassigned to a different "
+                        "maintenance block."
+                    )
+
+                elif impact_type == "INDIRECT":
+                    reason = (
+                        "Reassigned to a different block "
+                        "as part of cascading recovery."
+                    )
+
+                else:
+                    reason = (
+                        "Reassigned to a different block "
+                        "during cascading replanning."
+                    )
+
+            elif change_type == "MOVED":
+
+                if impact_type == "INDIRECT":
+                    reason = (
+                        "Start time moved within the "
+                        "same block as part of cascading "
+                        "recovery."
+                    )
+
+                else:
+                    reason = (
+                        "Start time changed while "
+                        "remaining in the same block."
+                    )
 
             else:
+
                 reason = (
-                    "Changed during cascading replanning."
+                    "Assignment changed during "
+                    "cascading replanning."
                 )
 
             rows.append(
