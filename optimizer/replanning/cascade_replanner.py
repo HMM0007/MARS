@@ -326,7 +326,12 @@ class CascadeReplanner:
         frozen_plan: pd.DataFrame,
         blocks: pd.DataFrame,
     ) -> dict:
-        """Solve the cascade group globally."""
+        """Solve the cascade group globally with optional job assignments.
+
+        Every cascade job is optional.  Frozen jobs are excluded from this
+        model and remain fixed in the caller.  Candidate windows are already
+        train-free and compatible with the static block constraints.
+        """
 
         model = cp_model.CpModel()
 
@@ -334,7 +339,14 @@ class CascadeReplanner:
             return {
                 "status": "NO_CANDIDATES",
                 "assignments": {},
-                "objective_values": {},
+                "objective_values": {
+                    "priority": 0,
+                    "criticality": 0,
+                    "scheduled_jobs": 0,
+                    "emergency_blocks": 0,
+                    "used_blocks": 0,
+                    "completion_minutes": 0,
+                },
             }
 
         # --------------------------------------------------------------
@@ -342,71 +354,52 @@ class CascadeReplanner:
         # --------------------------------------------------------------
 
         candidate_vars = {}
-
         job_candidates = {}
 
-        for index, candidate in enumerate(
-            candidates
-        ):
-            key = index
+        # Candidate start/end describe a safe placement WINDOW.
+        # The actual maintenance duration comes from the job.
+        job_duration_map = {
+            str(row.job_id): int(row.duration_min)
+            for row in cascade_jobs.itertuples()
+        }
 
-            x = model.NewBoolVar(
-                f"x_{index}"
+        for index, candidate in enumerate(candidates):
+            start_value = int(
+                pd.Timestamp(candidate.start).value
+                // 60_000_000_000
             )
-
-            start_value = (
-                candidate.start.value
+            end_value = int(
+                pd.Timestamp(candidate.end).value
                 // 60_000_000_000
             )
 
-            end_value = (
-                candidate.end.value
-                // 60_000_000_000
+            # Candidate start/end are the safe placement window.
+            # They are NOT the maintenance job duration.
+            duration = job_duration_map.get(
+                str(candidate.job_id)
             )
+
+            if duration is None or duration <= 0:
+                continue
+
+            if end_value - start_value < duration:
+                continue
+
+            x = model.NewBoolVar(f"x_{index}")
 
             start = model.NewIntVar(
                 start_value,
-                end_value
-                - int(
-                    candidate.end
-                    .subtract(
-                        candidate.start
-                    )
-                    .total_seconds()
-                    // 60
-                ),
+                end_value - duration,
                 f"s_{index}",
             )
-
-            duration = int(
-                (
-                    candidate.end
-                    - candidate.start
-                ).total_seconds()
-                // 60
-            )
-
             end = model.NewIntVar(
-                start_value
-                + duration,
+                start_value + duration,
                 end_value,
                 f"e_{index}",
             )
 
             model.Add(
-                end
-                == start
-                + duration
-            ).OnlyEnforceIf(x)
-
-            model.Add(
-                start
-                >= start_value
-            ).OnlyEnforceIf(x)
-
-            model.Add(
-                end
-                <= end_value
+                end == start + duration
             ).OnlyEnforceIf(x)
 
             interval = model.NewOptionalIntervalVar(
@@ -417,7 +410,7 @@ class CascadeReplanner:
                 f"interval_{index}",
             )
 
-            candidate_vars[key] = {
+            candidate_vars[index] = {
                 "x": x,
                 "start": start,
                 "end": end,
@@ -427,287 +420,134 @@ class CascadeReplanner:
             }
 
             job_candidates.setdefault(
-                candidate.job_id,
-                [],
-            ).append(key)
+                str(candidate.job_id), []
+            ).append(index)
+
+        if not candidate_vars:
+            return {
+                "status": "NO_CANDIDATES",
+                "assignments": {},
+                "objective_values": {
+                    "priority": 0,
+                    "criticality": 0,
+                    "scheduled_jobs": 0,
+                    "emergency_blocks": 0,
+                    "used_blocks": 0,
+                    "completion_minutes": 0,
+                },
+            }
 
         # --------------------------------------------------------------
-        # At most one assignment per job.
+        # At most one candidate per cascade job
         # --------------------------------------------------------------
+
+        job_selected = {}
 
         for job_id, indexes in job_candidates.items():
+            selected = model.NewBoolVar(f"selected_{job_id}")
             model.Add(
-                sum(
+                selected
+                == sum(
                     candidate_vars[i]["x"]
                     for i in indexes
                 )
-                <= 1
             )
+            job_selected[job_id] = selected
 
         # --------------------------------------------------------------
-        # Same-section NoOverlap.
+        # Same-section and same-block non-overlap
         # --------------------------------------------------------------
 
         for section_id in sorted(
             {
-                str(c.section_id)
-                for c in candidates
+                str(
+                    candidate_vars[i]["candidate"].section_id
+                )
+                for i in candidate_vars
             }
         ):
-
             intervals = [
                 candidate_vars[i]["interval"]
                 for i in candidate_vars
                 if str(
-                    candidate_vars[i][
-                        "candidate"
-                    ].section_id
-                )
-                == section_id
+                    candidate_vars[i]["candidate"].section_id
+                ) == section_id
             ]
-
             if intervals:
-                model.AddNoOverlap(
-                    intervals
-                )
-
-        # --------------------------------------------------------------
-        # Same-block NoOverlap.
-        # --------------------------------------------------------------
+                model.AddNoOverlap(intervals)
 
         for block_id in sorted(
             {
-                str(c.block_id)
-                for c in candidates
+                str(
+                    candidate_vars[i]["candidate"].block_id
+                )
+                for i in candidate_vars
             }
         ):
-
             intervals = [
                 candidate_vars[i]["interval"]
                 for i in candidate_vars
                 if str(
-                    candidate_vars[i][
-                        "candidate"
-                    ].block_id
-                )
-                == block_id
+                    candidate_vars[i]["candidate"].block_id
+                ) == block_id
             ]
-
             if intervals:
-                model.AddNoOverlap(
-                    intervals
-                )
+                model.AddNoOverlap(intervals)
 
         # --------------------------------------------------------------
-        # Objective:
-        #
-        # 1. priority
-        # 2. criticality
-        # 3. scheduled jobs
-        # 4. emergency usage
-        # 5. used blocks
-        # 6. completion time
-        #
-        # We use sequential solve stages.
+        # Objective coefficients
         # --------------------------------------------------------------
 
         priority_map = {
             str(row.job_id): int(
-                round(
-                    float(
-                        row.priority_score
-                    )
-                    * 100
-                )
+                round(float(row.priority_score) * 100)
             )
             for row in cascade_jobs.itertuples()
         }
 
         criticality_map = {
             str(row.job_id): int(
-                round(
-                    float(
-                        row.asset_criticality_score
-                    )
-                    * 100
-                )
+                round(float(row.asset_criticality_score) * 100)
             )
             for row in cascade_jobs.itertuples()
         }
 
+        # --------------------------------------------------------------
+        # Emergency-block indicators
+        # --------------------------------------------------------------
+
         emergency_map = {}
 
-        for index in candidate_vars:
-
-            candidate = candidate_vars[
-                index
-            ]["candidate"]
-
-            block_row = blocks[
+        for index, info in candidate_vars.items():
+            candidate = info["candidate"]
+            block_rows = blocks[
                 blocks.block_id.astype(str)
                 == str(candidate.block_id)
             ]
 
-            emergency = False
-
-            if not block_row.empty:
-                emergency = (
+            emergency_map[index] = 0
+            if not block_rows.empty:
+                emergency_map[index] = int(
                     str(
-                        block_row.iloc[0][
-                            "block_type"
-                        ]
-                    ).upper()
+                        block_rows.iloc[0]["block_type"]
+                    ).strip().upper()
                     == "EMERGENCY"
                 )
 
-            emergency_map[index] = (
-                1 if emergency else 0
-            )
+        # --------------------------------------------------------------
+        # Used-block indicators
+        # --------------------------------------------------------------
 
-        job_selected = {}
-
-        for job_id, indexes in job_candidates.items():
-            job_selected[job_id] = model.NewBoolVar(
-                f"selected_{job_id}"
-            )
-
-            model.Add(
-                job_selected[job_id]
-                == sum(
-                    candidate_vars[i]["x"]
-                    for i in indexes
-                )
-            )
-
-        solver = cp_model.CpSolver()
-
-        solver.parameters.num_search_workers = 1
-        solver.parameters.random_seed = (
-            self.random_seed
-        )
-        solver.parameters.max_time_in_seconds = (
-            self.max_time_seconds
-        )
-
-        def solve_objective(expression, maximize=True):
-            if maximize:
-                model.Maximize(
-                    expression
-                )
-            else:
-                model.Minimize(
-                    expression
-                )
-
-            status = solver.Solve(
-                model
-            )
-
-            if status not in (
-                cp_model.OPTIMAL,
-                cp_model.FEASIBLE,
-            ):
-                return None
-
-            return int(
-                round(
-                    solver.ObjectiveValue()
-                )
-            )
-
-        # Stage 1
-        priority_expr = sum(
-            priority_map.get(
-                job_id,
-                0,
-            )
-            * job_selected[job_id]
-            for job_id in job_candidates
-        )
-
-        priority_value = solve_objective(
-            priority_expr,
-            maximize=True,
-        )
-
-        if priority_value is None:
-            return {
-                "status": solver.StatusName(),
-                "assignments": {},
-                "objective_values": {},
-            }
-
-        model.Add(
-            priority_expr
-            == priority_value
-        )
-
-        # Stage 2
-        criticality_expr = sum(
-            criticality_map.get(
-                job_id,
-                0,
-            )
-            * job_selected[job_id]
-            for job_id in job_candidates
-        )
-
-        criticality_value = solve_objective(
-            criticality_expr,
-            maximize=True,
-        )
-
-        model.Add(
-            criticality_expr
-            == criticality_value
-        )
-
-        # Stage 3
-        scheduled_expr = sum(
-            job_selected.values()
-        )
-
-        scheduled_value = solve_objective(
-            scheduled_expr,
-            maximize=True,
-        )
-
-        model.Add(
-            scheduled_expr
-            == scheduled_value
-        )
-
-        # Stage 4
-        emergency_expr = sum(
-            emergency_map[i]
-            * candidate_vars[i]["x"]
-            for i in candidate_vars
-        )
-
-        emergency_value = solve_objective(
-            emergency_expr,
-            maximize=False,
-        )
-
-        model.Add(
-            emergency_expr
-            == emergency_value
-        )
-
-        # Stage 5
         used_blocks = {}
 
         for block_id in sorted(
             {
                 str(
-                    candidate_vars[i][
-                        "candidate"
-                    ].block_id
+                    candidate_vars[i]["candidate"].block_id
                 )
                 for i in candidate_vars
             }
         ):
-
             used = model.NewBoolVar(
                 f"used_{block_id}"
             )
@@ -716,110 +556,313 @@ class CascadeReplanner:
                 candidate_vars[i]["x"]
                 for i in candidate_vars
                 if str(
-                    candidate_vars[i][
-                        "candidate"
-                    ].block_id
-                )
-                == block_id
+                    candidate_vars[i]["candidate"].block_id
+                ) == block_id
             ]
 
             for x in block_x:
-                model.Add(
-                    x <= used
-                )
+                model.Add(x <= used)
 
             model.Add(
-                used
-                <= sum(block_x)
+                used <= sum(block_x)
             )
 
-            used_blocks[
-                block_id
-            ] = used
+            used_blocks[block_id] = used
+
+        # --------------------------------------------------------------
+        # Solver
+        # --------------------------------------------------------------
+
+        solver = cp_model.CpSolver()
+        solver.parameters.num_search_workers = 1
+        solver.parameters.random_seed = self.random_seed
+        solver.parameters.max_time_in_seconds = (
+            self.max_time_seconds
+        )
+
+        def optimize(expression, maximize):
+            if maximize:
+                model.Maximize(expression)
+            else:
+                model.Minimize(expression)
+
+            status = solver.Solve(model)
+
+            if status not in (
+                cp_model.OPTIMAL,
+                cp_model.FEASIBLE,
+            ):
+                return None, status
+
+            return int(round(solver.ObjectiveValue())), status
+
+        def fix(expression, value):
+            model.Add(expression == int(value))
+
+        # --------------------------------------------------------------
+        # Stage 1 — maximize total priority value
+        # --------------------------------------------------------------
+
+        priority_expr = sum(
+            priority_map.get(job_id, 0)
+            * job_selected[job_id]
+            for job_id in job_candidates
+        )
+
+        priority_value, status = optimize(
+            priority_expr,
+            maximize=True,
+        )
+
+        if priority_value is None:
+            return {
+                "status": solver.StatusName(status),
+                "assignments": {},
+                "objective_values": {},
+            }
+
+        fix(priority_expr, priority_value)
+
+        # --------------------------------------------------------------
+        # Stage 2 — maximize criticality
+        # --------------------------------------------------------------
+
+        criticality_expr = sum(
+            criticality_map.get(job_id, 0)
+            * job_selected[job_id]
+            for job_id in job_candidates
+        )
+
+        criticality_value, status = optimize(
+            criticality_expr,
+            maximize=True,
+        )
+
+        if criticality_value is None:
+            return {
+                "status": solver.StatusName(status),
+                "assignments": {},
+                "objective_values": {},
+            }
+
+        fix(criticality_expr, criticality_value)
+
+        # --------------------------------------------------------------
+        # Stage 3 — maximize number of scheduled jobs
+        # --------------------------------------------------------------
+
+        scheduled_expr = sum(
+            job_selected.values()
+        )
+
+        scheduled_value, status = optimize(
+            scheduled_expr,
+            maximize=True,
+        )
+
+        if scheduled_value is None:
+            return {
+                "status": solver.StatusName(status),
+                "assignments": {},
+                "objective_values": {},
+            }
+
+        fix(scheduled_expr, scheduled_value)
+
+        # --------------------------------------------------------------
+        # Stage 4 — minimize Emergency-block assignments
+        # --------------------------------------------------------------
+
+        emergency_expr = sum(
+            emergency_map[i]
+            * candidate_vars[i]["x"]
+            for i in candidate_vars
+        )
+
+        emergency_value, status = optimize(
+            emergency_expr,
+            maximize=False,
+        )
+
+        if emergency_value is None:
+            return {
+                "status": solver.StatusName(status),
+                "assignments": {},
+                "objective_values": {},
+            }
+
+        fix(emergency_expr, emergency_value)
+
+        # --------------------------------------------------------------
+        # Stage 5 — minimize number of used blocks
+        # --------------------------------------------------------------
 
         used_blocks_expr = sum(
             used_blocks.values()
         )
 
-        used_blocks_value = solve_objective(
+        used_blocks_value, status = optimize(
             used_blocks_expr,
             maximize=False,
         )
 
-        model.Add(
-            used_blocks_expr
-            == used_blocks_value
+        if used_blocks_value is None:
+            return {
+                "status": solver.StatusName(status),
+                "assignments": {},
+                "objective_values": {},
+            }
+
+        fix(
+            used_blocks_expr,
+            used_blocks_value,
         )
 
-        # Stage 6: selected candidate completion time only.
+        # --------------------------------------------------------------
+        # Stage 6 — minimize completion time of SELECTED jobs only
+        #
+        # selected_end = end - horizon_start when x == 1
+        # selected_end = 0 otherwise.
+        #
+        # This avoids the invalid CP-SAT expression:
+        #     end * x
+        # --------------------------------------------------------------
+
+        horizon_start = min(
+            int(
+                pd.Timestamp(
+                    info["candidate"].start
+                ).value
+                // 60_000_000_000
+            )
+            for info in candidate_vars.values()
+        )
+
+        completion_terms = []
+
+        for index, info in candidate_vars.items():
+            selected_end = model.NewIntVar(
+                0,
+                max(
+                    0,
+                    int(
+                        pd.Timestamp(
+                            info["candidate"].end
+                        ).value
+                        // 60_000_000_000
+                    )
+                    - horizon_start,
+                ),
+                f"selected_end_{index}",
+            )
+
+            end_offset = (
+                info["end"]
+                - horizon_start
+            )
+
+            model.Add(
+                selected_end == end_offset
+            ).OnlyEnforceIf(
+                info["x"]
+            )
+
+            model.Add(
+                selected_end == 0
+            ).OnlyEnforceIf(
+                info["x"].Not()
+            )
+
+            completion_terms.append(
+                selected_end
+            )
+
         completion_expr = sum(
-            candidate_vars[i]["end"]
-            * candidate_vars[i]["x"]
-            for i in candidate_vars
+            completion_terms
         )
 
-        completion_value = solve_objective(
+        completion_value, status = optimize(
             completion_expr,
             maximize=False,
         )
 
-        if completion_value is not None:
-            model.Add(
-                completion_expr
-                == completion_value
-            )
+        if completion_value is None:
+            return {
+                "status": solver.StatusName(status),
+                "assignments": {},
+                "objective_values": {},
+            }
 
-        # Final solve.
-        final_status = solver.Solve(
-            model
+        fix(
+            completion_expr,
+            completion_value,
         )
 
-        assignments = {}
+        # --------------------------------------------------------------
+        # Final solve after all lexicographic constraints are fixed.
+        # --------------------------------------------------------------
 
-        if final_status in (
+        final_status = solver.Solve(model)
+
+        if final_status not in (
             cp_model.OPTIMAL,
             cp_model.FEASIBLE,
         ):
+            return {
+                "status": solver.StatusName(final_status),
+                "assignments": {},
+                "objective_values": {},
+            }
 
-            for job_id, indexes in job_candidates.items():
+        # --------------------------------------------------------------
+        # Extract selected assignments.
+        # --------------------------------------------------------------
 
-                for index in indexes:
+        assignments = {}
 
-                    if solver.Value(
-                        candidate_vars[index][
-                            "x"
-                        ]
-                    ):
+        for job_id, indexes in job_candidates.items():
+            for index in indexes:
+                info = candidate_vars[index]
 
-                        candidate = candidate_vars[
-                            index
-                        ]["candidate"]
+                if solver.Value(info["x"]) != 1:
+                    continue
 
-                        assignments[
-                            job_id
-                        ] = {
-                            "candidate": candidate,
-                            "start": pd.Timestamp(
-                                candidate.start
-                            )
-                            + pd.Timedelta(
-                                minutes=(
-                                    solver.Value(
-                                        candidate_vars[
-                                            index
-                                        ][
-                                            "start"
-                                        ]
-                                    )
-                                    - (
-                                        candidate.start.value
-                                        // 60_000_000_000
-                                    )
-                                )
-                            ),
-                        }
+                candidate = info["candidate"]
 
-                        break
+                start_value = int(
+                    solver.Value(info["start"])
+                )
+
+                candidate_start_value = int(
+                    pd.Timestamp(
+                        candidate.start
+                    ).value
+                    // 60_000_000_000
+                )
+
+                actual_start = (
+                    pd.Timestamp(candidate.start)
+                    + pd.Timedelta(
+                        minutes=(
+                            start_value
+                            - candidate_start_value
+                        )
+                    )
+                )
+
+                assignments[str(job_id)] = {
+                    "candidate": candidate,
+                    "start": actual_start,
+                    "duration": info["duration"],
+                    "end": (
+                        actual_start
+                        + pd.Timedelta(
+                            minutes=info["duration"]
+                        )
+                    ),
+                }
+
+                break
 
         return {
             "status": solver.StatusName(
@@ -935,16 +978,16 @@ class CascadeReplanner:
                 assignment["start"]
             )
 
+            # Always use the actual maintenance job duration
+            # returned by the solver.
+            duration = int(
+                assignment["duration"]
+            )
+
             end = (
                 start
                 + pd.Timedelta(
-                    minutes=int(
-                        (
-                            candidate.end
-                            - candidate.start
-                        ).total_seconds()
-                        // 60
-                    )
+                    minutes=duration
                 )
             )
 

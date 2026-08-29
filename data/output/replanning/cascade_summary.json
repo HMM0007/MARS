@@ -1,0 +1,50 @@
+{
+  "event_id": "EVT-B020-CASCADE-001",
+  "event_type": "BLOCK_UNAVAILABLE",
+  "event_block_id": "B020",
+  "cascade_depth": 1,
+  "direct_jobs": [
+    "J004",
+    "J036"
+  ],
+  "indirect_jobs": [
+    "J005",
+    "J029"
+  ],
+  "reconsidered_jobs": [
+    "J004",
+    "J005",
+    "J029",
+    "J036"
+  ],
+  "frozen_jobs": [
+    "J013",
+    "J014",
+    "J015",
+    "J019",
+    "J027",
+    "J031",
+    "J040"
+  ],
+  "direct_job_count": 2,
+  "indirect_job_count": 2,
+  "reconsidered_job_count": 4,
+  "frozen_job_count": 7,
+  "previous_scheduled_jobs": 11,
+  "cascade_scheduled_jobs": 9,
+  "newly_scheduled_jobs": 0,
+  "dropped_jobs": 2,
+  "rescheduled_jobs": 1,
+  "moved_jobs": 1,
+  "schedule_stability": 0.8181818181818182,
+  "solver_status": "OPTIMAL",
+  "objective_values": {
+    "priority": 15022,
+    "criticality": 20000,
+    "scheduled_jobs": 2,
+    "emergency_blocks": 2,
+    "used_blocks": 1,
+    "completion_minutes": 150
+  },
+  "independent_validation": "PASSED"
+}

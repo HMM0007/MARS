@@ -1,0 +1,5 @@
+job_id,impact_type,cascade_depth,impact_reason
+J004,DIRECT,0,Assigned block B020 became unavailable.
+J036,DIRECT,0,Assigned block B020 became unavailable.
+J005,INDIRECT,1,Scheduled job J005 occupies a candidate window needed by affected job J004.
+J029,INDIRECT,1,Scheduled job J029 occupies a candidate window needed by affected job J004.
