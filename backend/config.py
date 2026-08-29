@@ -24,6 +24,11 @@ OPTIMIZED_PLAN_FILE = (
     OUTPUT_DATA_DIR / "optimized_maintenance_plan.csv"
 )
 
+# Authoritative plan currently used by read APIs and replanning.
+CURRENT_PLAN_FILE = (
+    OUTPUT_DATA_DIR / "current_plan.csv"
+)
+
 HEURISTIC_PLAN_FILE = (
     OUTPUT_DATA_DIR / "initial_maintenance_plan.csv"
 )
