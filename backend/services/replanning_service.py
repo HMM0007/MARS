@@ -316,7 +316,7 @@ class ReplanningService:
             ),
             "released_jobs": affected,
             "affected_jobs": affected,
-            "unchanged_jobs": int((types == "UNCHANGED").sum()),
+            "unchanged_jobs": stable_scheduled,
             "rescheduled_jobs": int((types == "RESCHEDULED").sum()),
             "dropped_jobs": int((types == "DROPPED").sum()),
             "newly_scheduled_jobs": int((types == "NEWLY_SCHEDULED").sum()),

@@ -254,22 +254,51 @@ class OptimizationService:
         from optimizer.cp_sat.cp_sat_optimizer import CPSATOptimizer
 
         optimizer = CPSATOptimizer(
-            priority_results_path=self.jobs_file.parent / "priority_results.csv",
-            jobs_path=self.jobs_file,
-            assets_path=self.assets_file,
-            blocks_path=self.blocks_file,
-            train_schedule_path=self.train_schedule_file,
-            train_sections_path=self.train_sections_file,
-            heuristic_plan_path=HEURISTIC_PLAN_FILE,
+        priority_results_path=self.jobs_file.parent / "priority_results.csv",
+        jobs_path=self.jobs_file,
+        assets_path=self.assets_file,
+        blocks_path=self.blocks_file,
+        train_schedule_path=self.train_schedule_file,
+        train_sections_path=self.train_sections_file,
+        heuristic_plan_path=HEURISTIC_PLAN_FILE,
         )
-        result = optimizer.optimize()
-        status = result.get("status")
-        if str(status).upper() not in {"OPTIMAL", "FEASIBLE"}:
-            raise RuntimeError(f"Optimization did not produce a usable plan: {status}")
-        self._persist_current_plan(result.get("plan", []))
+
+        # CPSATOptimizer.optimize() returns:
+        #     plan, summary
+        plan, summary = optimizer.optimize()
+
+        if not isinstance(plan, pd.DataFrame):
+            plan = pd.DataFrame(plan)
+
+        if plan.empty:
+            raise ValueError(
+                "Optimization produced an empty plan."
+            )
+
+        status = summary.get(
+            "solver_status",
+            "UNKNOWN",
+        )
+
+        if str(status).upper() not in {
+            "OPTIMAL",
+            "FEASIBLE",
+        }:
+            raise RuntimeError(
+                "Optimization did not produce a usable plan: "
+                f"{status}"
+            )
+
+        # Promote the successful optimized plan
+        # to the Current Active Plan.
+        self._persist_current_plan(plan)
+
         return {
             "status": status,
-            "objective_values": result.get("objective_values", {}),
-            "plan": result.get("plan", []),
+            "objective_values": summary.get(
+                "objective_values",
+                {},
+            ),
+            "plan": self._records(plan),
             "current_plan_promoted": True,
         }

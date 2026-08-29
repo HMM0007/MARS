@@ -1094,23 +1094,15 @@ class CascadeReplanner:
             )
 
             old_start = (
-                ""
-                if pd.isna(
-                    old.scheduled_start
-                )
-                else str(
-                    old.scheduled_start
-                ).strip()
+                None
+                if pd.isna(old.scheduled_start)
+                else pd.Timestamp(old.scheduled_start)
             )
 
             new_start = (
-                ""
-                if pd.isna(
-                    new.scheduled_start
-                )
-                else str(
-                    new.scheduled_start
-                ).strip()
+                None
+                if pd.isna(new.scheduled_start)
+                else pd.Timestamp(new.scheduled_start)
             )
 
             # ------------------------------------------------------

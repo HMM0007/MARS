@@ -21,7 +21,7 @@
   "jobs_moved": 6,
   "jobs_unchanged": 34,
   "solver_status": "OPTIMAL",
-  "solver_wall_time_seconds": 0.0337839,
+  "solver_wall_time_seconds": 0.08088300000000001,
   "objective_values": {
     "priority": 74616,
     "criticality": 75000,
