@@ -147,7 +147,12 @@ class ReplanningService:
             "event_type": event.event_type,
             "block_id": event.block_id,
         }
-        response["summary"] = self._cascade_summary(result)
+        response["summary"] = self._cascade_summary(
+            result=result,
+            current_plan=current_plan,
+            event=event,
+            generator=generator,
+        )
         response["optimization"] = {
             "solver_status": result.solver_status,
             "objective_values": self._serialize_value(result.objective_values),
@@ -155,7 +160,66 @@ class ReplanningService:
         return response
 
     @classmethod
-    def _cascade_summary(cls, result) -> dict:
+    def _cascade_candidate_counts(
+        cls,
+        result,
+        current_plan: pd.DataFrame,
+        event: DisruptionEvent,
+        generator: CandidateGenerator,
+    ) -> dict[str, int]:
+        """Report the actual usable candidate windows for reconsidered jobs."""
+        cascade_group = getattr(result, "cascade_group", None)
+        if cascade_group is None:
+            return {}
+
+        job_ids = {str(job_id) for job_id in getattr(cascade_group, "job_ids", [])}
+        if not job_ids:
+            return {}
+
+        _, _, _, raw_candidates, _ = generator.generate()
+        cascade_candidates = [
+            candidate
+            for candidate in raw_candidates
+            if str(candidate.job_id) in job_ids
+        ]
+
+        if str(event.event_type).upper() == "BLOCK_UNAVAILABLE":
+            event_block = str(getattr(event, "block_id", ""))
+            cascade_candidates = [
+                candidate
+                for candidate in cascade_candidates
+                if str(candidate.block_id) != event_block
+            ]
+
+        frozen_ids = {
+            str(job_id)
+            for job_id in getattr(cascade_group, "frozen_job_ids", [])
+        }
+        frozen_plan = current_plan[
+            current_plan.job_id.astype(str).isin(frozen_ids)
+        ].copy()
+
+        usable_candidates = CascadeReplanner._remove_frozen_conflicts(
+            cascade_candidates,
+            frozen_plan,
+        )
+
+        counts = {job_id: 0 for job_id in sorted(job_ids)}
+        for candidate in usable_candidates:
+            job_id = str(candidate.job_id)
+            if job_id in counts:
+                counts[job_id] += 1
+
+        return counts
+
+    @classmethod
+    def _cascade_summary(
+        cls,
+        result,
+        current_plan: pd.DataFrame | None = None,
+        event: DisruptionEvent | None = None,
+        generator: CandidateGenerator | None = None,
+    ) -> dict:
         """Build the schema-compatible cascade summary."""
         changes = getattr(result, "changes", None)
         graph = getattr(result, "impact_graph", None)
@@ -181,15 +245,45 @@ class ReplanningService:
         new_scheduled = changes["new_status"].astype(str).str.upper().eq("SCHEDULED")
         previous_scheduled = int(old_scheduled.sum())
         revised_scheduled = int(new_scheduled.sum())
+
         impact = graph_df.get("impact_type", pd.Series(dtype=str)).astype(str).str.upper()
         direct = int((impact == "DIRECT").sum())
         indirect = int((impact == "INDIRECT").sum())
-        affected = direct + indirect
+        affected = len(getattr(getattr(result, "cascade_group", None), "job_ids", []))
+
+        previous_blocks = changes["previous_block"].astype(str)
+        new_blocks = changes["new_block"].astype(str)
+        previous_starts = pd.to_datetime(
+            changes["previous_start"],
+            errors="coerce",
+        )
+        new_starts = pd.to_datetime(
+            changes["new_start"],
+            errors="coerce",
+        )
+        unchanged_assignment = (
+            old_scheduled
+            & new_scheduled
+            & previous_blocks.eq(new_blocks)
+            & previous_starts.eq(new_starts)
+        )
+        stable_scheduled = int(unchanged_assignment.sum())
+
+        candidate_counts = {}
+        if current_plan is not None and event is not None and generator is not None:
+            candidate_counts = cls._cascade_candidate_counts(
+                result=result,
+                current_plan=current_plan,
+                event=event,
+                generator=generator,
+            )
 
         return {
             "previous_scheduled": previous_scheduled,
             "revised_scheduled": revised_scheduled,
-            "frozen_jobs": max(previous_scheduled - affected, 0),
+            "frozen_jobs": len(
+                getattr(getattr(result, "cascade_group", None), "frozen_job_ids", [])
+            ),
             "released_jobs": affected,
             "affected_jobs": affected,
             "unchanged_jobs": int((types == "UNCHANGED").sum()),
@@ -197,10 +291,10 @@ class ReplanningService:
             "dropped_jobs": int((types == "DROPPED").sum()),
             "newly_scheduled_jobs": int((types == "NEWLY_SCHEDULED").sum()),
             "schedule_stability": (
-                int((types == "UNCHANGED").sum()) / previous_scheduled
+                stable_scheduled / previous_scheduled
                 if previous_scheduled else 0.0
             ),
-            "candidate_counts": {},
+            "candidate_counts": candidate_counts,
         }
 
     @classmethod
