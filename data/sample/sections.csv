@@ -1,0 +1,11 @@
+section_id,section_start,section_end,distance_km,corridor_id,line_type,status
+S01,Pune,Lonavala,64,C01,Double,Operational
+S02,Lonavala,Karjat,52,C01,Double,Operational
+S03,Karjat,Kalyan,67,C01,Double,Operational
+S04,Pune,Daund,75,C02,Double,Operational
+S05,Daund,Ahmednagar,120,C02,Single,Operational
+S06,Ahmednagar,Manmad,160,C02,Single,Operational
+S07,Kalyan,Thane,35,C03,Quadruple,Operational
+S08,Thane,Mumbai,32,C03,Quadruple,Operational
+S09,Daund,Solapur,180,C02,Double,Operational
+S10,Solapur,Kalaburagi,120,C02,Double,Operational

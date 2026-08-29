@@ -1,0 +1,21 @@
+block_id,section_id,block_date,start_time,end_time,duration_min,status,block_type,restrictions,isolation_required
+B001,S01,2026-08-30,09:00,11:00,120,Available,Planned,Engineering work only,Yes
+B002,S01,2026-08-30,12:00,14:00,120,Available,Planned,Limited speed,Yes
+B003,S02,2026-08-30,14:00,16:00,120,Available,Emergency,Limited speed,Yes
+B004,S02,2026-08-30,09:00,11:00,120,Available,Planned,OHE work only,No
+B005,S03,2026-08-30,22:00,00:00,120,Available,Planned,None,Yes
+B006,S03,2026-08-30,14:00,16:00,120,Available,Planned,OHE work only,Yes
+B007,S04,2026-08-30,22:00,00:00,120,Available,Planned,None,No
+B008,S04,2026-08-30,14:00,16:00,120,Available,Planned,OHE work only,No
+B009,S05,2026-08-30,22:00,00:00,120,Available,Planned,Limited speed,No
+B010,S05,2026-08-30,09:00,11:00,120,Available,Planned,OHE work only,Yes
+B011,S06,2026-08-30,14:00,16:00,120,Available,Emergency,OHE work only,Yes
+B012,S06,2026-08-30,12:00,14:00,120,Available,Planned,Limited speed,Yes
+B013,S07,2026-08-30,14:00,16:00,120,Available,Planned,OHE work only,Yes
+B014,S07,2026-08-30,06:00,08:00,120,Available,Planned,Limited speed,Yes
+B015,S08,2026-08-30,12:00,14:00,120,Available,Planned,Limited speed,No
+B016,S08,2026-08-30,14:00,16:00,120,Available,Planned,Engineering work only,No
+B017,S09,2026-08-30,12:00,14:00,120,Available,Planned,None,No
+B018,S09,2026-08-30,14:00,16:00,120,Available,Planned,None,No
+B019,S10,2026-08-30,09:00,11:00,120,Available,Emergency,None,Yes
+B020,S10,2026-08-30,06:00,08:00,120,Available,Planned,Limited speed,Yes

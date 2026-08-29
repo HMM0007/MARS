@@ -1,0 +1,26 @@
+asset_id,asset_type,asset_name,section_id,location_km,criticality,status,installation_date,last_maintenance_date
+A001,Track,Track Asset 001,S02,11.6,Low,Operational,2017-05-28,2026-06-19
+A002,Track,Track Asset 002,S09,5.4,Low,Operational,2023-03-19,2026-04-13
+A003,Track,Track Asset 003,S09,128.9,High,Operational,2017-10-19,2025-11-04
+A004,Track,Track Asset 004,S07,28.3,Medium,Operational,2025-08-04,2026-05-21
+A005,Track,Track Asset 005,S07,33.5,Medium,Operational,2021-11-21,2026-06-19
+A006,Track,Track Asset 006,S02,17.9,Medium,Operational,2022-09-12,2026-07-19
+A007,Track,Track Asset 007,S08,12.1,High,Faulty,2019-06-22,2026-03-13
+A008,Track,Track Asset 008,S10,23.1,Critical,Operational,2024-11-19,2026-07-18
+A009,Track,Track Asset 009,S04,64.1,High,Faulty,2024-07-13,2026-01-28
+A010,Track,Track Asset 010,S05,19.5,High,Operational,2021-09-05,2026-04-25
+A011,Signal,Signal Asset 011,S05,8.6,High,Operational,2018-07-18,2026-05-15
+A012,Signal,Signal Asset 012,S09,68.3,High,Operational,2018-06-27,2026-04-20
+A013,Signal,Signal Asset 013,S06,36.6,High,Operational,2025-04-21,2026-03-02
+A014,Signal,Signal Asset 014,S07,33.0,Medium,Operational,2017-08-12,2026-03-02
+A015,Signal,Signal Asset 015,S04,68.6,High,Operational,2020-07-08,2026-05-29
+A016,Signal,Signal Asset 016,S05,64.7,Medium,Operational,2017-04-15,2026-01-03
+A017,OHE,OHE Asset 017,S10,119.7,Medium,Operational,2019-12-13,2025-12-01
+A018,OHE,OHE Asset 018,S02,7.9,High,Operational,2023-11-14,2026-01-06
+A019,OHE,OHE Asset 019,S10,119.5,Low,Operational,2019-09-24,2026-04-04
+A020,OHE,OHE Asset 020,S09,129.7,Critical,Operational,2018-01-07,2025-11-09
+A021,OHE,OHE Asset 021,S05,35.2,High,Operational,2023-11-22,2025-12-21
+A022,Point,Point Asset 022,S01,16.9,Critical,Operational,2020-01-19,2026-05-11
+A023,Point,Point Asset 023,S09,53.7,Critical,Operational,2018-07-01,2025-11-24
+A024,Point,Point Asset 024,S10,19.4,Medium,Operational,2016-12-06,2025-11-12
+A025,Point,Point Asset 025,S01,7.2,High,Operational,2021-08-05,2026-03-06
