@@ -14,8 +14,8 @@ import pandas as pd
 from backend.config import (
     ASSETS_FILE,
     BLOCKS_FILE,
+    CURRENT_PLAN_FILE,
     JOBS_FILE,
-    OPTIMIZED_PLAN_FILE,
     TRAIN_SCHEDULE_FILE,
     TRAIN_SECTIONS_FILE,
 )
@@ -37,14 +37,42 @@ class ReplanningService:
         self.train_schedule_path = Path(TRAIN_SCHEDULE_FILE)
         self.train_sections_path = Path(TRAIN_SECTIONS_FILE)
 
+    @staticmethod
+    def _promote_current_plan(plan: pd.DataFrame) -> None:
+        """Atomically promote a validated revised plan to current state."""
+        if plan is None or plan.empty:
+            raise ValueError("Cannot promote an empty plan to the current plan.")
+
+        CURRENT_PLAN_FILE.parent.mkdir(parents=True, exist_ok=True)
+        temporary_file = CURRENT_PLAN_FILE.with_name(
+            f".{CURRENT_PLAN_FILE.name}.tmp"
+        )
+        try:
+            plan.to_csv(temporary_file, index=False)
+            temporary_file.replace(CURRENT_PLAN_FILE)
+        except Exception:
+            if temporary_file.exists():
+                temporary_file.unlink()
+            raise
+
     def _load_current_plan(self) -> pd.DataFrame:
-        """Load the latest optimized maintenance plan."""
-        if not OPTIMIZED_PLAN_FILE.exists():
+        """Load the authoritative current active maintenance plan."""
+        if not CURRENT_PLAN_FILE.exists():
             raise FileNotFoundError(
-                "Optimized maintenance plan not found: "
-                f"{OPTIMIZED_PLAN_FILE}"
+                "Current maintenance plan not found: "
+                f"{CURRENT_PLAN_FILE}. Run initial optimization first."
             )
-        return pd.read_csv(OPTIMIZED_PLAN_FILE, keep_default_na=False)
+        return pd.read_csv(CURRENT_PLAN_FILE, keep_default_na=False)
+
+    def _validator(self) -> OptimizedPlanValidator:
+        """Create the independent plan validator used before promotion."""
+        return OptimizedPlanValidator(
+            self.jobs_path,
+            self.assets_path,
+            self.blocks_path,
+            self.train_schedule_path,
+            self.train_sections_path,
+        )
 
     @staticmethod
     def _create_event(event_type: str, block_id: str) -> DisruptionEvent:
@@ -85,6 +113,9 @@ class ReplanningService:
             event=event,
         )
 
+        self._validator().validate(revised_plan)
+        self._promote_current_plan(revised_plan)
+
         return {
             "event": {
                 "event_type": event.event_type,
@@ -109,6 +140,7 @@ class ReplanningService:
             },
             "plan": self._serialize_dataframe(revised_plan),
             "changes": self._serialize_dataframe(changes),
+            "current_plan_promoted": True,
         }
 
     def cascade_replan(self, event_type: str, block_id: str) -> dict:
@@ -124,13 +156,7 @@ class ReplanningService:
             self.train_schedule_path,
             self.train_sections_path,
         )
-        validator = OptimizedPlanValidator(
-            self.jobs_path,
-            self.assets_path,
-            self.blocks_path,
-            self.train_schedule_path,
-            self.train_sections_path,
-        )
+        validator = self._validator()
         replanner = CascadeReplanner(
             candidate_generator=generator,
             validator=validator,
@@ -142,6 +168,10 @@ class ReplanningService:
             current_plan=current_plan,
             event=event,
         )
+
+        revised_plan = getattr(result, "plan", None)
+        validator.validate(revised_plan)
+        self._promote_current_plan(revised_plan)
 
         response = self._serialize_cascade_result(result)
         response["event"] = {
@@ -158,6 +188,7 @@ class ReplanningService:
             "solver_status": result.solver_status,
             "objective_values": self._serialize_value(result.objective_values),
         }
+        response["current_plan_promoted"] = True
         return response
 
     @classmethod
@@ -371,7 +402,7 @@ class ReplanningService:
                 "direct_jobs": direct,
                 "indirect_jobs": indirect,
                 "reconsidered_jobs": len(getattr(cascade_group, "job_ids", [])),
-                "frozen_jobs": 0,
+                "frozen_jobs": len(getattr(cascade_group, "frozen_job_ids", [])),
             }
 
         return response
