@@ -1,11 +1,7 @@
 """MARS replanning service.
 
-Connects the FastAPI backend to the existing MARS dynamic
-and cascading replanning engines.
-
-This service contains no optimization logic.
-It only prepares inputs, invokes the existing engines,
-and converts their results into API-safe JSON data.
+Connects the FastAPI backend to the existing dynamic and cascading
+replanning engines and converts their results into API-safe data.
 """
 
 from __future__ import annotations
@@ -22,226 +18,102 @@ from backend.config import (
     TRAIN_SCHEDULE_FILE,
     TRAIN_SECTIONS_FILE,
 )
-
-from optimizer.cp_sat.candidate_generator import (
-    CandidateGenerator,
-)
-
-from optimizer.cp_sat.plan_validator import (
-    OptimizedPlanValidator,
-)
-
-from optimizer.replanning.cascade_replanner import (
-    CascadeReplanner,
-)
-
-from optimizer.replanning.disruption_models import (
-    DisruptionEvent,
-)
-
-from optimizer.replanning.replan_optimizer import (
-    ReplanOptimizer,
-)
+from optimizer.cp_sat.candidate_generator import CandidateGenerator
+from optimizer.cp_sat.plan_validator import OptimizedPlanValidator
+from optimizer.replanning.cascade_replanner import CascadeReplanner
+from optimizer.replanning.disruption_models import DisruptionEvent
+from optimizer.replanning.replan_optimizer import ReplanOptimizer
 
 
 class ReplanningService:
     """Application service for MARS replanning."""
 
     def __init__(self):
-        """Initialize dataset paths."""
-
-        self.priority_results_path = (
-            JOBS_FILE.parent
-            / "priority_results.csv"
-        )
-
+        self.priority_results_path = JOBS_FILE.parent / "priority_results.csv"
         self.jobs_path = Path(JOBS_FILE)
         self.assets_path = Path(ASSETS_FILE)
         self.blocks_path = Path(BLOCKS_FILE)
-
-        self.train_schedule_path = Path(
-            TRAIN_SCHEDULE_FILE
-        )
-
-        self.train_sections_path = Path(
-            TRAIN_SECTIONS_FILE
-        )
-
-    # ============================================================
-    # CURRENT PLAN
-    # ============================================================
+        self.train_schedule_path = Path(TRAIN_SCHEDULE_FILE)
+        self.train_sections_path = Path(TRAIN_SECTIONS_FILE)
 
     def _load_current_plan(self) -> pd.DataFrame:
         """Load the latest optimized maintenance plan."""
-
         if not OPTIMIZED_PLAN_FILE.exists():
             raise FileNotFoundError(
                 "Optimized maintenance plan not found: "
                 f"{OPTIMIZED_PLAN_FILE}"
             )
-
-        return pd.read_csv(
-            OPTIMIZED_PLAN_FILE,
-            keep_default_na=False,
-        )
-
-    # ============================================================
-    # EVENT CREATION
-    # ============================================================
+        return pd.read_csv(OPTIMIZED_PLAN_FILE, keep_default_na=False)
 
     @staticmethod
-    def _create_event(
-        event_type: str,
-        block_id: str,
-    ) -> DisruptionEvent:
+    def _create_event(event_type: str, block_id: str) -> DisruptionEvent:
         """Create a validated disruption event."""
-
-        event_type = (
-            str(event_type)
-            .strip()
-            .upper()
-        )
-
-        block_id = (
-            str(block_id)
-            .strip()
-        )
-
+        event_type = str(event_type).strip().upper()
+        block_id = str(block_id).strip()
         if not event_type:
-            raise ValueError(
-                "event_type is required."
-            )
-
+            raise ValueError("event_type is required.")
         if not block_id:
-            raise ValueError(
-                "block_id is required."
-            )
-
+            raise ValueError("block_id is required.")
         return DisruptionEvent(
-            event_id=(
-                f"API-{event_type}-{block_id}"
-            ),
+            event_id=f"API-{event_type}-{block_id}",
             event_type=event_type,
             severity="HIGH",
             block_id=block_id,
             description=(
-                "Disruption received through "
-                "the MARS backend API: "
+                "Disruption received through the MARS backend API: "
                 f"{event_type} for block {block_id}."
             ),
         )
 
-    # ============================================================
-    # DYNAMIC REPLANNING
-    # ============================================================
-
-    def replan(
-        self,
-        event_type: str,
-        block_id: str,
-    ) -> dict:
-        """Run the existing dynamic replanning engine."""
-
-        current_plan = (
-            self._load_current_plan()
-        )
-
-        event = self._create_event(
-            event_type=event_type,
-            block_id=block_id,
-        )
+    def replan(self, event_type: str, block_id: str) -> dict:
+        """Run dynamic replanning and return the public API contract."""
+        current_plan = self._load_current_plan()
+        event = self._create_event(event_type, block_id)
 
         replanner = ReplanOptimizer(
-            priority_results_path=(
-                self.priority_results_path
-            ),
+            priority_results_path=self.priority_results_path,
             jobs_path=self.jobs_path,
             assets_path=self.assets_path,
             blocks_path=self.blocks_path,
-            train_schedule_path=(
-                self.train_schedule_path
-            ),
-            train_sections_path=(
-                self.train_sections_path
-            ),
+            train_schedule_path=self.train_schedule_path,
+            train_sections_path=self.train_sections_path,
         )
 
-        # IMPORTANT:
-        # ReplanOptimizer.replan() returns:
-        #
-        #     (
-        #         revised_plan,
-        #         changes,
-        #         summary,
-        #     )
-        #
-        revised_plan, changes, summary = (
-            replanner.replan(
-                current_plan=current_plan,
-                event=event,
-            )
+        revised_plan, changes, summary = replanner.replan(
+            current_plan=current_plan,
+            event=event,
         )
 
         return {
             "event": {
-                "event_id": event.event_id,
                 "event_type": event.event_type,
-                "severity": event.severity,
                 "block_id": event.block_id,
-                "train_id": event.train_id,
-                "section_id": event.section_id,
-                "job_id": event.job_id,
-                "delay_minutes": event.delay_minutes,
-                "description": event.description,
             },
-
-            "solver_status": summary.get(
-                "solver_status"
-            ),
-
-            "objective_values": self._serialize_value(
-                summary.get(
-                    "objective_values",
-                    {},
-                )
-            ),
-
-            "summary": self._serialize_value(
-                summary
-            ),
-
-            "plan": self._serialize_dataframe(
-                revised_plan
-            ),
-
-            "changes": self._serialize_dataframe(
-                changes
-            ),
+            "summary": {
+                "previous_scheduled": int(summary.get("previous_scheduled_jobs", 0)),
+                "revised_scheduled": int(summary.get("revised_scheduled_jobs", 0)),
+                "frozen_jobs": int(summary.get("frozen_jobs", 0)),
+                "released_jobs": int(summary.get("released_jobs", 0)),
+                "affected_jobs": int(summary.get("affected_jobs", 0)),
+                "unchanged_jobs": int(summary.get("unchanged_jobs", 0)),
+                "rescheduled_jobs": int(summary.get("rescheduled_jobs", 0)),
+                "dropped_jobs": int(summary.get("dropped_jobs", 0)),
+                "newly_scheduled_jobs": int(summary.get("newly_scheduled_jobs", 0)),
+                "schedule_stability": float(summary.get("schedule_stability", 0.0)),
+                "candidate_counts": self._serialize_value(summary.get("candidate_counts", {})),
+            },
+            "optimization": {
+                "solver_status": summary.get("solver_status"),
+                "objective_values": self._serialize_value(summary.get("objective_values", {})),
+            },
+            "plan": self._serialize_dataframe(revised_plan),
+            "changes": self._serialize_dataframe(changes),
         }
 
-    # ============================================================
-    # CASCADING REPLANNING
-    # ============================================================
-
-    def cascade_replan(
-        self,
-        event_type: str,
-        block_id: str,
-    ) -> dict:
-        """Run the existing cascading replanning engine."""
-
-        current_plan = (
-            self._load_current_plan()
-        )
-
-        event = self._create_event(
-            event_type=event_type,
-            block_id=block_id,
-        )
-
-        # --------------------------------------------------------
-        # Candidate generator
-        # --------------------------------------------------------
+    def cascade_replan(self, event_type: str, block_id: str) -> dict:
+        """Run cascading replanning and return the public API contract."""
+        current_plan = self._load_current_plan()
+        event = self._create_event(event_type, block_id)
 
         generator = CandidateGenerator(
             self.priority_results_path,
@@ -251,11 +123,6 @@ class ReplanningService:
             self.train_schedule_path,
             self.train_sections_path,
         )
-
-        # --------------------------------------------------------
-        # Independent validator
-        # --------------------------------------------------------
-
         validator = OptimizedPlanValidator(
             self.jobs_path,
             self.assets_path,
@@ -263,11 +130,6 @@ class ReplanningService:
             self.train_schedule_path,
             self.train_sections_path,
         )
-
-        # --------------------------------------------------------
-        # Cascade replanner
-        # --------------------------------------------------------
-
         replanner = CascadeReplanner(
             candidate_generator=generator,
             validator=validator,
@@ -275,198 +137,139 @@ class ReplanningService:
             random_seed=42,
             max_time_seconds=30.0,
         )
-
         result = replanner.replan(
             current_plan=current_plan,
             event=event,
         )
 
-        return self._serialize_cascade_result(
-            result
-        )
-
-    # ============================================================
-    # VALUE SERIALIZATION
-    # ============================================================
+        response = self._serialize_cascade_result(result)
+        response["event"] = {
+            "event_type": event.event_type,
+            "block_id": event.block_id,
+        }
+        response["summary"] = self._cascade_summary(result)
+        response["optimization"] = {
+            "solver_status": result.solver_status,
+            "objective_values": self._serialize_value(result.objective_values),
+        }
+        return response
 
     @classmethod
-    def _serialize_value(
-        cls,
-        value,
-    ):
-        """Convert pandas/Python values into JSON-safe values."""
+    def _cascade_summary(cls, result) -> dict:
+        """Build the schema-compatible cascade summary."""
+        changes = getattr(result, "changes", None)
+        graph = getattr(result, "impact_graph", None)
+        graph_df = graph.to_dataframe() if graph is not None else pd.DataFrame()
 
-        if value is None:
-            return None
-
-        if isinstance(
-            value,
-            pd.Timestamp,
-        ):
-            return value.isoformat()
-
-        if isinstance(
-            value,
-            dict,
-        ):
+        if changes is None or changes.empty:
             return {
-                str(key): cls._serialize_value(
-                    item
-                )
-                for key, item in value.items()
+                "previous_scheduled": 0,
+                "revised_scheduled": 0,
+                "frozen_jobs": 0,
+                "released_jobs": 0,
+                "affected_jobs": 0,
+                "unchanged_jobs": 0,
+                "rescheduled_jobs": 0,
+                "dropped_jobs": 0,
+                "newly_scheduled_jobs": 0,
+                "schedule_stability": 0.0,
+                "candidate_counts": {},
             }
 
-        if isinstance(
-            value,
-            (list, tuple),
-        ):
-            return [
-                cls._serialize_value(
-                    item
-                )
-                for item in value
-            ]
+        types = changes["change_type"].astype(str).str.upper()
+        old_scheduled = changes["previous_status"].astype(str).str.upper().eq("SCHEDULED")
+        new_scheduled = changes["new_status"].astype(str).str.upper().eq("SCHEDULED")
+        previous_scheduled = int(old_scheduled.sum())
+        revised_scheduled = int(new_scheduled.sum())
+        impact = graph_df.get("impact_type", pd.Series(dtype=str)).astype(str).str.upper()
+        direct = int((impact == "DIRECT").sum())
+        indirect = int((impact == "INDIRECT").sum())
+        affected = direct + indirect
 
-        return value
-
-    # ============================================================
-    # DATAFRAME SERIALIZATION
-    # ============================================================
-
-    @classmethod
-    def _serialize_dataframe(
-        cls,
-        dataframe: pd.DataFrame | None,
-    ) -> list[dict]:
-        """Convert a DataFrame into JSON-safe records."""
-
-        if dataframe is None:
-            return []
-
-        if dataframe.empty:
-            return []
-
-        cleaned = dataframe.copy()
-
-        for column in cleaned.columns:
-
-            cleaned[column] = cleaned[
-                column
-            ].map(
-                lambda value: (
-                    value.isoformat()
-                    if isinstance(
-                        value,
-                        pd.Timestamp,
-                    )
-                    else value
-                )
-            )
-
-        cleaned = cleaned.where(
-            pd.notna(cleaned),
-            None,
-        )
-
-        return [
-            {
-                str(key): cls._serialize_value(
-                    value
-                )
-                for key, value in record.items()
-            }
-            for record in cleaned.to_dict(
-                orient="records"
-            )
-        ]
-
-    # ============================================================
-    # CASCADE RESULT SERIALIZATION
-    # ============================================================
-
-    @classmethod
-    def _serialize_cascade_result(
-        cls,
-        result,
-    ) -> dict:
-        """Serialize CascadeResult for the API."""
-
-        response = {
-            "solver_status": getattr(
-                result,
-                "solver_status",
-                None,
+        return {
+            "previous_scheduled": previous_scheduled,
+            "revised_scheduled": revised_scheduled,
+            "frozen_jobs": max(previous_scheduled - affected, 0),
+            "released_jobs": affected,
+            "affected_jobs": affected,
+            "unchanged_jobs": int((types == "UNCHANGED").sum()),
+            "rescheduled_jobs": int((types == "RESCHEDULED").sum()),
+            "dropped_jobs": int((types == "DROPPED").sum()),
+            "newly_scheduled_jobs": int((types == "NEWLY_SCHEDULED").sum()),
+            "schedule_stability": (
+                int((types == "UNCHANGED").sum()) / previous_scheduled
+                if previous_scheduled else 0.0
             ),
-            "objective_values": cls._serialize_value(
-                getattr(
-                    result,
-                    "objective_values",
-                    {},
-                )
-            ),
-            "plan": cls._serialize_dataframe(
-                getattr(
-                    result,
-                    "plan",
-                    None,
-                )
-            ),
-            "changes": cls._serialize_dataframe(
-                getattr(
-                    result,
-                    "changes",
-                    None,
-                )
-            ),
-            "impact_graph": [],
-            "cascade": None,
+            "candidate_counts": {},
         }
 
-        # --------------------------------------------------------
-        # Impact graph
-        # --------------------------------------------------------
+    @classmethod
+    def _serialize_value(cls, value):
+        """Convert pandas/Python values into JSON-safe values."""
+        if value is None:
+            return None
+        if isinstance(value, pd.Timestamp):
+            return value.isoformat()
+        if isinstance(value, dict):
+            return {str(k): cls._serialize_value(v) for k, v in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [cls._serialize_value(v) for v in value]
+        return value
 
-        impact_graph = getattr(
-            result,
-            "impact_graph",
-            None,
-        )
+    @classmethod
+    def _serialize_dataframe(cls, dataframe: pd.DataFrame | None) -> list[dict]:
+        """Convert a DataFrame into JSON-safe records."""
+        if dataframe is None or dataframe.empty:
+            return []
+        cleaned = dataframe.copy()
+        for column in cleaned.columns:
+            cleaned[column] = cleaned[column].map(
+                lambda value: value.isoformat() if isinstance(value, pd.Timestamp) else value
+            )
+        cleaned = cleaned.where(pd.notna(cleaned), None)
+        return [
+            {str(key): cls._serialize_value(value) for key, value in record.items()}
+            for record in cleaned.to_dict(orient="records")
+        ]
 
+    @classmethod
+    def _serialize_cascade_result(cls, result) -> dict:
+        """Serialize CascadeResult for the API."""
+        response = {
+            "plan": cls._serialize_dataframe(getattr(result, "plan", None)),
+            "changes": cls._serialize_dataframe(getattr(result, "changes", None)),
+            "impact_graph": [],
+            "cascade": {
+                "cascade_depth": 0,
+                "direct_jobs": 0,
+                "indirect_jobs": 0,
+                "reconsidered_jobs": 0,
+                "frozen_jobs": 0,
+            },
+        }
+
+        impact_graph = getattr(result, "impact_graph", None)
         if impact_graph is not None:
-
-            response["impact_graph"] = (
-                cls._serialize_dataframe(
-                    impact_graph.to_dataframe()
-                )
+            response["impact_graph"] = cls._serialize_dataframe(
+                impact_graph.to_dataframe()
             )
 
-        # --------------------------------------------------------
-        # Cascade group
-        # --------------------------------------------------------
-
-        cascade_group = getattr(
-            result,
-            "cascade_group",
-            None,
-        )
-
+        cascade_group = getattr(result, "cascade_group", None)
         if cascade_group is not None:
-
+            graph_df = (
+                impact_graph.to_dataframe()
+                if impact_graph is not None
+                else pd.DataFrame()
+            )
+            impact = graph_df.get("impact_type", pd.Series(dtype=str)).astype(str).str.upper()
+            direct = int((impact == "DIRECT").sum())
+            indirect = int((impact == "INDIRECT").sum())
             response["cascade"] = {
-                "job_ids": list(
-                    getattr(
-                        cascade_group,
-                        "job_ids",
-                        [],
-                    )
-                ),
-                "summary": cls._serialize_value(
-                    getattr(
-                        cascade_group,
-                        "summary",
-                        None,
-                    )
-                ),
+                "cascade_depth": int(getattr(cascade_group, "max_depth", 0) or 0),
+                "direct_jobs": direct,
+                "indirect_jobs": indirect,
+                "reconsidered_jobs": len(getattr(cascade_group, "job_ids", [])),
+                "frozen_jobs": 0,
             }
 
         return response
