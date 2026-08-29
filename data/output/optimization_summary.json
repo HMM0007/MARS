@@ -1,0 +1,33 @@
+{
+  "heuristic_scheduled_jobs": 11,
+  "optimized_scheduled_jobs": 11,
+  "heuristic_scheduled_minutes": 660,
+  "optimized_scheduled_minutes": 660,
+  "heuristic_priority_value": 74616,
+  "optimized_priority_value": 74616,
+  "heuristic_criticality_value": 75000,
+  "optimized_criticality_value": 75000,
+  "heuristic_block_utilization": 0.275,
+  "optimized_block_utilization": 0.275,
+  "heuristic_blocks_used": 7,
+  "optimized_blocks_used": 7,
+  "heuristic_emergency_blocks": 3,
+  "optimized_emergency_blocks": 3,
+  "heuristic_selected_completion_minutes": 3851,
+  "optimized_selected_completion_minutes": 3686,
+  "completion_improvement_minutes": 165,
+  "jobs_newly_scheduled": 0,
+  "jobs_unscheduled": 29,
+  "jobs_moved": 6,
+  "jobs_unchanged": 34,
+  "solver_status": "OPTIMAL",
+  "solver_wall_time_seconds": 0.0337839,
+  "objective_values": {
+    "priority": 74616,
+    "criticality": 75000,
+    "scheduled_jobs": 11,
+    "emergency_blocks": 3,
+    "used_blocks": 7,
+    "completion_minutes": 3686
+  }
+}
