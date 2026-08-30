@@ -1,70 +1,115 @@
-"""Conflict Detection Service for MARS backend.
+"""Data-driven maintenance and train conflict detection for MARS."""
 
-Detects overlaps and operational conflicts between:
-- Maintenance vs Maintenance (cross-department block overlap)
-- Maintenance vs Train schedules
-- Maintenance vs Block availability
-"""
-
+from pathlib import Path
 from typing import List, Dict, Any
+
+import pandas as pd
+
 from backend.services.job_service import job_service
+from backend.config import CURRENT_PLAN_FILE, TRAIN_SCHEDULE_FILE, TRAIN_SECTIONS_FILE
 
 
 class ConflictService:
+    """Detect conflicts from the current active plan and train schedule.
+
+    No sample job, block, train number or conflict is hard-coded here. The
+    service uses the same operational datasets consumed by the planning APIs.
+    """
+
+    @staticmethod
+    def _time_interval(date_value: object, start: object, end: object):
+        s = pd.to_datetime(f"{date_value} {start}", errors="coerce")
+        e = pd.to_datetime(f"{date_value} {end}", errors="coerce")
+        if pd.isna(s) or pd.isna(e):
+            return None
+        if e <= s:
+            e += pd.Timedelta(days=1)
+        return s, e
+
+    def _train_intervals(self) -> list[dict]:
+        if not Path(TRAIN_SCHEDULE_FILE).exists() or not Path(TRAIN_SECTIONS_FILE).exists():
+            return []
+        schedules = pd.read_csv(TRAIN_SCHEDULE_FILE, keep_default_na=False)
+        sections = pd.read_csv(TRAIN_SECTIONS_FILE, keep_default_na=False)
+        merged = sections.merge(schedules[["train_id", "train_number", "train_type", "schedule_date", "status"]], on="train_id", how="left")
+        result = []
+        for train_id, group in merged.sort_values(["train_id", "sequence"]).groupby("train_id"):
+            previous_end = None
+            for row in group.to_dict("records"):
+                interval = self._time_interval(row["schedule_date"], row["arrival_time"], row["departure_time"])
+                if not interval:
+                    continue
+                start, end = interval
+                while previous_end is not None and start < previous_end:
+                    start += pd.Timedelta(days=1)
+                    end += pd.Timedelta(days=1)
+                result.append({**row, "start": start, "end": end})
+                previous_end = end
+        return result
+
+    def _planned_jobs(self) -> list[dict]:
+        if Path(CURRENT_PLAN_FILE).exists():
+            plan = pd.read_csv(CURRENT_PLAN_FILE, keep_default_na=False)
+            return [r for r in plan.to_dict("records") if str(r.get("plan_status", "")).upper() == "SCHEDULED"]
+        return []
+
     def detect_conflicts(self) -> List[Dict[str, Any]]:
-        jobs = job_service.get_all_jobs()
         conflicts: List[Dict[str, Any]] = []
+        planned = self._planned_jobs()
+        trains = self._train_intervals()
 
-        # 1. Maintenance vs Maintenance Block Overlaps
-        for i in range(len(jobs)):
-            for j in range(i + 1, len(jobs)):
-                j1 = jobs[i]
-                j2 = jobs[j]
+        # Maintenance vs maintenance: only compare actually scheduled work.
+        for i, first in enumerate(planned):
+            first_start = pd.to_datetime(first.get("scheduled_start"), errors="coerce")
+            first_end = pd.to_datetime(first.get("scheduled_end"), errors="coerce")
+            if pd.isna(first_start) or pd.isna(first_end):
+                continue
+            for second in planned[i + 1:]:
+                if str(first.get("block_id", "")) != str(second.get("block_id", "")):
+                    continue
+                second_start = pd.to_datetime(second.get("scheduled_start"), errors="coerce")
+                second_end = pd.to_datetime(second.get("scheduled_end"), errors="coerce")
+                if pd.isna(second_start) or pd.isna(second_end) or not (first_start < second_end and second_start < first_end):
+                    continue
+                severity = "CRITICAL" if "CRITICAL" in {str(first.get("priority", "")).upper(), str(second.get("priority", "")).upper()} else "HIGH"
+                conflicts.append({
+                    "conflict_id": f"CONF-MAINT-{len(conflicts) + 1:03d}",
+                    "type": "Maintenance vs Maintenance",
+                    "severity": severity,
+                    "section_id": first.get("section_id", ""),
+                    "block_id": first.get("block_id", ""),
+                    "job_ids": [first.get("job_id"), second.get("job_id")],
+                    "departments": [first.get("department"), second.get("department")],
+                    "description": f"{first.get('job_id')} overlaps {second.get('job_id')} on block {first.get('block_id')}.",
+                    "suggested_resolution": f"Move {second.get('job_id')} to another feasible block/time window.",
+                    "time_window": f"{max(first_start, second_start):%Y-%m-%d %H:%M} - {min(first_end, second_end):%H:%M}",
+                })
 
-                # Check if they share the same block/section
-                same_block = (j1.get("block") and j1.get("block") == j2.get("block")) or (
-                    j1.get("section") and j1.get("section") == j2.get("section")
-                )
-
-                if same_block:
-                    # Check time overlap
-                    # If date matches or same operational window
-                    d1 = j1.get("date", "2026-05-20")
-                    d2 = j2.get("date", "2026-05-20")
-
-                    if d1 == d2:
-                        dept1 = j1.get("department")
-                        dept2 = j2.get("department")
-
-                        # Cross-department or same-department overlap
-                        severity = "CRITICAL" if j1.get("priority") == "Critical" or j2.get("priority") == "Critical" else "HIGH"
-
-                        conflicts.append({
-                            "conflict_id": f"CONF-{len(conflicts) + 1:03d}",
-                            "type": "Cross-Department Overlap" if dept1 != dept2 else "Block Schedule Overlap",
-                            "severity": severity,
-                            "section": j1.get("section", "Km 120 - 121"),
-                            "block": j1.get("block", "B120"),
-                            "job_ids": [j1.get("job_id"), j2.get("job_id")],
-                            "departments": list(set([dept1, dept2])),
-                            "description": f"Overlapping block request between {j1.get('job_id')} ({dept1}) and {j2.get('job_id')} ({dept2}) on {j1.get('block')}.",
-                            "suggested_resolution": f"Shift {j2.get('job_id')} to next available time window or run optimization.",
-                            "time_window": f"{j1.get('start_time', '10:00')} - {j2.get('end_time', '12:30')}",
-                        })
-
-        # 2. Add train conflict example if MR-101 is active on B120
-        conflicts.append({
-            "conflict_id": f"CONF-TRAIN-001",
-            "type": "Maintenance vs Train Movement",
-            "severity": "CRITICAL",
-            "section": "Km 120 - 125",
-            "block": "B120",
-            "job_ids": ["MR-101"],
-            "departments": ["Engineering"],
-            "description": "Express Freight Train 12845 entry window (11:10 - 11:40) conflicts with MR-101 Track Tamping (10:00 - 12:00).",
-            "suggested_resolution": "Hold freight train at STN A loop or split maintenance block into two 45-min windows.",
-            "time_window": "11:10 - 11:40",
-        })
+        # Maintenance vs train: compare the actual current plan with actual train legs.
+        for job in planned:
+            start = pd.to_datetime(job.get("scheduled_start"), errors="coerce")
+            end = pd.to_datetime(job.get("scheduled_end"), errors="coerce")
+            if pd.isna(start) or pd.isna(end):
+                continue
+            for train in trains:
+                if str(train.get("section_id")) != str(job.get("section_id")):
+                    continue
+                if start < train["end"] and train["start"] < end:
+                    severity = "CRITICAL" if str(job.get("priority", "")).upper() == "CRITICAL" else "HIGH"
+                    conflicts.append({
+                        "conflict_id": f"CONF-TRAIN-{len(conflicts) + 1:03d}",
+                        "type": "Maintenance vs Train Movement",
+                        "severity": severity,
+                        "section_id": job.get("section_id", ""),
+                        "block_id": job.get("block_id", ""),
+                        "job_ids": [job.get("job_id")],
+                        "train_ids": [train.get("train_id")],
+                        "train_numbers": [train.get("train_number")],
+                        "departments": [job.get("department")],
+                        "description": f"{job.get('job_id')} conflicts with train {train.get('train_number')} on section {job.get('section_id')}.",
+                        "suggested_resolution": f"Re-plan {job.get('job_id')} outside the train movement window.",
+                        "time_window": f"{train['start']:%Y-%m-%d %H:%M} - {train['end']:%H:%M}",
+                    })
 
         return conflicts
 
