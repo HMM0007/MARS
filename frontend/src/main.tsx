@@ -2,10 +2,12 @@ import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import Login from './Login'
+import PlannerControlCentre from './PlannerControlCentre'
 import { clearSession, getSession, saveSession, type Department } from './auth'
 import './styles.css'
 import './map-interactions.css'
 import './login.css'
+import './planner-control-centre.css'
 
 const AUTH_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -64,6 +66,11 @@ function Root() {
   }
 
   if (!authenticated) return <Login onLogin={handleLogin} />
+
+  const isPlanner = currentSession?.role === 'Divisional Planner' || currentSession?.department === 'Divisional Planner'
+  if (isPlanner && currentSession) {
+    return <PlannerControlCentre key={currentSession.employeeId} session={currentSession} onLogout={handleLogout} />
+  }
 
   return <App key={currentSession?.employeeId || currentSession?.department || 'default'} onLogout={handleLogout} />
 }
