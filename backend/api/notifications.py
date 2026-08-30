@@ -1,57 +1,50 @@
-"""Notifications API endpoints for department-aware alerts."""
+"""Department-aware operational notifications for MARS."""
 
 from typing import Optional
 from fastapi import APIRouter, Query
 
-router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
+from backend.services.conflict_service import conflict_service
+from backend.services.job_service import job_service
 
-_DEMO_NOTIFICATIONS = [
-    {
-        "id": "NOTIF-001",
-        "department": "Engineering",
-        "type": "conflict",
-        "title": "Block Conflict Detected",
-        "message": "MR-101 (Engineering) has a block conflict with S&T MR-102 on Section B120.",
-        "timestamp": "10:20 AM",
-        "read": False,
-    },
-    {
-        "id": "NOTIF-002",
-        "department": "Divisional Planner",
-        "type": "review",
-        "title": "Maintenance Requests Pending Review",
-        "message": "3 new maintenance requests require planner review and block allocation.",
-        "timestamp": "09:45 AM",
-        "read": False,
-    },
-    {
-        "id": "NOTIF-003",
-        "department": "S&T",
-        "type": "conflict",
-        "title": "Signal Inspection Conflict",
-        "message": "MR-102 signal inspection overlaps with Track Tamping on B120.",
-        "timestamp": "09:10 AM",
-        "read": False,
-    },
-    {
-        "id": "NOTIF-004",
-        "department": "Traction",
-        "type": "schedule",
-        "title": "OHE Isolation Scheduled",
-        "message": "OHE inspection block allocated for B120 on 22 May (14:00 - 15:00).",
-        "timestamp": "08:30 AM",
-        "read": True,
-    },
-]
+router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
 
 
 @router.get("")
 def get_notifications(department: Optional[str] = Query(None)):
-    """Return department-aware notifications."""
-    notifs = _DEMO_NOTIFICATIONS
-    if department and department != "All":
-        notifs = [n for n in notifs if n["department"] == department or n["department"] == "Divisional Planner"]
-    return {
-        "count": len(notifs),
-        "notifications": notifs,
-    }
+    """Build notifications from current jobs and detected conflicts."""
+    conflicts = conflict_service.detect_conflicts()
+    jobs = job_service.get_all_jobs()
+    notifications: list[dict] = []
+
+    for conflict in conflicts:
+        departments = conflict.get("departments") or []
+        if department and department != "All" and department not in departments and department != "Divisional Planner":
+            continue
+        notifications.append({
+            "id": conflict.get("conflict_id"),
+            "department": departments[0] if departments else "Divisional Planner",
+            "type": "conflict",
+            "severity": conflict.get("severity", "INFO"),
+            "title": conflict.get("type", "Operational conflict"),
+            "message": conflict.get("description", "Operational conflict detected."),
+            "job_ids": conflict.get("job_ids", []),
+            "block_id": conflict.get("block_id", ""),
+            "section_id": conflict.get("section_id", ""),
+            "timestamp": conflict.get("time_window", ""),
+            "read": False,
+        })
+
+    open_jobs = [j for j in jobs if str(j.get("status", "")).upper() in {"OPEN", "PENDING", "SUBMITTED", "UNDER REVIEW"}]
+    if department in (None, "All", "Divisional Planner"):
+        notifications.append({
+            "id": "NOTIF-OPEN-JOBS",
+            "department": "Divisional Planner",
+            "type": "review",
+            "severity": "INFO",
+            "title": "Maintenance requests pending planning",
+            "message": f"{len(open_jobs)} open maintenance request(s) require planning review.",
+            "job_ids": [j.get("job_id") for j in open_jobs[:20]],
+            "read": False,
+        })
+
+    return {"count": len(notifications), "notifications": notifications}
