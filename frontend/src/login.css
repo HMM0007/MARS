@@ -1,1 +1,700 @@
-.login-page{min-height:100vh;width:100%;display:grid;grid-template-columns:48% 52%;background:#fff;color:#263b4d;font-family:Arial,Helvetica,sans-serif}.login-visual-panel{position:relative;min-height:100vh;overflow:hidden;background:#102f40;color:#fff;isolation:isolate}.login-railway-image{position:absolute;inset:-3%;width:106%;height:106%;object-fit:cover;transition:transform .18s ease-out;transform:translate(calc(var(--dx,0px)*-.35),calc(var(--dy,0px)*-.35));filter:saturate(.98) contrast(1.04)}.login-visual-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,28,40,.08) 0%,rgba(5,28,40,.05) 38%,rgba(4,25,37,.78) 100%);z-index:1}.login-cursor-light{position:absolute;width:330px;height:330px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(86,188,207,.08) 0,rgba(86,188,207,.035) 24%,transparent 68%);pointer-events:none;z-index:2;mix-blend-mode:screen;transition:left .12s ease-out,top .12s ease-out}.login-mars-hero{position:absolute;left:9%;right:9%;top:50%;transform:translate(var(--dx),calc(-50% + var(--dy)));z-index:4;text-align:left;transition:transform .16s ease-out}.mars-brand-lockup{display:flex;align-items:center;gap:20px}.mars-brand-symbol{width:82px;height:82px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(0,0,0,.38))}.mars-brand-copy{min-width:0}.mars-lettering{display:flex;align-items:center;gap:2px;font-size:clamp(62px,8.2vw,108px);font-weight:900;line-height:.82;letter-spacing:.04em;position:relative}.mars-lettering:after{content:'';position:absolute;left:0;right:0;bottom:-10px;height:1px;background:rgba(255,255,255,.48);transform:scaleX(.7);transform-origin:left}.mars-lettering span{display:inline-block;color:#fff;text-shadow:0 2px 0 rgba(18,47,64,.35),0 10px 28px rgba(0,0,0,.4)}.mars-full-form{margin-top:15px;color:rgba(255,255,255,.9);font-size:clamp(9px,1vw,12px);font-weight:700;letter-spacing:.18em;white-space:nowrap}.mars-underline{height:2px;margin:19px 0 12px;display:flex;gap:5px;overflow:hidden;width:210px}.mars-underline i{display:block;height:100%;width:95px;background:rgba(255,255,255,.72);transform:translateX(-130%);animation:railSweep 3.8s cubic-bezier(.4,0,.2,1) infinite}.mars-underline i:nth-child(2){width:40px;opacity:.62;animation-delay:.2s}.mars-underline i:nth-child(3){width:17px;opacity:.42;animation-delay:.4s}@keyframes railSweep{0%,20%{transform:translateX(-130%)}50%,72%{transform:translateX(0)}100%{transform:translateX(170%)}}.mars-status{display:flex;align-items:center;gap:9px;font-size:8px;letter-spacing:.18em;color:rgba(233,238,240,.72)}.mars-status span{width:6px;height:6px;border-radius:50%;background:#63cda1;box-shadow:0 0 0 4px rgba(99,205,161,.11),0 0 12px rgba(99,205,161,.55);animation:statusPulse 2.1s infinite}@keyframes statusPulse{50%{box-shadow:0 0 0 7px rgba(99,205,161,.03),0 0 18px rgba(99,205,161,.72)}}.login-visual-footer{position:absolute;z-index:5;bottom:25px;left:9%;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.65)}.login-visual-footer b{margin:0 8px;color:rgba(255,255,255,.7)}.login-form-panel{min-height:100vh;background:#fff;display:flex;flex-direction:column}.railway-authority{min-height:88px;border-bottom:1px solid #dfe4e7;display:flex;align-items:center;padding:0 9%;box-sizing:border-box;gap:14px}.railway-symbol{width:48px;height:48px;object-fit:contain;flex:none}.railway-authority strong,.railway-authority span{display:block}.railway-authority strong{font-size:13px;letter-spacing:.075em;color:#234a64}.railway-authority span{font-size:8px;letter-spacing:.13em;color:#7b8790;margin-top:5px}.login-form-inner{width:min(460px,78%);margin:auto;padding:36px 0}.login-heading-centered{text-align:center;margin-bottom:30px}.login-heading-centered .heading-line{display:inline-block;width:46px;height:2px;background:#7c8a92;vertical-align:middle;margin:0 12px 7px}.login-heading-centered h1{display:inline-block;margin:0;color:#29455a;font-size:27px;font-weight:500;letter-spacing:.08em;vertical-align:middle}.login-heading-centered p{font-size:9px;color:#87929a;margin:11px 0 0;letter-spacing:.04em}.login-form{margin:0}.field-label{display:block;font-size:9px;font-weight:700;color:#536575;margin-bottom:18px}.field-label input,.field-label select{box-sizing:border-box;width:100%;height:43px;border:1px solid #c8d0d6;border-radius:1px;margin-top:7px;padding:0 12px;color:#30475a;background:#fff;font-size:11px;outline:none}.field-label input::placeholder{color:#a6afb5}.field-label input:focus,.field-label select:focus{border-color:#16819f;box-shadow:0 0 0 2px rgba(22,129,159,.08)}.password-field{display:flex;margin-top:7px}.password-field input{margin-top:0;border-radius:1px 0 0 1px}.password-field button{width:58px;border:1px solid #c8d0d6;border-left:0;background:#f4f6f7;color:#60717c;font-size:7px;font-weight:700;letter-spacing:.08em;cursor:pointer}.form-options{display:flex;justify-content:space-between;align-items:center;margin:2px 0 22px;font-size:8px;color:#697781}.form-options label{display:flex;align-items:center;gap:5px}.form-options input{accent-color:#177d99}.form-options button{border:0;background:none;color:#16789b;font-size:8px;padding:0;cursor:pointer}.login-button{height:46px;width:100%;border:0;border-radius:1px;background:#187f9b;color:#fff;font-size:10px;font-weight:700;letter-spacing:.16em;cursor:pointer;box-shadow:0 4px 10px rgba(24,127,155,.16);position:relative;overflow:hidden}.login-button:before{content:'';position:absolute;inset:0;transform:translateX(-110%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transition:transform .55s ease}.login-button:hover:before{transform:translateX(110%)}.login-button:hover{background:#146d86}.login-button b{position:absolute;right:14px;font-size:15px;line-height:8px;font-weight:400}.login-error{background:#fff4f2;border:1px solid #e2b5ac;color:#a04439;padding:10px;font-size:9px;margin:-7px 0 13px}.login-security-box{display:flex;gap:10px;border:1px solid #dce3e7;background:#f7f9fa;padding:13px 14px;margin-top:23px}.security-symbol{width:20px;height:20px;border:1px solid #4b8799;border-radius:50%;display:grid;place-items:center;color:#27788d;font-size:10px;flex:none}.login-security-box strong{display:block;font-size:8px;color:#526775}.login-security-box p{font-size:7px;line-height:1.5;color:#7a8790;margin:4px 0 0}.login-footer{min-height:43px;border-top:1px solid #d8dfe3;padding:0 7%;display:flex;align-items:center;justify-content:space-between;color:#7d8991;font-size:7px;letter-spacing:.03em}.login-footer span{color:#60727e}@media(max-width:900px){.login-page{grid-template-columns:1fr}.login-visual-panel{min-height:470px}.login-form-panel{min-height:auto}.login-form-inner{margin:0 auto;padding:42px 0}.railway-authority{padding:0 7%}}@media(max-width:560px){.login-visual-panel{min-height:400px}.login-mars-hero{left:25px;right:25px}.mars-brand-lockup{gap:11px}.mars-brand-symbol{width:58px;height:58px}.mars-lettering{font-size:54px}.mars-full-form{font-size:6px;letter-spacing:.12em;white-space:normal;line-height:1.4}.mars-underline{width:180px}.mars-status{font-size:6px}.railway-authority{min-height:76px;padding:0 22px}.railway-symbol{width:40px;height:40px}.railway-authority strong{font-size:10px}.railway-authority span{font-size:7px}.login-form-inner{width:calc(100% - 44px);padding:32px 0}.login-heading-centered h1{font-size:22px}.login-heading-centered .heading-line{width:25px;margin:0 7px 6px}.login-footer{justify-content:center;font-size:6px;padding:0 15px}.login-footer span{display:none}}
+/* Clean, Professional Indian Railways Official Portal Styling */
+
+.login-page {
+  min-height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 48% 52%;
+  background: #ffffff;
+  color: #263b4d;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================================================
+   LEFT VISUAL PANEL & BRANDING (HIGH CONTRAST, CRISP, 0 BLUR)
+   ========================================================================== */
+
+.login-visual-panel {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #091c28;
+  color: #ffffff;
+  isolation: isolate;
+}
+
+.login-railway-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1) contrast(1.05) brightness(0.65);
+}
+
+.login-visual-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      rgba(9, 28, 40, 0.4) 0%,
+      rgba(9, 28, 40, 0.25) 40%,
+      rgba(4, 18, 28, 0.9) 100%);
+  z-index: 1;
+}
+
+.login-mars-hero {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  text-align: center;
+}
+
+/* Centered Brand Lockup with Emblem Centered ABOVE MARS */
+.centered-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.mars-brand-symbol-centered {
+  width: 95px;
+  height: 95px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.65));
+  flex: none;
+  margin-bottom: 2px;
+}
+
+.centered-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* MARS Word Container */
+.mars-lettering-wrap {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  user-select: none;
+}
+
+/* Clean Official Government MARS Typography */
+.mars-prof-lettering {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  margin: 6px 0 2px;
+}
+
+.mars-char {
+  font-size: clamp(72px, 9.4vw, 118px);
+  font-weight: 900;
+  line-height: 0.84;
+  letter-spacing: 0.12em;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #ffffff;
+  text-shadow: 0 6px 20px rgba(0, 0, 0, 0.85);
+  transition: transform 0.25s ease;
+}
+
+.mars-lettering-wrap:hover .mars-char {
+  transform: scale(1.02);
+  color: #ffffff;
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.45);
+}
+
+/* Container for Track & Continuous 3D Train under MARS */
+.mars-under-track-container {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Railway 25kV OHE Electric Line under MARS (Pure Silver/White Electric Wire, 0 Blue) */
+.mars-track-rail {
+  position: relative;
+  height: 5px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.85);
+  overflow: hidden;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.25);
+}
+
+.track-rail-line {
+  position: absolute;
+  inset: 0;
+  background-image:
+    /* High Voltage Electric Pulse Nodes (Pure Silver / White) */
+    repeating-linear-gradient(90deg,
+      #ffffff 0px,
+      #f1f5f9 4px,
+      #cbd5e1 8px,
+      transparent 8px,
+      transparent 22px),
+    /* OHE Electric Contact Wire Metallic Beam Glow */
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(226, 232, 240, 0.9) 50%,
+      rgba(148, 163, 184, 0.75) 100%);
+  background-size: 26px 100%, 100% 100%;
+  animation: electricLineMoveLeftToRight 0.38s linear infinite;
+}
+
+@keyframes electricLineMoveLeftToRight {
+  0% {
+    background-position-x: -26px, 0;
+  }
+
+  100% {
+    background-position-x: 0px, 0;
+  }
+}
+
+/* 3D Train Viewport (Continuous Display) */
+.train-3d-viewport {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  pointer-events: none;
+  z-index: 10;
+  margin-top: 18px;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+}
+
+.train-3d-viewport canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.train-3d-loading {
+  font-size: 9px;
+  color: #38bdf8;
+  letter-spacing: 0.1em;
+  padding: 8px 0;
+  font-weight: bold;
+}
+
+.mars-full-form {
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: clamp(9px, 1.05vw, 12px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.centered-status {
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.mars-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: rgba(233, 238, 240, 0.85);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.mars-status span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #63cda1;
+  box-shadow: 0 0 0 4px rgba(99, 205, 161, 0.11), 0 0 12px rgba(99, 205, 161, 0.55);
+  animation: statusPulse 2.1s infinite;
+}
+
+@keyframes statusPulse {
+  50% {
+    box-shadow: 0 0 0 7px rgba(99, 205, 161, 0.03), 0 0 18px rgba(99, 205, 161, 0.72);
+  }
+}
+
+.login-visual-footer {
+  position: absolute;
+  z-index: 5;
+  bottom: 25px;
+  left: 9%;
+  right: 9%;
+  text-align: center;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.login-visual-footer b {
+  margin: 0 8px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================================================
+   RIGHT FORM PANEL (CLEAN OFFICIAL WEBSITE STYLE)
+   ========================================================================== */
+
+.login-form-panel {
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.railway-authority {
+  min-height: 98px;
+  border-bottom: 1px solid #dfe4e7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 7%;
+  box-sizing: border-box;
+  gap: 16px;
+}
+
+.railway-symbol {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  flex: none;
+}
+
+.authority-titles {
+  flex: 1;
+}
+
+.railway-authority strong,
+.railway-authority span {
+  display: block;
+}
+
+.railway-authority strong {
+  font-size: 14px;
+  letter-spacing: 0.075em;
+  color: #234a64;
+}
+
+.railway-authority span {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  color: #7b8790;
+  margin-top: 4px;
+}
+
+.ashoka-chakra-symbol {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  flex: none;
+  filter: contrast(1.08) brightness(1.02) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+
+.login-form-inner {
+  width: min(460px, 78%);
+  margin: auto;
+  padding: 36px 0;
+}
+
+.login-welcome-hero {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.login-welcome-hero .welcome-subtext {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #000000;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.login-welcome-hero .highlight-mars-brand {
+  display: block;
+  color: #dc2626;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+
+.login-heading-centered {
+  text-align: center;
+  margin-bottom: 30px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.login-heading-centered .heading-line {
+  display: inline-block;
+  width: 42px;
+  height: 2px;
+  background: #7c8a92;
+  vertical-align: middle;
+  margin: 0 12px 7px;
+  transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease;
+}
+
+.login-heading-centered h1 {
+  display: inline-block;
+  margin: 0;
+  color: #29455a;
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+  position: relative;
+  transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* Interactive Hover & Active Click Effects for USER LOGIN */
+.login-heading-centered:hover h1 {
+  color: #187f9b;
+  transform: translateY(-2px);
+  text-shadow: 0 4px 12px rgba(24, 127, 155, 0.22);
+}
+
+.login-heading-centered:hover .heading-line {
+  width: 60px;
+  background: #187f9b;
+}
+
+.login-heading-centered:active h1 {
+  transform: scale(0.97);
+}
+
+.login-heading-centered p {
+  font-size: 9px;
+  color: #87929a;
+  margin: 11px 0 0;
+  letter-spacing: 0.04em;
+  transition: color 0.3s ease;
+}
+
+.login-heading-centered p .highlight-mars {
+  color: #187f9b;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.login-heading-centered:hover p {
+  color: #536575;
+}
+
+.login-form {
+  margin: 0;
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #334155;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.field-label input,
+.field-label select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 46px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  margin-top: 8px;
+  padding: 0 14px;
+  color: #0f172a;
+  background: #f8fafc;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.field-label input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.field-label input:hover,
+.field-label select:hover {
+  border-color: #94a3b8;
+  background: #ffffff;
+}
+
+.field-label input:focus,
+.field-label select:focus {
+  border-color: #0284c7;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
+}
+
+.password-field {
+  display: flex;
+  margin-top: 8px;
+}
+
+.password-field input {
+  margin-top: 0;
+  border-radius: 6px 0 0 6px;
+}
+
+.password-field button {
+  width: 64px;
+  border: 1px solid #cbd5e1;
+  border-left: 0;
+  border-radius: 0 6px 6px 0;
+  background: #f1f5f9;
+  color: #0284c7;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.password-field button:hover {
+  background: #e2e8f0;
+  color: #0369a1;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0 24px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.form-options label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-options input {
+  width: 16px;
+  height: 16px;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+.form-options button {
+  border: 0;
+  background: none;
+  color: #0284c7;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.form-options button:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+/* Clean Formal Government Login Button */
+.login-button {
+  height: 46px;
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  background: #187f9b;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.login-button:hover {
+  background: #136981;
+}
+
+.login-button:active {
+  background: #0f5468;
+}
+
+.login-error {
+  background: #fff4f2;
+  border: 1px solid #e2b5ac;
+  color: #a04439;
+  padding: 10px;
+  font-size: 9px;
+  margin: -7px 0 13px;
+}
+
+.login-security-box {
+  display: flex;
+  gap: 10px;
+  border: 1px solid #dce3e7;
+  background: #f7f9fa;
+  padding: 13px 14px;
+  margin-top: 23px;
+}
+
+.security-symbol {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #4b8799;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #27788d;
+  font-size: 10px;
+  flex: none;
+}
+
+.login-security-box strong {
+  display: block;
+  font-size: 8px;
+  color: #526775;
+}
+
+.login-security-box p {
+  font-size: 7px;
+  line-height: 1.5;
+  color: #7a8790;
+  margin: 4px 0 0;
+}
+
+.login-footer {
+  min-height: 43px;
+  border-top: 1px solid #d8dfe3;
+  padding: 0 7%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #7d8991;
+  font-size: 7px;
+  letter-spacing: 0.03em;
+}
+
+.login-footer span {
+  color: #60727e;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 900px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-visual-panel {
+    min-height: 470px;
+  }
+
+  .login-form-panel {
+    min-height: auto;
+  }
+
+  .login-form-inner {
+    margin: 0 auto;
+    padding: 42px 0;
+  }
+
+  .railway-authority {
+    padding: 0 7%;
+  }
+}
+
+@media (max-width: 560px) {
+  .login-visual-panel {
+    min-height: 400px;
+  }
+
+  .login-mars-hero {
+    left: 25px;
+    right: 25px;
+  }
+
+  .mars-brand-symbol-centered {
+    width: 65px;
+    height: 65px;
+  }
+
+  .topo-char {
+    font-size: 54px;
+  }
+
+  .mars-full-form {
+    font-size: 6px;
+    letter-spacing: 0.12em;
+    white-space: normal;
+    line-height: 1.4;
+  }
+
+  .mars-status {
+    font-size: 6px;
+  }
+
+  .railway-authority {
+    min-height: 76px;
+    padding: 0 22px;
+  }
+
+  .railway-symbol {
+    width: 40px;
+    height: 40px;
+  }
+
+  .railway-authority strong {
+    font-size: 10px;
+  }
+
+  .railway-authority span {
+    font-size: 7px;
+  }
+
+  .login-form-inner {
+    width: calc(100% - 44px);
+    padding: 32px 0;
+  }
+
+  .login-heading-centered h1 {
+    font-size: 22px;
+  }
+
+  .login-heading-centered .heading-line {
+    width: 25px;
+    margin: 0 7px 6px;
+  }
+
+  .login-footer {
+    justify-content: center;
+    font-size: 6px;
+    padding: 0 15px;
+  }
+
+  .login-footer span {
+    display: none;
+  }
+}
