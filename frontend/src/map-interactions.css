@@ -1,15 +1,27 @@
-.network-map .map-canvas{overflow:visible;position:relative;background:linear-gradient(180deg,#fbfcfe 0%,#f7f9fb 100%);border:1px solid #e7ebf0;border-radius:4px}
+.network-map .map-canvas{overflow:visible!important;position:relative;background:linear-gradient(180deg,#fbfcfe 0%,#f7f9fb 100%);border:1px solid #e7ebf0;border-radius:4px}
 .network-map .network-svg{overflow:visible}
 .network-map .stations circle{r:9px;cursor:pointer;transition:r .16s ease,stroke-width .16s ease,filter .16s ease,fill .16s ease}
 .network-map .stations circle:hover{r:12px;stroke:#1468c4;stroke-width:3.5px;filter:drop-shadow(0 2px 4px rgba(20,104,196,.24));fill:#ffffff}
 .network-map .stations circle.selected-point{r:12px;stroke:#1468c4;stroke-width:4px;filter:drop-shadow(0 2px 5px rgba(20,104,196,.28));fill:#eef5ff}
 .network-map .stations circle.selected-point:hover{r:13px}
-.network-map .map-tooltip{animation:map-tooltip-in .14s ease-out;pointer-events:auto;box-shadow:0 12px 28px rgba(25,48,75,.18);border-color:#c6d3e1}
-@keyframes map-tooltip-in{from{opacity:0;transform:translate(-8%,-8%) scale(.98)}to{opacity:1;transform:translate(-8%,-12%) scale(1)}}
-.network-map .map-tooltip-head span{white-space:nowrap}
+
+/* Distinct station markers: larger double-ring visual, while KM points stay compact */
+.network-map .stations circle:first-child,.network-map .stations circle:nth-child(7){r:11px;stroke:#1769c5;stroke-width:4px;fill:#ffffff;filter:drop-shadow(0 1px 2px rgba(23,105,197,.18))}
+.network-map .stations circle:first-child:hover,.network-map .stations circle:nth-child(7):hover,.network-map .stations circle:first-child.selected-point,.network-map .stations circle:nth-child(7).selected-point{r:14px;stroke:#0e5eb5;stroke-width:5px;fill:#eef5ff;filter:drop-shadow(0 2px 5px rgba(20,104,196,.3))}
+.network-map .stations circle:first-child::after,.network-map .stations circle:nth-child(7)::after{content:none}
+
+/* Keep the information card inside the visible map panel instead of letting it clip near the SVG edge. */
+.network-map .map-tooltip{left:auto!important;right:10px!important;top:auto!important;bottom:10px!important;transform:none!important;animation:map-tooltip-in-fixed .14s ease-out;pointer-events:auto;box-shadow:0 12px 28px rgba(25,48,75,.18);border-color:#bfcddd}
+.network-map .map-tooltip-head{padding-bottom:8px}
+.network-map .map-tooltip-head strong{font-size:10px}
+.network-map .map-tooltip-grid{gap:8px 12px;padding:10px 0}
+.network-map .map-tooltip-grid small{font-size:6.5px}
+.network-map .map-tooltip-grid b{font-size:8.5px;color:#253a54}
 .network-map .map-tooltip>button{display:inline-flex;align-items:center;gap:3px;transition:background .15s ease,transform .15s ease}
 .network-map .map-tooltip>button:hover{transform:translateY(-1px)}
+@keyframes map-tooltip-in-fixed{from{opacity:0;transform:translateY(5px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.network-map .map-tooltip-head span{white-space:nowrap}
 .network-map .map-help{font-style:normal;font-weight:500}
 .network-map .map-legend{align-items:center}
 .network-map .map-legend .map-help:before{content:'●';color:#1468c4;margin-right:4px;font-size:7px}
-@media (max-width:760px){.network-map .map-canvas{overflow:visible}.network-map .map-tooltip{max-width:calc(100% - 20px);width:190px}.network-map .stations circle{r:11px}.network-map .stations circle:hover,.network-map .stations circle.selected-point{r:14px}}
+@media (max-width:760px){.network-map .map-canvas{overflow:visible!important}.network-map .map-tooltip{right:6px!important;bottom:6px!important;max-width:calc(100% - 12px);width:190px}.network-map .stations circle{r:11px}.network-map .stations circle:hover,.network-map .stations circle.selected-point{r:14px}.network-map .stations circle:first-child,.network-map .stations circle:nth-child(7){r:13px}}
