@@ -1,0 +1,32 @@
+.gantt{background:#fff}
+.gantt-scroll{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.gantt-header,.gantt-row{min-width:760px}
+.gantt-header{display:grid;grid-template-columns:150px repeat(7,minmax(86px,1fr));height:36px;background:#f7f9fb;border-bottom:1px solid #dce3eb;position:sticky;top:0;z-index:2}
+.gantt-header>div{display:flex;align-items:center;padding:0 12px;border-right:1px solid #dfe5ec;font-size:7px;font-weight:700;letter-spacing:.08em;color:#68788c;background:#f7f9fb;position:sticky;left:0;z-index:3}
+.gantt-header span{display:flex;align-items:center;justify-content:center;border-right:1px solid #e5e9ee;font-size:8px;font-weight:600;color:#66768b;position:relative}
+.gantt-header span:first-of-type{color:#1468c4;background:#eef5ff}
+.gantt-header span:first-of-type:after{content:'TODAY';position:absolute;top:3px;right:4px;font-size:5px;letter-spacing:.06em;color:#1468c4;font-weight:700}
+.gantt-row{display:grid;grid-template-columns:150px 1fr;min-height:54px;border-bottom:1px solid #e7ebf0;background:#fff}
+.gantt-row:nth-child(even){background:#fcfdfe}
+.gantt-label{padding:8px 12px;border-right:1px solid #dfe5ec;display:flex;flex-direction:column;justify-content:center;gap:4px;background:inherit;position:sticky;left:0;z-index:1}
+.gantt-label strong{font-size:8px;color:#304158;font-weight:650}
+.gantt-label small{font-size:6px;color:#8a96a5;letter-spacing:.04em}
+.gantt-track{position:relative;min-height:54px;display:grid;grid-template-columns:repeat(7,minmax(86px,1fr));background:repeating-linear-gradient(90deg,transparent 0,transparent calc(14.2857% - 1px),#e8edf2 calc(14.2857% - 1px),#e8edf2 14.2857%)}
+.gantt-track:before{content:'NOW';position:absolute;z-index:1;left:14.2857%;top:0;bottom:0;border-left:2px solid #2a74c5;opacity:.55;font-size:5px;color:#2a74c5;padding-left:3px;line-height:12px;font-weight:700;pointer-events:none}
+.gantt-track>i{display:block;height:100%;border-right:1px solid rgba(223,229,236,.55);pointer-events:none}
+.gantt-task,.conflict-task{position:absolute;z-index:2;height:28px;top:13px;border-radius:3px;border:1px solid transparent;box-shadow:0 1px 2px rgba(29,49,72,.12),inset 0 1px 0 rgba(255,255,255,.38);font-size:7px;font-weight:650;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 9px;cursor:pointer;transition:transform .14s,box-shadow .14s,filter .14s}
+.gantt-task:before{content:'BLOCK';font-size:5px;letter-spacing:.08em;opacity:.7;margin-right:5px}
+.gantt-task:hover,.conflict-task:hover{transform:translateY(-1px);box-shadow:0 4px 9px rgba(30,54,80,.16);filter:saturate(1.04)}
+.gantt-task.green{background:linear-gradient(180deg,#e8f7ee,#d6efdf);border-color:#9fcdb0;color:#286a40}
+.gantt-task.orange{background:linear-gradient(180deg,#fff2df,#ffe5c4);border-color:#e9c08b;color:#9a5d12}
+.gantt-task.blue{background:linear-gradient(180deg,#e9f3ff,#d7e9fb);border-color:#a7c8e8;color:#285e91}
+.gantt-task.purple{background:linear-gradient(180deg,#f1ebff,#e5d9ff);border-color:#c5b3ea;color:#5b3a9d}
+.gantt-task.teal{background:linear-gradient(180deg,#e5f6f5,#d1ecea);border-color:#9bc9c5;color:#27736f}
+.gantt-task.red{background:linear-gradient(180deg,#fff0f0,#ffdede);border-color:#e7a4a4;color:#ad3838}
+.gantt-task.red:after{content:'CONFLICT';font-size:5px;letter-spacing:.06em;margin-left:7px;padding:2px 4px;border-radius:2px;background:#fff;border:1px solid #e7b1b1;color:#b63c3c}
+.conflict-task{height:18px;top:31px;left:54%;width:26%;padding:0 6px;background:#fff8f8;border-color:#e1b0b0;border-style:dashed;color:#b63d3d;font-size:6px;z-index:3}
+.gantt-legend{border-top:1px solid #e5e9ee;background:#fafbfd;padding:9px 12px;display:flex;gap:15px;align-items:center;flex-wrap:wrap}
+.gantt-legend span{font-size:7px;color:#6e7c8e;display:flex;align-items:center;gap:5px}
+.gantt-legend i{width:12px;height:7px;border-radius:2px;border:1px solid rgba(70,90,110,.15);display:inline-block}
+.gantt-legend .green-box{background:#d6efdf}.gantt-legend .orange-box{background:#ffe5c4}.gantt-legend .blue-box{background:#d7e9fb}.gantt-legend .purple-box{background:#e5d9ff}.gantt-legend .dash-box{background:#fff;border-style:dashed}.gantt-legend .red-box{background:#ffdede}
+@media(max-width:760px){.gantt-header,.gantt-row{min-width:700px}.gantt-header{grid-template-columns:125px repeat(7,minmax(82px,1fr))}.gantt-row{grid-template-columns:125px 1fr}.gantt-label{padding-inline:8px}.gantt-task{font-size:6.5px;padding-inline:6px}.gantt-task:before{display:none}}
