@@ -29,4 +29,48 @@
 .gantt-legend span{font-size:7px;color:#6e7c8e;display:flex;align-items:center;gap:5px}
 .gantt-legend i{width:12px;height:7px;border-radius:2px;border:1px solid rgba(70,90,110,.15);display:inline-block}
 .gantt-legend .green-box{background:#d6efdf}.gantt-legend .orange-box{background:#ffe5c4}.gantt-legend .blue-box{background:#d7e9fb}.gantt-legend .purple-box{background:#e5d9ff}.gantt-legend .dash-box{background:#fff;border-style:dashed}.gantt-legend .red-box{background:#ffdede}
-@media(max-width:760px){.gantt-header,.gantt-row{min-width:700px}.gantt-header{grid-template-columns:125px repeat(7,minmax(82px,1fr))}.gantt-row{grid-template-columns:125px 1fr}.gantt-label{padding-inline:8px}.gantt-task{font-size:6.5px;padding-inline:6px}.gantt-task:before{display:none}}
+
+/* Real timeline scaling: Day, Week and Month now use different time widths while the task schedule stays anchored to its dates. */
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-header{grid-template-columns:150px minmax(620px,1fr)}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-track{grid-template-columns:1fr;background:linear-gradient(90deg,transparent 0%,transparent 24.99%,#e8edf2 25%,transparent 25.1%,transparent 49.99%,#e8edf2 50%,transparent 50.1%,transparent 74.99%,#e8edf2 75%,transparent 75.1%)}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-track:before{left:8.3333%;}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-header span{display:flex}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-header span:not(:first-of-type){display:none}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-task{height:30px;top:12px}
+
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-header{grid-template-columns:150px repeat(7,minmax(86px,1fr))}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-track{grid-template-columns:repeat(7,minmax(86px,1fr))}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-track:before{left:14.2857%}
+
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-header{grid-template-columns:150px repeat(6,minmax(100px,1fr));min-width:750px}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-track{grid-template-columns:repeat(6,minmax(100px,1fr));background:repeating-linear-gradient(90deg,transparent 0,transparent calc(16.6667% - 1px),#e8edf2 calc(16.6667% - 1px),#e8edf2 16.6667%)}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-track:before{left:8.3333%}
+
+/* Task dates are represented visually against the selected scale. */
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-row:nth-child(2) .gantt-task{left:2%;width:18%}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-row:nth-child(3) .gantt-task{left:23%;width:22%}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-row:nth-child(4) .gantt-task{left:43%;width:25%}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-row:nth-child(5) .gantt-task{left:53%;width:20%}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-row:nth-child(6) .gantt-task{left:68%;width:20%}
+.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-row:nth-child(7) .gantt-task{left:78%;width:17%}
+
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-row:nth-child(2) .gantt-task{left:2%;width:11%}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-row:nth-child(3) .gantt-task{left:17%;width:12%}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-row:nth-child(4) .gantt-task{left:29%;width:18%}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-row:nth-child(5) .gantt-task{left:44%;width:12%}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-row:nth-child(6) .gantt-task{left:57%;width:17%}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .gantt-row:nth-child(7) .gantt-task{left:73%;width:15%}
+.gantt-panel:has(.range-buttons button:nth-child(2).selected) .conflict-task{left:31%;width:17%}
+
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-row:nth-child(2) .gantt-task{left:1%;width:14%}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-row:nth-child(3) .gantt-task{left:10%;width:14%}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-row:nth-child(4) .gantt-task{left:17%;width:23%}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-row:nth-child(5) .gantt-task{left:34%;width:15%}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-row:nth-child(6) .gantt-task{left:49%;width:19%}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-row:nth-child(7) .gantt-task{left:66%;width:18%}
+.gantt-panel:has(.range-buttons button:nth-child(3).selected) .conflict-task{left:21%;width:18%}
+
+.gantt-task{transition:left .22s ease,width .22s ease,transform .14s,box-shadow .14s,filter .14s}
+.gantt-header,.gantt-track{transition:grid-template-columns .22s ease}
+
+@media(max-width:760px){.gantt-header,.gantt-row{min-width:700px}.gantt-header{grid-template-columns:125px repeat(7,minmax(82px,1fr))}.gantt-row{grid-template-columns:125px 1fr}.gantt-label{padding-inline:8px}.gantt-task{font-size:6.5px;padding-inline:6px}.gantt-task:before{display:none}.gantt-panel:has(.range-buttons button:nth-child(3).selected) .gantt-header{min-width:725px;grid-template-columns:125px repeat(6,minmax(100px,1fr))}.gantt-panel:has(.range-buttons button:nth-child(1).selected) .gantt-header{min-width:745px;grid-template-columns:125px minmax(620px,1fr)}}
