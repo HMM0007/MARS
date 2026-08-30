@@ -9,6 +9,7 @@ from backend.config import (
     APP_VERSION,
 )
 
+from backend.api.auth import router as auth_router
 from backend.api.jobs import router as jobs_router
 from backend.api.assets import router as assets_router
 from backend.api.blocks import router as blocks_router
@@ -43,6 +44,7 @@ app.add_middleware(
 # API ROUTERS
 # ------------------------------------------------------------
 
+app.include_router(auth_router)
 app.include_router(jobs_router)
 app.include_router(assets_router)
 app.include_router(blocks_router)
