@@ -1,129 +1,150 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import './planner-gantt.css'
 
 type Job = Record<string, any>
 type Train = Record<string, any>
 
-type Props = { jobs: Job[]; trains: Train[]; onBack?: () => void }
+type Props = {
+  jobs: Job[]
+  trains: Train[]
+  onBack?: () => void
+}
 
-const fmt = (value: any, fallback = '—') => value === undefined || value === null || value === '' ? fallback : String(value)
+const text = (value: any, fallback = '—') => value === undefined || value === null || value === '' ? fallback : String(value)
 
 function parseDate(value: any) {
   if (!value) return null
   const d = new Date(String(value).replace(' ', 'T'))
   return Number.isNaN(d.getTime()) ? null : d
 }
-function dateKey(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
-function startOfWeek(d: Date) { const x = new Date(d); const day = x.getDay(); x.setDate(x.getDate() - (day === 0 ? 6 : day - 1)); x.setHours(0, 0, 0, 0); return x }
-function addDays(d: Date, n: number) { const x = new Date(d); x.setDate(x.getDate() + n); return x }
-function parseTime(value: any) { const m = String(value || '').match(/(\d{1,2}):(\d{2})/); return m ? Number(m[1]) * 60 + Number(m[2]) : null }
-function trainDate(t: Train) { const raw = t.schedule_date || t.date || t.scheduled_date; return raw ? String(raw).slice(0, 10) : null }
-function durationMinutes(a: Date, b: Date) { return Math.max(1, Math.round((b.getTime() - a.getTime()) / 60000)) }
-function departmentKey(value: any) { const v = String(value || '').toLowerCase(); return v.includes('s&t') || v.includes('signal') ? 'S&T' : v.includes('traction') || v.includes('ohe') ? 'Traction' : 'Engineering' }
+
+function minutes(d: Date) {
+  return d.getHours() * 60 + d.getMinutes()
+}
+
+function fmtTime(value: any) {
+  const d = parseDate(value)
+  return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : text(value)
+}
+
+function fmtDate(value: any) {
+  const d = parseDate(value)
+  return d ? d.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' }) : text(value)
+}
+
+function trainTime(t: Train) {
+  return t.arrival || t.arrival_time || t.start_time || ''
+}
 
 export default function PlannerGantt({ jobs, trains, onBack }: Props) {
   const scheduled = useMemo(() => jobs.filter(j => String(j.plan_status || '').toUpperCase() === 'SCHEDULED' && j.scheduled_start), [jobs])
-  const firstDate = useMemo(() => {
-    const dates = scheduled.map(j => parseDate(j.scheduled_start)).filter(Boolean) as Date[]
-    dates.sort((a, b) => a.getTime() - b.getTime())
-    return dates[0] || new Date()
-  }, [scheduled])
-  const [mode, setMode] = useState<'DAY' | 'WEEK'>('DAY')
-  const [selectedDate, setSelectedDate] = useState(() => dateKey(new Date()))
-  const [initialized, setInitialized] = useState(false)
+  const firstScheduled = useMemo(() => scheduled.map(j => parseDate(j.scheduled_start)).filter(Boolean).sort((a: any, b: any) => a.getTime() - b.getTime())[0] as Date | undefined, [scheduled])
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = firstScheduled || new Date()
+    return d.toISOString().slice(0, 10)
+  })
+  const [department, setDepartment] = useState('ALL')
   const [showTrains, setShowTrains] = useState(true)
-  const [query, setQuery] = useState('')
-  const [focused, setFocused] = useState(true)
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null)
 
-  useEffect(() => { if (!initialized && scheduled.length) { setSelectedDate(dateKey(firstDate)); setInitialized(true) } }, [initialized, firstDate, scheduled.length])
+  const dayJobs = useMemo(() => scheduled.filter(j => {
+    const d = parseDate(j.scheduled_start)
+    if (!d || d.toISOString().slice(0, 10) !== selectedDate) return false
+    return department === 'ALL' || String(j.department || '') === department
+  }).sort((a, b) => (parseDate(a.scheduled_start)?.getTime() || 0) - (parseDate(b.scheduled_start)?.getTime() || 0)), [scheduled, selectedDate, department])
 
-  const anchor = useMemo(() => parseDate(selectedDate) || firstDate, [selectedDate, firstDate])
-  const range = useMemo(() => mode === 'DAY' ? (() => { const s = new Date(anchor); s.setHours(0, 0, 0, 0); return { start: s, days: 1 } })() : { start: startOfWeek(anchor), days: 7 }, [anchor, mode])
-  const rangeEnd = addDays(range.start, range.days)
+  const departments = useMemo(() => Array.from(new Set(scheduled.map(j => String(j.department || '')).filter(Boolean))), [scheduled])
+  const dayTrains = useMemo(() => trains.filter(t => {
+    const raw = t.schedule_date || t.date || t.scheduled_date
+    return !raw || String(raw).slice(0, 10) === selectedDate
+  }).slice(0, 30), [trains, selectedDate])
 
-  const visibleJobs = useMemo(() => scheduled.filter(j => {
-    const s = parseDate(j.scheduled_start), e = parseDate(j.scheduled_end) || s
-    if (!s || !e || e < range.start || s >= rangeEnd) return false
-    const text = [j.job_id, j.department, j.section_id, j.block_id, j.work_type, j.description].join(' ').toLowerCase()
-    return !query || text.includes(query.toLowerCase())
-  }), [scheduled, range.start, rangeEnd, query])
+  const dayStart = 6 * 60
+  const dayEnd = 22 * 60
+  const total = dayEnd - dayStart
 
-  const visibleTrains = useMemo(() => showTrains ? trains.filter(t => {
-    const d = trainDate(t)
-    return d ? d >= dateKey(range.start) && d < dateKey(rangeEnd) : mode === 'DAY'
-  }).slice(0, 100) : [], [showTrains, trains, range.start, rangeEnd, mode])
-
-  const bounds = useMemo(() => {
-    if (mode !== 'DAY' || !focused) return { start: 0, end: 24 * 60 }
-    const times: number[] = []
-    visibleJobs.forEach(j => { const s = parseDate(j.scheduled_start), e = parseDate(j.scheduled_end); if (s) times.push(s.getHours() * 60 + s.getMinutes()); if (e) times.push(e.getHours() * 60 + e.getMinutes()) })
-    visibleTrains.forEach(t => { const m = parseTime(t.arrival || t.arrival_time || t.start_time); if (m !== null) times.push(m) })
-    if (!times.length) return { start: 6 * 60, end: 22 * 60 }
-    const min = Math.max(0, Math.floor((Math.min(...times) - 60) / 60) * 60)
-    const max = Math.min(24 * 60, Math.ceil((Math.max(...times) + 60) / 60) * 60)
-    return { start: min, end: Math.max(max, min + 4 * 60) }
-  }, [mode, focused, visibleJobs, visibleTrains])
-
-  const totalMinutes = mode === 'DAY' ? bounds.end - bounds.start : range.days * 1440
-  const columns = mode === 'DAY' ? Array.from({ length: Math.max(1, (bounds.end - bounds.start) / 60) }, (_, i) => bounds.start / 60 + i) : Array.from({ length: 7 }, (_, i) => i)
-  const title = mode === 'DAY' ? anchor.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }) : `${range.start.toLocaleDateString([], { day: 'numeric', month: 'short' })} – ${addDays(range.start, 6).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}`
-
-  const position = (s: Date, e: Date) => {
-    if (mode === 'DAY') {
-      const a = s.getHours() * 60 + s.getMinutes(), b = e.getHours() * 60 + e.getMinutes()
-      return { left: ((Math.max(a, bounds.start) - bounds.start) / totalMinutes) * 100, width: Math.max(1.8, ((Math.min(b, bounds.end) - Math.max(a, bounds.start)) / totalMinutes) * 100) }
-    }
-    const cs = s < range.start ? range.start : s, ce = e > rangeEnd ? rangeEnd : e
-    return { left: ((cs.getTime() - range.start.getTime()) / 60000) / totalMinutes * 100, width: Math.max(1.5, durationMinutes(cs, ce) / totalMinutes * 100) }
-  }
-  const trainPosition = (t: Train) => {
-    const time = parseTime(t.arrival || t.arrival_time || t.start_time), d = trainDate(t)
-    if (mode === 'DAY') return time === null ? null : ((time - bounds.start) / totalMinutes) * 100
-    if (!d) return null
-    const day = Math.round((new Date(`${d}T00:00:00`).getTime() - range.start.getTime()) / 86400000)
-    return day < 0 || day >= 7 ? null : ((day * 1440 + (time ?? 720)) / totalMinutes) * 100
+  const position = (job: Job) => {
+    const start = parseDate(job.scheduled_start)!
+    const end = parseDate(job.scheduled_end) || new Date(start.getTime() + 30 * 60000)
+    const left = Math.max(0, Math.min(100, ((minutes(start) - dayStart) / total) * 100))
+    const right = Math.max(left + 3, Math.min(100, ((minutes(end) - dayStart) / total) * 100))
+    return { left, width: right - left }
   }
 
-  const grouped = ['Engineering', 'S&T', 'Traction'].map(dept => ({ dept, jobs: visibleJobs.filter(j => departmentKey(j.department) === dept) })).filter(g => g.jobs.length)
-  const conflicts = visibleJobs.filter(j => String(j.conflict_status || j.has_conflict || '').toLowerCase() === 'true' || String(j.status || '').toLowerCase().includes('conflict')).length
-  const moveDate = (n: number) => setSelectedDate(dateKey(mode === 'WEEK' ? addDays(anchor, n * 7) : addDays(anchor, n)))
+  const trainPosition = (train: Train) => {
+    const raw = trainTime(train)
+    const match = String(raw).match(/(\d{1,2}):(\d{2})/)
+    if (!match) return null
+    const value = Number(match[1]) * 60 + Number(match[2])
+    return Math.max(0, Math.min(100, ((value - dayStart) / total) * 100))
+  }
 
   return <section className="pg-card">
-    <div className="pg-header">
-      <div><div className="pg-eyebrow">MARS / PLANNER CONTROL CENTRE</div><h2>Maintenance Schedule Gantt</h2><p>At-a-glance view of maintenance work, block windows and train movements.</p></div>
-      {onBack && <button className="pg-link" onClick={onBack}>← Proposed Plan</button>}
-    </div>
+    <header className="pg-header">
+      <div>
+        <div className="pg-eyebrow">MARS / PLANNER</div>
+        <h2>Maintenance Schedule</h2>
+        <p>See exactly when each maintenance job is planned and which block it uses.</p>
+      </div>
+      {onBack && <button className="pg-back" onClick={onBack}>← Proposed Plan</button>}
+    </header>
 
     <div className="pg-kpis">
-      <div><span className="kpi-icon jobs">J</span><b>{visibleJobs.length}</b><small>Scheduled jobs</small></div>
-      <div><span className="kpi-icon uns">!</span><b>{jobs.length - scheduled.length}</b><small>Unscheduled</small></div>
-      <div><span className="kpi-icon trains">T</span><b>{visibleTrains.length}</b><small>Train movements</small></div>
-      <div className={conflicts ? 'risk' : ''}><span className="kpi-icon conflicts">!</span><b>{conflicts}</b><small>Conflicts</small></div>
+      <div><b>{dayJobs.length}</b><span>Jobs scheduled today</span></div>
+      <div><b>{jobs.filter(j => String(j.plan_status || '').toUpperCase() !== 'SCHEDULED').length}</b><span>Jobs still unscheduled</span></div>
+      <div><b>{dayTrains.length}</b><span>Train movements</span></div>
+      <div><b>{departments.length}</b><span>Departments</span></div>
     </div>
 
-    <div className="pg-toolbar">
-      <div className="pg-view-switch">{(['DAY', 'WEEK'] as const).map(v => <button key={v} className={mode === v ? 'active' : ''} onClick={() => setMode(v)}>{v === 'DAY' ? 'Day' : 'Week'}</button>)}</div>
-      <button onClick={() => moveDate(-1)}>‹</button><input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} /><button onClick={() => setSelectedDate(dateKey(firstDate))}>Plan date</button><button onClick={() => moveDate(1)}>›</button>
-      {mode === 'DAY' && <button className={focused ? 'pg-toggle active' : 'pg-toggle'} onClick={() => setFocused(v => !v)}>{focused ? 'Focus schedule' : 'Full day'}</button>}
-      <input className="pg-search" placeholder="Find job, section or block…" value={query} onChange={e => setQuery(e.target.value)} />
-      <label className="pg-check"><input type="checkbox" checked={showTrains} onChange={e => setShowTrains(e.target.checked)} /> Train layer</label>
+    <div className="pg-controls">
+      <label>Date <input type="date" value={selectedDate} onChange={e => { setSelectedDate(e.target.value); setSelectedJob(null) }} /></label>
+      <label>Department <select value={department} onChange={e => setDepartment(e.target.value)}><option value="ALL">All departments</option>{departments.map(d => <option key={d}>{d}</option>)}</select></label>
+      <button className={showTrains ? 'active' : ''} onClick={() => setShowTrains(v => !v)}>{showTrains ? 'Hide trains' : 'Show trains'}</button>
+      <button onClick={() => { const d = firstScheduled || new Date(); setSelectedDate(d.toISOString().slice(0, 10)); setDepartment('ALL') }}>Plan date</button>
     </div>
 
-    <div className="pg-datebar"><strong>{title}</strong><span><i className="legend-job" />Maintenance <i className="legend-eng" />Engineering <i className="legend-st" />S&amp;T <i className="legend-tr" />Traction <i className="legend-train" />Train</span></div>
+    <div className="pg-help"><span>Maintenance jobs</span><span className="job-key" /> <span className="train-key" /> Train arrival <em>Click a job for details</em></div>
 
-    <div className="pg-scroll">
-      <div className="pg-grid" style={{ ['--pg-columns' as any]: columns.length }}>
-        <div className="pg-corner">WORK / MOVEMENT</div>
-        <div className="pg-scale">{columns.map((column, index) => <div key={column} className="pg-scale-cell">{mode === 'DAY' ? `${String(column).padStart(2, '0')}:00` : addDays(range.start, index).toLocaleDateString([], { weekday: 'short', day: '2-digit', month: 'short' })}</div>)}</div>
-
-        {grouped.map(group => <div className="pg-group" key={group.dept}><div className={`pg-group-label ${group.dept.toLowerCase().replace('&', '')}`}><span>{group.dept === 'Engineering' ? 'ENG' : group.dept === 'S&T' ? 'S&T' : 'TRC'}</span><strong>{group.dept}</strong><small>{group.jobs.length} jobs</small></div><div className="pg-group-track"><div className="pg-lane-grid" style={{ ['--pg-columns' as any]: columns.length }} />{group.jobs.map((job, index) => { const s = parseDate(job.scheduled_start)!, e = parseDate(job.scheduled_end) || s; const p = position(s, e); return <div className="pg-job" key={`${job.job_id}-${index}`} style={{ top: `${index * 31 + 5}px`, height: '25px' }}><div className={`pg-bar ${group.dept.toLowerCase().replace('&', '')}`} style={{ left: `${Math.max(0, p.left)}%`, width: `${p.width}%` }} title={`${fmt(job.job_id)} · ${fmt(job.scheduled_start)} → ${fmt(job.scheduled_end)}`}><b>{fmt(job.job_id)}</b><span>{fmt(job.section_id || job.section)} · {fmt(job.block_id || job.block)}</span></div></div>})}</div></div>)}
-
-        {showTrains && <div className="pg-train-lane"><div className="pg-train-label"><span className="train-symbol">T</span><strong>TRAIN MOVEMENTS</strong><small>{visibleTrains.length} movements</small></div><div className="pg-train-track"><div className="pg-lane-grid" style={{ ['--pg-columns' as any]: columns.length }} />{visibleTrains.map((train, index) => { const left = trainPosition(train); if (left === null || left < 0 || left > 100) return null; return <button type="button" className="pg-train-marker" style={{ left: `${left}%` }} key={`train-${train.train_no || train.train_id || index}`} title={`Train ${fmt(train.train_no || train.train_id)} · ${fmt(train.arrival || train.arrival_time || train.start_time)}`}><span>{fmt(train.train_no || train.train_id)}</span></button> })}</div></div>}
-
-        {!grouped.length && <div className="pg-empty">No scheduled maintenance work matches this date or search.</div>}
+    <div className="pg-timeline">
+      <div className="pg-time-header">
+        <div className="pg-label-head">JOB</div>
+        <div className="pg-hours">{Array.from({ length: 17 }, (_, i) => <span key={i}>{String(i + 6).padStart(2, '0')}:00</span>)}</div>
       </div>
+
+      {dayJobs.length === 0 && <div className="pg-empty"><strong>No scheduled jobs for this date.</strong><span>Try another date or select “All departments”.</span></div>}
+
+      {dayJobs.map((job, index) => {
+        const p = position(job)
+        const dept = String(job.department || '').toLowerCase().replace('&', 'and').replace(/[^a-z]/g, '')
+        return <button className={`pg-job-row ${selectedJob === job ? 'selected' : ''}`} key={`${job.job_id}-${index}`} onClick={() => setSelectedJob(job)}>
+          <div className="pg-job-label"><strong>{text(job.job_id)}</strong><span>{text(job.department)} · {text(job.section_id || job.section)} · {text(job.block_id || job.block)}</span></div>
+          <div className="pg-track">
+            <div className="pg-grid-lines">{Array.from({ length: 17 }, (_, i) => <i key={i} />)}</div>
+            <div className={`pg-job-bar ${dept}`} style={{ left: `${p.left}%`, width: `${p.width}%` }}><strong>{text(job.job_id)}</strong><small>{fmtTime(job.scheduled_start)}–{fmtTime(job.scheduled_end)}</small></div>
+          </div>
+        </button>
+      })}
+
+      {showTrains && dayTrains.length > 0 && <div className="pg-trains">
+        <div className="pg-train-label"><strong>TRAINS</strong><span>{dayTrains.length} movements</span></div>
+        <div className="pg-train-track">
+          <div className="pg-grid-lines">{Array.from({ length: 17 }, (_, i) => <i key={i} />)}</div>
+          {dayTrains.map((train, index) => { const left = trainPosition(train); return left === null ? null : <button className="pg-train-dot" key={index} style={{ left: `${left}%` }} title={`Train ${text(train.train_no || train.train_id)} at ${text(trainTime(train))}`}><span>{text(train.train_no || train.train_id)}</span></button> })}
+        </div>
+      </div>}
     </div>
 
-    <div className="pg-footer"><span><b>Reading the chart:</b> each horizontal bar is a maintenance job; its position is the planned start/end window. Department lanes make ownership immediately visible.</span><button onClick={() => setShowTrains(v => !v)}>{showTrains ? 'Hide train layer' : 'Show train layer'}</button></div>
+    {selectedJob && <aside className="pg-details">
+      <div><div className="pg-eyebrow">SELECTED JOB</div><h3>{text(selectedJob.job_id)}</h3></div>
+      <button onClick={() => setSelectedJob(null)} aria-label="Close details">×</button>
+      <div className="pg-detail-grid">
+        <span>Department <b>{text(selectedJob.department)}</b></span>
+        <span>Work type <b>{text(selectedJob.work_type || selectedJob.description)}</b></span>
+        <span>Section <b>{text(selectedJob.section_id || selectedJob.section)}</b></span>
+        <span>Block <b>{text(selectedJob.block_id || selectedJob.block)}</b></span>
+        <span>Start <b>{fmtDate(selectedJob.scheduled_start)} · {fmtTime(selectedJob.scheduled_start)}</b></span>
+        <span>End <b>{fmtTime(selectedJob.scheduled_end)}</b></span>
+      </div>
+    </aside>}
   </section>
 }
