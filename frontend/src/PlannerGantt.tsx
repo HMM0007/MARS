@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import './planner-gantt.css'
 
 type Job = Record<string, any>
 type Train = Record<string, any>
