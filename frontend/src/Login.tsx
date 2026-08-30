@@ -40,12 +40,16 @@ export default function Login({ onLogin }: { onLogin: (department: Department) =
         <div className="login-visual-shade" />
         <div className="login-cursor-light" style={{ left: `${pointer.x}%`, top: `${pointer.y}%` }} />
         <div className={`login-mars-hero ${marsActive ? 'is-active' : ''}`} style={visualVars} onMouseEnter={() => setMarsActive(true)} onMouseLeave={() => setMarsActive(false)}>
-          <div className="mars-kicker">MAINTENANCE ALLOCATION &amp; ROUTING SYSTEM</div>
-          <div className="mars-lettering" aria-label="MARS"><span>M</span><span>A</span><span>R</span><span>S</span></div>
+          <div className="mars-brand-lockup">
+            <img src="/railway-symbol.png" alt="Indian Railways" className="mars-brand-symbol" />
+            <div className="mars-brand-copy">
+              <div className="mars-lettering" aria-label="MARS"><span>M</span><span>A</span><span>R</span><span>S</span></div>
+              <div className="mars-full-form">MAINTENANCE ALLOCATION &amp; ROUTING SYSTEM</div>
+            </div>
+          </div>
           <div className="mars-underline"><i /><i /><i /></div>
-          <div className="mars-status"><span /> LIVE OPERATIONS PORTAL</div>
+          <div className="mars-status"><span /> RAILWAY MAINTENANCE OPERATIONS</div>
         </div>
-        <div className="login-visual-footer">GOVERNMENT OF INDIA <b>•</b> MINISTRY OF RAILWAYS <b>•</b> INDIAN RAILWAYS</div>
       </section>
 
       <section className="login-form-panel">
