@@ -2,7 +2,6 @@ import { useState } from 'react'
 import './login.css'
 
 type Department = 'Engineering' | 'S&T' | 'Traction' | 'Divisional Planner'
-
 type PointerVars = React.CSSProperties & { '--px'?: string; '--py'?: string; '--dx'?: string; '--dy'?: string }
 
 export default function Login({ onLogin }: { onLogin: (department: Department) => void }) {
@@ -46,18 +45,12 @@ export default function Login({ onLogin }: { onLogin: (department: Department) =
           <div className="mars-underline"><i /><i /><i /></div>
           <div className="mars-status"><span /> LIVE OPERATIONS PORTAL</div>
         </div>
-        <div className="cursor-train" aria-hidden="true">
-          <div className="cursor-train-engine"><i /><i /><b /></div>
-          <div className="cursor-train-coach"><i /><i /><i /></div>
-          <div className="cursor-train-wheel w1" /><div className="cursor-train-wheel w2" /><div className="cursor-train-wheel w3" />
-        </div>
-        <div className="login-track-line" />
         <div className="login-visual-footer">GOVERNMENT OF INDIA <b>•</b> MINISTRY OF RAILWAYS <b>•</b> INDIAN RAILWAYS</div>
       </section>
 
       <section className="login-form-panel">
         <div className="railway-authority">
-          <img src="/railway-symbol" alt="Indian Railways symbol" className="railway-symbol" />
+          <img src="/railway-symbol.png" alt="Indian Railways symbol" className="railway-symbol" />
           <div><strong>MINISTRY OF INDIAN RAILWAYS</strong><span>Government of India</span></div>
         </div>
         <div className="login-form-inner">
