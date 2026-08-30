@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './planner-gantt.css'
 
 type Job = Record<string, any>
@@ -55,9 +55,17 @@ export default function PlannerGantt({ jobs, trains, onBack }: Props) {
   }, [scheduled])
 
   const [mode, setMode] = useState<'DAY' | 'WEEK' | 'MONTH'>('DAY')
-  const [selectedDate, setSelectedDate] = useState(() => dateKey(firstDate))
+  const [selectedDate, setSelectedDate] = useState(() => dateKey(new Date()))
+  const [dateInitialized, setDateInitialized] = useState(false)
   const [showTrains, setShowTrains] = useState(true)
   const [query, setQuery] = useState('')
+
+  useEffect(() => {
+    if (!dateInitialized && scheduled.length) {
+      setSelectedDate(dateKey(firstDate))
+      setDateInitialized(true)
+    }
+  }, [dateInitialized, firstDate, scheduled.length])
 
   const anchor = useMemo(() => {
     const parsed = parseDate(selectedDate)
