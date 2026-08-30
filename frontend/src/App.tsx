@@ -126,7 +126,7 @@ function App() {
         </section>
 
         <section className="top-panels">
-          <Panel title="Railway Network Overview" action="Open map" className="network-panel" onAction={() => setActive('Corridor Map')}><NetworkMap zoom={mapZoom} setZoom={setMapZoom} /></Panel>
+          <Panel title="Railway Network Overview" action="Open map" className="network-panel" onAction={() => setActive('Corridor Map')}><NetworkMap zoom={mapZoom} setZoom={setMapZoom} onSelect={(text) => setModal(text)} /></Panel>
           <Panel title="Operational Status" action="View details" className="status-panel" onAction={() => setModal('Operational status details: 24 running trains, 38 active blocks, 16 maintenance jobs and 3 traffic restrictions.')}><StatusList /></Panel>
           <Panel title="Alerts & Notifications" action="View All" className="alerts-panel" onAction={() => setActive('Alerts & Notifications')}><Alerts onSelect={(text) => setModal(text)} /></Panel>
         </section>
@@ -160,9 +160,144 @@ function Panel({ title, action, className = '', children, onAction }: { title: s
 function Priority({ value }: { value: PriorityValue }) { return <span className={`priority ${value.toLowerCase()}`}>{value}</span> }
 function StatusBadge({ value }: { value: JobStatus }) { return <span className={`status-badge ${value.toLowerCase().replace(/\s/g, '-')}`}>{value}</span> }
 
-function NetworkMap({ zoom, setZoom }: { zoom: number; setZoom: (v: number) => void }) { return <div className="network-map"><div className="map-summary"><span className="map-chip green">● On Time <b>12 Trains</b></span><span className="map-chip amber">● Attention <b>2 Sections</b></span><span className="map-chip red">● Delayed <b>3 Trains</b></span></div><div className="map-canvas"><svg viewBox="0 0 660 230" className="network-svg" style={{ transform: `scale(${zoom})` }} aria-label="Railway corridor schematic"><path d="M38 125 H170 H285 L335 82 L405 125 H500 H620" className="route normal"/><path d="M285 125 L335 165 L405 198" className="route attention"/><path d="M405 125 L450 82 L525 82" className="route delayed"/><g className="stations">{[[38,125,7],[170,125,5],[285,125,5],[335,82,6],[405,125,6],[500,125,5],[620,125,7],[335,165,5],[405,198,5],[450,82,5],[525,82,5]].map(([cx,cy,r],i) => <circle key={i} cx={cx} cy={cy} r={r} />)}</g><g className="map-labels"><text x="38" y="151">STN A</text><text x="170" y="151">KM 100</text><text x="285" y="151">KM 120</text><text x="335" y="68">KM 130</text><text x="405" y="151">KM 160</text><text x="500" y="151">KM 170</text><text x="620" y="151">STN B</text><text x="335" y="184">KM 140</text><text x="405" y="217">KM 150</text><text x="450" y="68">KM 165</text><text x="525" y="68">KM 175</text></g></svg></div><div className="map-legend"><span><i className="green-line" /> Normal</span><span><i className="amber-line" /> Attention</span><span><i className="red-line" /> Delayed</span><span><i className="gray-line" /> No Data</span></div><div className="map-tools"><button onClick={() => setZoom(1)} aria-label="Reset map">↺</button><button onClick={() => setZoom(Math.min(1.35, zoom + .15))} aria-label="Zoom in"><Icon name="plus" size={13} /></button><button onClick={() => setZoom(Math.max(.85, zoom - .15))} aria-label="Zoom out"><Icon name="minus" size={13} /></button><button onClick={() => setZoom(1.2)} aria-label="Fit map"><Icon name="expand" size={13} /></button></div></div> }
+function NetworkMap({ zoom, setZoom, onSelect }: { zoom: number; setZoom: (v: number) => void; onSelect: (text: string) => void }) {
+  const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
+  const [selectedPoint, setSelectedPoint] = useState<string | null>(null)
+  const points = [
+    { id: 'stn-a', x: 38, y: 125, label: 'STN A', status: 'Normal', block: '—', jobs: 0, dept: 'All departments', window: 'No active block' },
+    { id: 'km-100', x: 170, y: 125, label: 'KM 100', status: 'Normal', block: 'B100', jobs: 1, dept: 'S&T', window: '08:00 - 10:00' },
+    { id: 'km-120', x: 285, y: 125, label: 'KM 120', status: 'Attention', block: 'B120', jobs: 3, dept: 'ENG · S&T · TRD', window: '10:00 - 12:00' },
+    { id: 'km-130', x: 335, y: 82, label: 'KM 130', status: 'Attention', block: 'B130', jobs: 2, dept: 'Engineering', window: '11:00 - 14:00' },
+    { id: 'km-160', x: 405, y: 125, label: 'KM 160', status: 'Delayed', block: 'B160', jobs: 2, dept: 'Traction', window: '14:00 - 16:00' },
+    { id: 'km-170', x: 500, y: 125, label: 'KM 170', status: 'Normal', block: 'B170', jobs: 1, dept: 'Engineering', window: '15:00 - 17:00' },
+    { id: 'stn-b', x: 620, y: 125, label: 'STN B', status: 'Normal', block: '—', jobs: 0, dept: 'All departments', window: 'No active block' },
+    { id: 'km-140', x: 335, y: 165, label: 'KM 140', status: 'Attention', block: 'B140', jobs: 1, dept: 'S&T', window: '12:00 - 14:00' },
+    { id: 'km-150', x: 405, y: 198, label: 'KM 150', status: 'Attention', block: 'B150', jobs: 2, dept: 'S&T · Traction', window: '15:00 - 17:00' },
+    { id: 'km-165', x: 450, y: 82, label: 'KM 165', status: 'Delayed', block: 'B165', jobs: 1, dept: 'Traction', window: '16:00 - 18:00' },
+    { id: 'km-175', x: 525, y: 82, label: 'KM 175', status: 'Delayed', block: 'B175', jobs: 2, dept: 'Engineering · Traction', window: '17:00 - 19:00' },
+  ]
+  const point = points.find(p => p.id === (hoveredPoint ?? selectedPoint))
+  const selectPoint = (p: typeof points[number]) => {
+    setSelectedPoint(p.id)
+    onSelect(`${p.label} · ${p.block === '—' ? 'Station' : `Block ${p.block}`} · ${p.jobs} active job${p.jobs === 1 ? '' : 's'} · ${p.status}`)
+  }
+  return <div className="network-map">
+    <div className="map-summary"><span className="map-chip green">● On Time <b>12 Trains</b></span><span className="map-chip amber">● Attention <b>2 Sections</b></span><span className="map-chip red">● Delayed <b>3 Trains</b></span></div>
+    <div className="map-canvas">
+      <style>{`
+        .network-map .map-canvas{position:relative}
+        .network-map .stations circle{cursor:pointer;transition:stroke-width .15s,filter .15s,fill .15s}
+        .network-map .stations circle:hover,.network-map .stations circle.selected-point{stroke:#1468c4;stroke-width:4;filter:drop-shadow(0 1px 3px rgba(20,104,196,.25));fill:#eef5ff}
+        .network-map .map-tooltip{position:absolute;z-index:5;width:218px;background:#fff;border:1px solid #cfd9e4;border-radius:6px;box-shadow:0 10px 24px rgba(28,52,78,.14);padding:10px;pointer-events:auto;transform:translate(-8%,-12%)}
+        .network-map .map-tooltip-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:7px;border-bottom:1px solid #edf0f3}
+        .network-map .map-tooltip-head strong{font-size:10px;color:#1b2c43}
+        .network-map .map-tooltip-head span{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 5px;border-radius:3px;background:#edf8f0;color:#2c8c4d}
+        .network-map .map-tooltip.attention .map-tooltip-head span{background:#fff5e6;color:#b96e0b}
+        .network-map .map-tooltip.delayed .map-tooltip-head span{background:#fff0f0;color:#c53d3d}
+        .network-map .map-tooltip-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;padding:9px 0}
+        .network-map .map-tooltip-grid div{min-width:0}
+        .network-map .map-tooltip-grid small{display:block;font-size:6px;text-transform:uppercase;letter-spacing:.05em;color:#8995a4;margin-bottom:2px}
+        .network-map .map-tooltip-grid b{display:block;font-size:8px;line-height:1.3;color:#34465d;overflow-wrap:anywhere}
+        .network-map .map-tooltip>button{border:0;background:#eef5ff;color:#1268c6;border-radius:4px;padding:6px 8px;font-size:8px;font-weight:600;cursor:pointer}
+        .network-map .map-tooltip>button:hover{background:#e2efff}
+        .network-map .map-help{margin-left:auto;color:#98a2af;font-style:italic}
+        @media (max-width:760px){.network-map .map-tooltip{width:190px;transform:translate(-10%,-8%)}.network-map .map-help{width:100%;margin-left:0}}
+      `}</style>
+      <svg viewBox="0 0 660 230" className="network-svg" style={{ transform: `scale(${zoom})` }} aria-label="Interactive railway corridor schematic">
+        <path d="M38 125 H170 H285 L335 82 L405 125 H500 H620" className="route normal"/>
+        <path d="M285 125 L335 165 L405 198" className="route attention"/>
+        <path d="M405 125 L450 82 L525 82" className="route delayed"/>
+        <g className="stations">{points.map(p => <circle key={p.id} cx={p.x} cy={p.y} r={p.id.startsWith('stn') ? 7 : 5} className={(hoveredPoint ?? selectedPoint) === p.id ? 'selected-point' : ''} onMouseEnter={() => setHoveredPoint(p.id)} onFocus={() => setHoveredPoint(p.id)} onMouseLeave={() => setHoveredPoint(null)} onClick={() => selectPoint(p)} role="button" tabIndex={0} aria-label={`${p.label}, ${p.status}, ${p.jobs} active jobs`} />)}</g>
+        <g className="map-labels">{points.map(p => <text key={p.id} x={p.x} y={p.y + (p.y < 100 ? -14 : 26)}>{p.label}</text>)}</g>
+      </svg>
+      {point && <div className={`map-tooltip ${point.status.toLowerCase()}`} style={{ left: `${Math.min(74, Math.max(8, (point.x / 660) * 100))}%`, top: `${Math.min(66, Math.max(8, (point.y / 230) * 100))}%` }}>
+        <div className="map-tooltip-head"><strong>{point.label}</strong><span>{point.status}</span></div>
+        <div className="map-tooltip-grid"><div><small>Block</small><b>{point.block}</b></div><div><small>Active Jobs</small><b>{point.jobs}</b></div><div><small>Department</small><b>{point.dept}</b></div><div><small>Window</small><b>{point.window}</b></div></div>
+        <button type="button" onClick={() => selectPoint(point)}>View Details →</button>
+      </div>}
+    </div>
+    <div className="map-legend"><span><i className="green-line" /> Normal</span><span><i className="amber-line" /> Attention</span><span><i className="red-line" /> Delayed</span><span><i className="gray-line" /> No Data</span><span className="map-help">Hover or click a point for details</span></div>
+    <div className="map-tools"><button onClick={() => { setZoom(1); setHoveredPoint(null); setSelectedPoint(null) }} aria-label="Reset map">↺</button><button onClick={() => setZoom(Math.min(1.35, zoom + .15))} aria-label="Zoom in"><Icon name="plus" size={13} /></button><button onClick={() => setZoom(Math.max(.85, zoom - .15))} aria-label="Zoom out"><Icon name="minus" size={13} /></button><button onClick={() => setZoom(1.2)} aria-label="Fit map"><Icon name="expand" size={13} /></button></div>
+  </div>
+}
 function StatusList() { const rows = [['trains','Running Trains','24','On Time 18  |  Delayed 6','blue'],['sections','Active Blocks','38 / 52','In Use 38  |  Free 14','green'],['assets','Maintenance in Progress','16','Across 8 Blocks','orange'],['alerts','Traffic Restrictions','3','Active Now','red']] as const; return <div className="status-list">{rows.map(([icon,label,value,sub,tone]) => <button className="status-row" key={label}><span className={`status-icon ${tone}`}><Icon name={icon} size={18} /></span><div className="status-copy"><strong>{label}</strong><small>{sub}</small></div><b>{value}</b></button>)}</div> }
 function Alerts({ onSelect }: { onSelect: (text: string) => void }) { const alerts = [['red','Train 12845 delayed by 1h 40m','Impact on block: Km 120-125 (10:00-12:00)','10:20 AM'],['amber','Block conflict detected in Km 130-135','21 May','09:45 AM'],['amber','Critical defect reported in Km 158','Immediate attention required','09:10 AM'],['blue','New maintenance request MR-129','Added by Engineering','08:30 AM']] as const; return <div className="alerts-list">{alerts.map(([tone,title,sub,time]) => <button className="alert-row" key={title} onClick={() => onSelect(`${title}. ${sub}`)}><span className={`alert-icon ${tone}`}>{tone === 'blue' ? 'i' : '!'}</span><div><strong>{title}</strong><small>{sub}</small></div><time>{time}</time></button>)}</div> }
-function Gantt({ range, onTaskClick }: { range: string; onTaskClick: (task: string) => void }) { const rows = [{label:'Km 100 - 105',block:'B100',left:'5%',width:'18%',text:'MR-110 (S&T)',tone:'green'},{label:'Km 110 - 115',block:'B110',left:'28%',width:'18%',text:'MR-108 (ENG)',tone:'orange'},{label:'Km 120 - 125',block:'B120',left:'9%',width:'49%',text:'MR-101 (ENG)',tone:'red'},{label:'Km 130 - 135',block:'B130',left:'38%',width:'20%',text:'MR-104 (ENG)',tone:'blue'},{label:'Km 140 - 145',block:'B140',left:'55%',width:'24%',text:'MR-115 (TRACTION)',tone:'purple'},{label:'Km 150 - 155',block:'B150',left:'78%',width:'16%',text:'MR-112 (ENG)',tone:'teal'}]; const days = range === 'Day' ? ['20 Mon'] : range === 'Month' ? ['20 Mon','24 Fri','28 Tue','01 Sat','05 Wed','09 Sun'] : ['20 Mon','21 Tue','22 Wed','23 Thu','24 Fri','25 Sat','26 Sun']; return <div className="gantt"><div className="gantt-scroll"><div className="gantt-header"><div>BLOCKS / SECTIONS</div>{days.map(d => <span key={d}>{d}</span>)}</div>{rows.map(row => <div className="gantt-row" key={row.label}><div className="gantt-label"><strong>{row.label}</strong><small>{row.block}</small></div><div className="gantt-track">{days.map((_,i) => <i key={i} />)}<button className={`gantt-task ${row.tone}`} style={{left:row.left,width:row.width}} onClick={() => onTaskClick(`${row.text} · ${row.label} · ${row.block}`)}>{row.text}</button>{row.tone === 'red' && <button className="conflict-task" onClick={() => onTaskClick('Conflict: Other Department Activity overlaps MR-101 on B120.')}>Other Dept Activity</button>}</div></div>)}</div></div><div className="gantt-legend"><span><i className="green-box" /> Engineering</span><span><i className="orange-box" /> S&amp;T</span><span><i className="blue-box" /> Traction</span><span><i className="purple-box" /> Multi-Department</span><span><i className="dash-box" /> Proposed</span><span><i className="red-box" /> Conflict</span></div></div> }
+function Gantt({ range, onTaskClick }: { range: string; onTaskClick: (task: string) => void }) {
+  const rows = [
+    { label: 'Km 100 - 105', block: 'B100', left: '5%', width: '18%', text: 'MR-110 (S&T)', tone: 'green' },
+    { label: 'Km 110 - 115', block: 'B110', left: '28%', width: '18%', text: 'MR-108 (ENG)', tone: 'orange' },
+    { label: 'Km 120 - 125', block: 'B120', left: '9%', width: '49%', text: 'MR-101 (ENG)', tone: 'red' },
+    { label: 'Km 130 - 135', block: 'B130', left: '38%', width: '20%', text: 'MR-104 (ENG)', tone: 'blue' },
+    { label: 'Km 140 - 145', block: 'B140', left: '55%', width: '24%', text: 'MR-115 (TRACTION)', tone: 'purple' },
+    { label: 'Km 150 - 155', block: 'B150', left: '78%', width: '16%', text: 'MR-112 (ENG)', tone: 'teal' },
+  ]
+
+  const days =
+    range === 'Day'
+      ? ['20 Mon']
+      : range === 'Month'
+        ? ['20 Mon', '24 Fri', '28 Tue', '01 Sat', '05 Wed', '09 Sun']
+        : ['20 Mon', '21 Tue', '22 Wed', '23 Thu', '24 Fri', '25 Sat', '26 Sun']
+
+  return (
+    <div className="gantt">
+      <div className="gantt-scroll">
+        <div className="gantt-header">
+          <div>BLOCKS / SECTIONS</div>
+          {days.map(d => (
+            <span key={d}>{d}</span>
+          ))}
+        </div>
+
+        {rows.map(row => (
+          <div className="gantt-row" key={row.label}>
+            <div className="gantt-label">
+              <strong>{row.label}</strong>
+              <small>{row.block}</small>
+            </div>
+
+            <div className="gantt-track">
+              {days.map((_, i) => (
+                <i key={i} />
+              ))}
+
+              <button
+                className={`gantt-task ${row.tone}`}
+                style={{ left: row.left, width: row.width }}
+                onClick={() =>
+                  onTaskClick(`${row.text} · ${row.label} · ${row.block}`)
+                }
+              >
+                {row.text}
+              </button>
+
+              {row.tone === 'red' && (
+                <button
+                  className="conflict-task"
+                  onClick={() =>
+                    onTaskClick(
+                      'Conflict: Other Department Activity overlaps MR-101 on B120.'
+                    )
+                  }
+                >
+                  Other Dept Activity
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="gantt-legend">
+        <span><i className="green-box" /> Engineering</span>
+        <span><i className="orange-box" /> S&amp;T</span>
+        <span><i className="blue-box" /> Traction</span>
+        <span><i className="purple-box" /> Multi-Department</span>
+        <span><i className="dash-box" /> Proposed</span>
+        <span><i className="red-box" /> Conflict</span>
+      </div>
+    </div>
+  )
+}
 
 export default App
