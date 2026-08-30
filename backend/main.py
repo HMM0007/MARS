@@ -15,9 +15,11 @@ from backend.api.assets import router as assets_router
 from backend.api.blocks import router as blocks_router
 from backend.api.trains import router as trains_router
 from backend.api.plans import router as plans_router
-from backend.api.replanning import (
-    router as replanning_router,
-)
+from backend.api.replanning import router as replanning_router
+from backend.api.conflicts import router as conflicts_router
+from backend.api.notifications import router as notifications_router
+from backend.api.analytics import router as analytics_router
+from backend.api.sections import router as sections_router
 
 
 app = FastAPI(
@@ -51,6 +53,10 @@ app.include_router(blocks_router)
 app.include_router(trains_router)
 app.include_router(plans_router)
 app.include_router(replanning_router)
+app.include_router(conflicts_router)
+app.include_router(notifications_router)
+app.include_router(analytics_router)
+app.include_router(sections_router)
 
 
 # ------------------------------------------------------------
@@ -60,7 +66,6 @@ app.include_router(replanning_router)
 @app.get("/api/health")
 def health_check():
     """Return basic MARS backend health information."""
-
     return {
         "status": "healthy",
         "application": APP_NAME,
@@ -75,7 +80,6 @@ def health_check():
 @app.get("/")
 def root():
     """Return basic API information."""
-
     return {
         "application": APP_NAME,
         "message": "MARS backend is running.",

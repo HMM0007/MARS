@@ -1,8 +1,10 @@
 """Authentication endpoints for the MARS frontend prototype.
 
-This module provides the first backend authentication boundary. It deliberately
-uses an in-memory demo user store until persistent identity management is
-introduced. Passwords are hashed rather than stored as plaintext.
+Provides authenticated user categories:
+- Engineering (ENG001)
+- S&T (SNT001)
+- Traction (TRD001)
+- Divisional Planner (PLAN001)
 """
 
 from hashlib import pbkdf2_hmac
@@ -36,12 +38,10 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
 
 
-# Demo identities for the development phase. Replace with the railway identity
-# store/SSO in the production authentication implementation.
 _DEMO_USERS = {
-    "ENG001": {"password": "mars123", "name": "Engineering Planner", "department": "Engineering", "role": "Department Planner"},
-    "SNT001": {"password": "mars123", "name": "S&T Planner", "department": "S&T", "role": "Department Planner"},
-    "TRD001": {"password": "mars123", "name": "Traction Planner", "department": "Traction", "role": "Department Planner"},
+    "ENG001": {"password": "mars123", "name": "Engineering Officer", "department": "Engineering", "role": "Department User"},
+    "SNT001": {"password": "mars123", "name": "S&T Officer", "department": "S&T", "role": "Department User"},
+    "TRD001": {"password": "mars123", "name": "Traction Officer", "department": "Traction", "role": "Department User"},
     "PLAN001": {"password": "mars123", "name": "Divisional Planner", "department": "Divisional Planner", "role": "Divisional Planner"},
 }
 
@@ -51,8 +51,6 @@ def _hash_password(password: str, salt: bytes) -> bytes:
 
 
 def _password_matches(password: str, expected: str) -> bool:
-    # Development-only verification helper. The production version should use
-    # a dedicated identity provider/password hashing service.
     salt = b"MARS-DEMO-SALT"
     actual = _hash_password(password, salt)
     target = _hash_password(expected, salt)
@@ -61,7 +59,7 @@ def _password_matches(password: str, expected: str) -> bool:
 
 @router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest):
-    """Authenticate a MARS development user and return role information."""
+    """Authenticate a MARS development user and return department & role info."""
     employee_id = payload.employee_id.strip().upper()
     user = _DEMO_USERS.get(employee_id)
 
@@ -71,8 +69,6 @@ def login(payload: LoginRequest):
             detail="Invalid Employee ID, password, or department.",
         )
 
-    # Placeholder development token. JWT/SSO token issuance belongs in the
-    # production authentication phase.
     token = f"mars-dev-{employee_id}-{os.urandom(8).hex()}"
 
     return LoginResponse(
@@ -89,5 +85,4 @@ def login(payload: LoginRequest):
 
 @router.post("/logout")
 def logout():
-    """Development logout endpoint; production token revocation comes later."""
     return {"authenticated": False, "message": "MARS session ended."}

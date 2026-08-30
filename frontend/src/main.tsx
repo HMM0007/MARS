@@ -12,9 +12,9 @@ const AUTH_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 function Root() {
   const existingSession = getSession()
   const [authenticated, setAuthenticated] = useState(Boolean(existingSession))
-  const [department, setDepartment] = useState<Department>(existingSession?.department || 'Engineering')
+  const [currentSession, setCurrentSession] = useState(existingSession)
 
-  const handleLogin = async (credentials: { employeeId: string; password: string; department: Department }) => {
+  const handleLogin = async (credentials: { employeeId: string; password: string; department: Department; rememberDevice?: boolean }) => {
     const response = await fetch(`${AUTH_API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,7 +33,7 @@ function Root() {
     }
 
     if (!response.ok) {
-      throw new Error(payload?.detail || 'Unable to authenticate with MARS backend.')
+      throw new Error(payload?.detail || 'Invalid Employee ID, password, or department.')
     }
 
     const user = {
@@ -43,8 +43,8 @@ function Root() {
       role: payload.user.role as 'Department User' | 'Divisional Planner',
     }
 
-    saveSession(user, true, payload.access_token)
-    setDepartment(user.department)
+    saveSession(user, Boolean(credentials.rememberDevice), payload.access_token)
+    setCurrentSession(getSession())
     setAuthenticated(true)
   }
 
@@ -56,19 +56,16 @@ function Root() {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
     } catch {
-      // Local logout still succeeds if the backend is unavailable.
+      // Local logout still succeeds
     }
     clearSession()
+    setCurrentSession(null)
     setAuthenticated(false)
   }
 
   if (!authenticated) return <Login onLogin={handleLogin} />
 
-  return <AppSessionBoundary department={department} onLogout={handleLogout} />
-}
-
-function AppSessionBoundary({ department, onLogout }: { department: Department; onLogout: () => void }) {
-  return <App />
+  return <App key={currentSession?.employeeId || currentSession?.department || 'default'} onLogout={handleLogout} />
 }
 
 createRoot(document.getElementById('root')!).render(
