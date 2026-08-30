@@ -1,0 +1,11 @@
+
+# Python generated files
+__pycache__/
+*.pyc
+
+# Frontend generated files
+frontend/node_modules/
+frontend/dist/
+
+# Runtime optimizer outputs
+data/output/.runtime_*.csv

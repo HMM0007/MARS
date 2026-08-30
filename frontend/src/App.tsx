@@ -160,7 +160,7 @@ export default function App({ onLogout }: AppProps) {
       if (trainRes?.trains) setTrains(trainRes.trains)
       if (assetRes?.assets) setAssets(assetRes.assets)
       if (planRes?.plan) setPlans(planRes.plan)
-      setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+      setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }))
     } catch (err) { console.error('Error loading dynamic MARS backend data:', err) }
   }
 

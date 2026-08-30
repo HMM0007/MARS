@@ -1,6 +1,6 @@
 import { getSession, type Department } from '../auth'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000'
 function getAuthHeaders(): Record<string, string> { const session=getSession(); const headers:Record<string,string>={'Content-Type':'application/json'}; if(session?.accessToken) headers.Authorization=`Bearer ${session.accessToken}`; return headers }
 async function apiRequest<T=any>(path:string, options:RequestInit={}):Promise<T>{ const response=await fetch(`${API_BASE_URL}${path}`,{...options,headers:{...getAuthHeaders(),...(options.headers||{})}}); if(!response.ok){const body=await response.json().catch(()=>({})); const detail=typeof body?.detail==='string'?body.detail:`Request failed (${response.status})`; if(response.status===401) throw new Error('Your MARS session has expired. Please log in again.'); if(response.status===403) throw new Error('You do not have permission to perform this MARS operation.'); throw new Error(detail)} if(response.status===204)return undefined as T; return response.json() }
 
@@ -10,7 +10,7 @@ export async function updateJob(id:string,data:Record<string,any>){return apiReq
 export async function deleteJob(id:string){return apiRequest(`/api/jobs/${encodeURIComponent(id)}`,{method:'DELETE'})}
 export async function fetchConflicts(){return apiRequest('/api/conflicts')}
 export async function fetchNotifications(department?:Department|string){return apiRequest(`/api/notifications${department?`?department=${encodeURIComponent(department)}`:''}`)}
-export async function fetchAnalytics(){return apiRequest('/api/analytics')}
+export async function fetchAnalytics(period?:string){return apiRequest(`/api/analytics${period?`?period=${encodeURIComponent(period)}`:''}`)}
 export async function fetchSections(){return apiRequest('/api/sections')}
 export async function fetchBlocks(){return apiRequest('/api/blocks')}
 export async function fetchTrains(){return apiRequest('/api/trains')}

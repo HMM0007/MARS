@@ -126,7 +126,8 @@ def check_allocation(request: AllocationCheck):
         job_row = job.iloc[0]
         block_row = block.iloc[0]
         asset = assets[assets["asset_id"].astype(str) == str(job_row.get("asset_id", ""))]
-        section_id = str(asset.iloc[0]["section_id"]) if not asset.empty else ""
+        asset_sec = str(asset.iloc[0]["section_id"]).strip() if not asset.empty else ""
+        section_id = asset_sec or str(job_row.get("section", "")).strip()
 
         if not section_id:
             return _allocation_result(request.job_id, request.block_id, section_id, False, "SECTION_UNKNOWN", "The maintenance asset has no mapped railway section. Please correct the asset mapping before allocation.")

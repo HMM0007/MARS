@@ -18,9 +18,15 @@ def _read(path: Path) -> pd.DataFrame:
 
 
 @router.get("")
-def get_analytics():
-    """Return metrics derived from the current prototype data, not hard-coded demo values."""
+def get_analytics(period: str = "This Week"):
+    """Return metrics derived from the current prototype data, filtered by period."""
     jobs = job_service.get_all_jobs()
+    
+    if period == "Today":
+        jobs = [j for j in jobs if any(dt in str(j.get("deadline") or j.get("scheduled_start") or j.get("created_date") or "") for dt in ["2026-08-30", "2026-08-31", "2026-09-01"])]
+    elif period == "This Week":
+        jobs = [j for j in jobs if any(dt in str(j.get("deadline") or j.get("scheduled_start") or j.get("created_date") or "") for dt in ["2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05"])]
+
     conflicts = conflict_service.detect_conflicts()
     assets = _read(Path(ASSETS_FILE))
     blocks = _read(Path(BLOCKS_FILE))

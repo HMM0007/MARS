@@ -39,3 +39,6 @@ J022,UNSCHEDULED,37,44.61,A004,S07,Engineering,Track Repair,120,2026-09-08,,,,,,
 J028,UNSCHEDULED,38,37.8,A001,S02,Engineering,Ballast Maintenance,60,2026-09-04,,,,,,,,True,INSUFFICIENT_CONTIGUOUS_CAPACITY,Existing maintenance reservations leave no contiguous interval.
 J023,UNSCHEDULED,39,36.16,A005,S07,Engineering,Track Inspection,60,2026-09-09,,,,,,,,True,INSUFFICIENT_CONTIGUOUS_CAPACITY,Existing maintenance reservations leave no contiguous interval.
 J021,UNSCHEDULED,40,31.08,A002,S09,Engineering,Ballast Maintenance,45,2026-09-09,,,,,,,,False,ISOLATION_UNAVAILABLE,No compatible block provides the required isolation.
+MR-41,UNSCHEDULED,41,66.25,A001,S02,Engineering,Track Tamping,90,2026-08-31,,,,,,,False,NEW_REQUEST_PENDING,New request pending allocation
+MR-42,UNSCHEDULED,42,66.25,A002,S02,S&T,Signal Testing,60,2026-08-31,,,,,,,False,NEW_REQUEST_PENDING,New request pending allocation
+

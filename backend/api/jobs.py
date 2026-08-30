@@ -84,8 +84,7 @@ def _enrich_jobs(jobs: list[dict]) -> list[dict]:
         job_id = str(job.get("job_id") or job.get("id") or "")
         asset = assets.get(str(job.get("asset_id", "")), {})
         current = plan.get(job_id, {})
-        if not job.get("section"):
-            job["section"] = current.get("section_id") or asset.get("section_id") or ""
+        job["section"] = asset.get("section_id") or current.get("section_id") or job.get("section") or ""
         if not job.get("block"):
             job["block"] = current.get("block_id") or ""
         job["plan_status"] = current.get("plan_status") or "UNPLANNED"

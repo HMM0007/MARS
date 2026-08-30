@@ -30,12 +30,13 @@ J006,UNSCHEDULED,28,54.87,A018,S02,Traction,OHE Repair,90,2026-09-07,,,,,,,,True
 J019,SCHEDULED,29,54.05,A005,S07,Engineering,Track Repair,30,2026-09-04,B014,2026-08-30,2026-08-30 06:00,2026-08-30 06:30,Planned,Limited speed,Yes,True,1,SCHEDULED,Selected by lexicographic CP-SAT optimization.,SCHEDULED,B014,2026-08-30 07:30,True
 J004,SCHEDULED,30,53.75,A008,S10,Engineering,Track Inspection,30,2026-09-05,B020,2026-08-30,2026-08-30 06:00,2026-08-30 06:30,Planned,Limited speed,Yes,True,2,SCHEDULED,Selected by lexicographic CP-SAT optimization.,SCHEDULED,B019,2026-08-30 10:15,True
 J037,UNSCHEDULED,31,53.66,A016,S05,S&T,Signal Inspection,45,2026-09-02,,,,,,,,True,0,TRAIN_CONFLICT,Train movements leave no contiguous eligible maintenance window.,UNSCHEDULED,,,False
-J008,UNSCHEDULED,32,49.61,A002,S09,Engineering,Ballast Maintenance,60,2026-09-03,,,,,,,,True,0,ISOLATION_UNAVAILABLE,No compatible block provides required isolation.,UNSCHEDULED,,,False
-J017,UNSCHEDULED,33,49.22,A017,S10,Traction,OHE Repair,60,2026-09-04,,,,,,,,True,2,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
-J025,UNSCHEDULED,34,48.62,A001,S02,Engineering,Track Inspection,60,2026-09-04,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
-J009,UNSCHEDULED,35,48.53,A014,S07,S&T,Signal Inspection,75,2026-09-05,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
-J007,UNSCHEDULED,36,48.06,A004,S07,Engineering,Track Inspection,75,2026-09-07,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
-J022,UNSCHEDULED,37,44.61,A004,S07,Engineering,Track Repair,120,2026-09-08,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
-J028,UNSCHEDULED,38,37.8,A001,S02,Engineering,Ballast Maintenance,60,2026-09-04,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
-J023,UNSCHEDULED,39,36.16,A005,S07,Engineering,Track Inspection,60,2026-09-09,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
-J021,UNSCHEDULED,40,31.08,A002,S09,Engineering,Ballast Maintenance,45,2026-09-09,,,,,,,,True,0,ISOLATION_UNAVAILABLE,No compatible block provides required isolation.,UNSCHEDULED,,,False
+MR-41,UNSCHEDULED,32,50.0,A001,S02,Engineering,Track Tamping,90,2026-08-31,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J008,UNSCHEDULED,33,49.61,A002,S09,Engineering,Ballast Maintenance,60,2026-09-03,,,,,,,,True,0,ISOLATION_UNAVAILABLE,No compatible block provides required isolation.,UNSCHEDULED,,,False
+J017,UNSCHEDULED,34,49.22,A017,S10,Traction,OHE Repair,60,2026-09-04,,,,,,,,True,2,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J025,UNSCHEDULED,35,48.62,A001,S02,Engineering,Track Inspection,60,2026-09-04,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J009,UNSCHEDULED,36,48.53,A014,S07,S&T,Signal Inspection,75,2026-09-05,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J007,UNSCHEDULED,37,48.06,A004,S07,Engineering,Track Inspection,75,2026-09-07,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J022,UNSCHEDULED,38,44.61,A004,S07,Engineering,Track Repair,120,2026-09-08,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J028,UNSCHEDULED,39,37.8,A001,S02,Engineering,Ballast Maintenance,60,2026-09-04,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J023,UNSCHEDULED,40,36.16,A005,S07,Engineering,Track Inspection,60,2026-09-09,,,,,,,,True,1,NOT_SELECTED_BY_OPTIMIZER,Feasible candidates were not selected by the global objective.,UNSCHEDULED,,,False
+J021,UNSCHEDULED,41,31.08,A002,S09,Engineering,Ballast Maintenance,45,2026-09-09,,,,,,,,True,0,ISOLATION_UNAVAILABLE,No compatible block provides required isolation.,UNSCHEDULED,,,False

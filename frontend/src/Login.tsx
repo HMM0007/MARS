@@ -22,6 +22,8 @@ interface LoginProps {
 function Train3DCanvas() {
   const mountRef = useRef<HTMLDivElement>(null)
   const trainGroupRef = useRef<THREE.Group | null>(null)
+  const particlesRef = useRef<THREE.Points | null>(null)
+  const pantographLightRef = useRef<THREE.PointLight | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -34,32 +36,69 @@ function Train3DCanvas() {
     // Scene setup
     const scene = new THREE.Scene()
 
-    // Camera setup - Positioned downside
+    // Dynamic Camera setup
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000)
-    camera.position.set(0, 0, 24)
-    camera.lookAt(0, -1.8, 0)
+    camera.position.set(0, 0.5, 22)
+    camera.lookAt(0, -0.5, 0)
 
-    // WebGL Renderer
+    // WebGL Renderer with High Dynamic Range Tone Mapping
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
     renderer.setSize(width, height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.35
+    renderer.toneMappingExposure = 1.5
     container.appendChild(renderer.domElement)
 
-    // Studio Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 2.6)
+    // Cinematic Lighting Setup
+    const ambient = new THREE.AmbientLight(0xffffff, 2.4)
     scene.add(ambient)
 
-    const mainSun = new THREE.DirectionalLight(0xffffff, 4.0)
-    mainSun.position.set(30, 35, 35)
-    scene.add(mainSun)
+    const keySun = new THREE.DirectionalLight(0xfff7ed, 4.8)
+    keySun.position.set(25, 30, 25)
+    scene.add(keySun)
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 2.0)
-    fillLight.position.set(-30, 20, -15)
-    scene.add(fillLight)
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 3.0)
+    rimLight.position.set(-25, 20, -15)
+    scene.add(rimLight)
 
-    // Load train locomotive .glb
+    // Locomotive Front Headlamp Spotlight
+    const headlight = new THREE.SpotLight(0xfff5ea, 8.0, 45, Math.PI / 6, 0.4)
+    headlight.position.set(-8, 1, 4)
+    headlight.target.position.set(-25, -2, 4)
+    scene.add(headlight)
+    scene.add(headlight.target)
+
+    // OHE Pantograph Electrical Arc Light (Electric Blue Flicker)
+    const pantoLight = new THREE.PointLight(0x38bdf8, 2.5, 15)
+    pantoLight.position.set(2, 4.5, 0)
+    scene.add(pantoLight)
+    pantographLightRef.current = pantoLight
+
+    // High-Speed Particle Speedlines
+    const particleCount = 200
+    const geometry = new THREE.BufferGeometry()
+    const positions = new Float32Array(particleCount * 3)
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 60     // X range
+      positions[i + 1] = (Math.random() - 0.5) * 12 // Y range
+      positions[i + 2] = (Math.random() - 0.5) * 20 // Z range
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    const pMaterial = new THREE.PointsMaterial({
+      color: 0x93c5fd,
+      size: 0.22,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending
+    })
+
+    const particleSystem = new THREE.Points(geometry, pMaterial)
+    scene.add(particleSystem)
+    particlesRef.current = particleSystem
+
+    // Load 3D WAP-7 Locomotive GLB Model
     const loader = new GLTFLoader()
     loader.load(
       '/train locomotive .glb',
@@ -71,18 +110,16 @@ function Train3DCanvas() {
         const size = new THREE.Vector3()
         box.getSize(size)
         const maxDim = Math.max(size.x, size.y, size.z)
-        const scale = 40 / maxDim
+        const scale = 38 / maxDim
         model.scale.set(scale, scale, scale)
 
         const center = new THREE.Vector3()
         box.getCenter(center)
         model.position.sub(center.multiplyScalar(scale))
 
-        // Position downside (-3.2)
-        model.position.y = -3.2
-
-        // Side View Orientation
-        model.rotation.y = Math.PI / 2
+        // Position & Dynamic Perspective Angle
+        model.position.y = -2.2
+        model.rotation.y = Math.PI * 0.28 // 3/4 Front View
 
         model.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
@@ -104,32 +141,70 @@ function Train3DCanvas() {
       }
     )
 
-    // Animation loop with continuous movement & smooth Canvas Fade In / Fade Out
+    // Interactive Mouse Parallax Tracking
+    let mouseX = 0
+    let mouseY = 0
+    const onMouseMove = (event: MouseEvent) => {
+      const rect = container.getBoundingClientRect()
+      mouseX = ((event.clientX - rect.left) / container.clientWidth - 0.5) * 2
+      mouseY = ((event.clientY - rect.top) / container.clientHeight - 0.5) * 2
+    }
+    container.addEventListener('mousemove', onMouseMove)
+
+    // High-Impact Cinematic Animation Loop with Movable Train & Particle Wind
     let animId: number
+    let clock = new THREE.Clock()
     let posX = -34
 
     const animate = () => {
       animId = requestAnimationFrame(animate)
+      const elapsedTime = clock.getElapsedTime()
 
-      if (trainGroupRef.current) {
-        posX += 0.08 // Slow & majestic cruising speed
-        if (posX > 34) posX = -34
-        trainGroupRef.current.position.x = posX
+      // 1. Continuous Horizontal Motion across track (Left to Right)
+      posX += 0.08
+      if (posX > 34) posX = -34
 
-        // Calculate Fade-In and Fade-Out opacity based on posX position
-        let alpha = 1.0
-        if (posX < -20) {
-          alpha = (posX - (-34)) / 14 // 0.0 -> 1.0 fade-in
-        } else if (posX > 20) {
-          alpha = (34 - posX) / 14 // 1.0 -> 0.0 fade-out
-        }
-        alpha = Math.max(0, Math.min(1, alpha))
-
-        // Update WebGL Canvas opacity directly for silky smooth fading
-        if (renderer.domElement) {
-          renderer.domElement.style.opacity = alpha.toString()
-        }
+      // Calculate Fade-In and Fade-Out opacity for smooth edge entry/exit
+      let alpha = 1.0
+      if (posX < -20) {
+        alpha = (posX - (-34)) / 14
+      } else if (posX > 20) {
+        alpha = (34 - posX) / 14
       }
+      alpha = Math.max(0, Math.min(1, alpha))
+
+      if (renderer.domElement) {
+        renderer.domElement.style.opacity = alpha.toString()
+      }
+
+      // 2. High-speed rail movement, micro-vibrations & camera sway
+      if (trainGroupRef.current) {
+        trainGroupRef.current.position.x = posX
+        trainGroupRef.current.position.y = -2.2 + Math.sin(elapsedTime * 4) * 0.05
+        trainGroupRef.current.rotation.z = Math.sin(elapsedTime * 2.5) * 0.012
+        trainGroupRef.current.rotation.y = (Math.PI * 0.28) + Math.cos(elapsedTime * 0.6) * 0.04 + mouseX * 0.1
+      }
+
+      // 2. Dynamic Pantograph Electrical Arc Flicker
+      if (pantographLightRef.current) {
+        pantographLightRef.current.intensity = Math.random() > 0.82 ? 4.5 : 1.2 + Math.sin(elapsedTime * 10) * 0.8
+      }
+
+      // 3. High-Speed Particle Speedlines Stream Effect
+      if (particlesRef.current) {
+        const posAttr = particlesRef.current.geometry.attributes.position as THREE.BufferAttribute
+        const arr = posAttr.array as Float32Array
+        for (let i = 0; i < particleCount * 3; i += 3) {
+          arr[i] += 0.45 // High-speed particle stream
+          if (arr[i] > 30) arr[i] = -30
+        }
+        posAttr.needsUpdate = true
+      }
+
+      // 4. Smooth Camera Parallax Response
+      camera.position.x += (mouseX * 1.5 - camera.position.x) * 0.05
+      camera.position.y += (-mouseY * 0.8 + 0.5 - camera.position.y) * 0.05
+      camera.lookAt(0, -0.5, 0)
 
       renderer.render(scene, camera)
     }
@@ -147,6 +222,7 @@ function Train3DCanvas() {
 
     return () => {
       cancelAnimationFrame(animId)
+      container.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('resize', handleResize)
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement)
@@ -157,7 +233,7 @@ function Train3DCanvas() {
 
   return (
     <div className="train-3d-viewport" ref={mountRef}>
-      {loading && <div className="train-3d-loading">Loading 3D Train Locomotive (GLB)...</div>}
+      {loading && <div className="train-3d-loading">Loading High-Speed Telemetry Viewport…</div>}
     </div>
   )
 }
@@ -220,13 +296,9 @@ export default function Login({ onLogin }: LoginProps) {
 
             <div className="mars-brand-copy centered-copy">
               <div className="mars-lettering-wrap">
-                {/* Clean Official MARS Typography */}
-                <div className="mars-prof-lettering" aria-label="MARS">
-                  <span className="mars-char">M</span>
-                  <span className="mars-char">A</span>
-                  <span className="mars-char">R</span>
-                  <span className="mars-char">S</span>
-                </div>
+                {/* Official Clean High-Trust MARS Brand Title */}
+                <h1 className="mars-gov-title" aria-label="MARS">MARS</h1>
+                <div className="mars-gov-tricolor-divider" />
 
                 {/* Continuous 3D Train Viewport */}
                 <div className="mars-under-track-container">
@@ -235,18 +307,18 @@ export default function Login({ onLogin }: LoginProps) {
               </div>
 
               <div className="mars-full-form">
-                MAINTENANCE ALLOCATION &amp; ROUTING SYSTEM
+                परिरक्षण वाटप और मार्गनियोजन प्रणाली · MAINTENANCE ALLOCATION &amp; ROUTING SYSTEM
               </div>
             </div>
           </div>
 
           <div className="mars-status centered-status">
-            <span /> RAILWAY MAINTENANCE OPERATIONS
+            <span /> भारतीय रेल · INDIAN RAILWAYS DIVISIONAL OPERATIONS
           </div>
         </div>
 
         <div className="login-visual-footer">
-          MINISTRY OF INDIAN RAILWAYS <b>·</b> GOVERNMENT OF INDIA
+          MINISTRY OF RAILWAYS <b>·</b> GOVERNMENT OF INDIA
         </div>
       </section>
 
@@ -259,8 +331,8 @@ export default function Login({ onLogin }: LoginProps) {
             className="railway-symbol"
           />
           <div className="authority-titles">
-            <strong>MINISTRY OF INDIAN RAILWAYS</strong>
-            <span>Government of India</span>
+            <strong>MINISTRY OF RAILWAYS · रेल मंत्रालय</strong>
+            <span>Government of India · भारत सरकार</span>
           </div>
           <img
             src="/emblem.png"
@@ -281,7 +353,7 @@ export default function Login({ onLogin }: LoginProps) {
             <span className="heading-line" />
             <h1>OFFICIAL SYSTEM ACCESS</h1>
             <span className="heading-line" />
-            <p>Authorised access to MARS operations</p>
+            <p>Authorised credentials required for MARS operations</p>
           </div>
 
           <form className="login-form" onSubmit={submit}>
@@ -303,7 +375,7 @@ export default function Login({ onLogin }: LoginProps) {
               <input
                 value={employeeId}
                 onChange={e => setEmployeeId(e.target.value)}
-                placeholder="Enter Employee ID"
+                placeholder="Enter Official Employee ID"
                 autoComplete="username"
               />
             </label>
@@ -346,23 +418,14 @@ export default function Login({ onLogin }: LoginProps) {
             {error && <div className="login-error" role="alert">{error}</div>}
 
             <button className="login-button" type="submit" disabled={submitting}>
-              <span>{submitting ? 'AUTHENTICATING…' : 'LOGIN'}</span>
-              <b>→</b>
+              <span>{submitting ? 'AUTHENTICATING…' : 'AUTHORISED LOGIN'}</span>
             </button>
           </form>
-
-          <div className="login-security-box">
-            <div className="security-symbol">✓</div>
-            <div>
-              <strong>Authorised Personnel Only</strong>
-              <p>This system is restricted to authorised Indian Railways personnel.</p>
-            </div>
-          </div>
         </div>
 
         <footer className="login-footer">
-          MARS · Ministry of Indian Railways, Government of India{' '}
-          <span>Secure Government Network</span>
+          MARS · Ministry of Railways, Government of India{' '}
+          <span>Secure Government Network · IR-NET</span>
         </footer>
       </section>
     </div>

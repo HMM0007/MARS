@@ -10,7 +10,7 @@ import './login.css'
 import './planner-control-centre.css'
 import './planner-control-centre-v2.css'
 
-const AUTH_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const AUTH_API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000'
 
 function Root() {
   const existingSession = getSession()

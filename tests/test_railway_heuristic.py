@@ -114,7 +114,7 @@ def test_dataset_v1_integration_and_output_location(tmp_path):
     output = tmp_path / "data" / "output" / "initial_maintenance_plan.csv"
     engine = RailwayAwareHeuristic(sample_dir / "priority_results.csv", sample_dir / "maintenance_jobs.csv", sample_dir / "assets.csv", sample_dir / "block_availability.csv", sample_dir / "train_schedule.csv", sample_dir / "train_sections.csv")
     plan = engine.save_plan(output)
-    assert len(plan) == 40
+    assert len(plan) == len(pd.read_csv(sample_dir / "maintenance_jobs.csv"))
     assert set(plan.plan_status) <= {"SCHEDULED", "UNSCHEDULED"}
     assert output.exists()
     assert output.parts[-3:] == ("data", "output", "initial_maintenance_plan.csv")

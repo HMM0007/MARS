@@ -1,41 +1,43 @@
-job_id,asset_id,department,work_type,description,duration_min,priority,deadline,status,block_required,isolation_required,created_date
-J001,A008,Engineering,Track Repair,Maintenance required for A008,90,Low,2026-09-04,Pending,Yes,Yes,2026-08-05
-J002,A022,S&T,Signal Inspection,Maintenance required for A022,90,Medium,2026-09-06,Pending,Yes,Yes,2026-08-16
-J003,A023,S&T,Signal Inspection,Maintenance required for A023,120,Medium,2026-09-05,Pending,Yes,Yes,2026-08-15
-J004,A008,Engineering,Track Inspection,Maintenance required for A008,30,Low,2026-09-05,Pending,Yes,Yes,2026-08-29
-J005,A008,Engineering,Ballast Maintenance,Maintenance required for A008,30,Low,2026-09-05,Pending,Yes,Yes,2026-08-21
-J006,A018,Traction,OHE Repair,Maintenance required for A018,90,Low,2026-09-07,Pending,Yes,Yes,2026-08-04
-J007,A004,Engineering,Track Inspection,Maintenance required for A004,75,Low,2026-09-07,Pending,Yes,Yes,2026-08-02
-J008,A002,Engineering,Ballast Maintenance,Maintenance required for A002,60,Medium,2026-09-03,Pending,Yes,Yes,2026-08-12
-J009,A014,S&T,Signal Inspection,Maintenance required for A014,75,Medium,2026-09-05,Pending,Yes,Yes,2026-08-26
-J010,A003,Engineering,Ballast Maintenance,Maintenance required for A003,45,Critical,2026-08-30,Pending,Yes,Yes,2026-08-23
-J011,A006,Engineering,Ballast Maintenance,Maintenance required for A006,75,Medium,2026-09-04,Pending,Yes,Yes,2026-08-07
-J012,A007,Engineering,Ballast Maintenance,Maintenance required for A007,30,Medium,2026-09-04,Pending,Yes,Yes,2026-08-28
-J013,A002,Engineering,Track Repair,Maintenance required for A002,30,Critical,2026-08-30,Pending,Yes,No,2026-08-08
-J014,A004,Engineering,Rail Replacement,Maintenance required for A004,90,Critical,2026-08-30,Pending,Yes,No,2026-08-16
-J015,A007,Engineering,Rail Replacement,Maintenance required for A007,60,High,2026-09-02,Pending,Yes,No,2026-08-08
-J016,A011,S&T,Signal Inspection,Maintenance required for A011,30,Critical,2026-08-30,Pending,Yes,Yes,2026-08-26
-J017,A017,Traction,OHE Repair,Maintenance required for A017,60,Medium,2026-09-04,Pending,Yes,No,2026-08-24
-J018,A020,Traction,Pantograph Clearance Check,Maintenance required for A020,120,Critical,2026-09-01,Pending,Yes,Yes,2026-07-31
-J019,A005,Engineering,Track Repair,Maintenance required for A005,30,Medium,2026-09-04,Pending,Yes,No,2026-08-10
-J020,A007,Engineering,Ballast Maintenance,Maintenance required for A007,60,High,2026-09-03,Pending,Yes,No,2026-08-27
-J021,A002,Engineering,Ballast Maintenance,Maintenance required for A002,45,Low,2026-09-09,Pending,Yes,Yes,2026-08-15
-J022,A004,Engineering,Track Repair,Maintenance required for A004,120,Low,2026-09-08,Pending,Yes,No,2026-08-12
-J023,A005,Engineering,Track Inspection,Maintenance required for A005,60,Low,2026-09-09,Pending,Yes,No,2026-08-22
-J024,A025,S&T,Signal Inspection,Maintenance required for A025,75,High,2026-09-01,Pending,Yes,No,2026-08-04
-J025,A001,Engineering,Track Inspection,Maintenance required for A001,60,Medium,2026-09-04,Pending,Yes,No,2026-08-04
-J026,A002,Engineering,Track Repair,Maintenance required for A002,45,Critical,2026-08-30,Pending,Yes,Yes,2026-08-03
-J027,A001,Engineering,Ballast Maintenance,Maintenance required for A001,75,High,2026-09-02,Pending,Yes,No,2026-08-18
-J028,A001,Engineering,Ballast Maintenance,Maintenance required for A001,60,Low,2026-09-04,Pending,Yes,No,2026-08-10
-J029,A024,S&T,Signal Repair,Maintenance required for A024,75,High,2026-08-31,Pending,Yes,Yes,2026-08-23
-J030,A023,S&T,Point Machine Maintenance,Maintenance required for A023,90,Medium,2026-09-04,Pending,Yes,No,2026-08-27
-J031,A020,Traction,OHE Repair,Maintenance required for A020,30,Medium,2026-09-06,Pending,Yes,No,2026-08-08
-J032,A013,S&T,Point Machine Maintenance,Maintenance required for A013,90,High,2026-09-01,Pending,Yes,Yes,2026-08-17
-J033,A020,Traction,OHE Repair,Maintenance required for A020,75,High,2026-08-31,Pending,Yes,No,2026-08-23
-J034,A015,S&T,Signal Repair,Maintenance required for A015,120,Medium,2026-09-03,Pending,Yes,No,2026-08-27
-J035,A003,Engineering,Track Inspection,Maintenance required for A003,45,High,2026-09-02,Pending,Yes,Yes,2026-08-25
-J036,A008,Engineering,Track Repair,Maintenance required for A008,90,Critical,2026-08-30,Pending,Yes,No,2026-08-11
-J037,A016,S&T,Signal Inspection,Maintenance required for A016,45,Medium,2026-09-02,Pending,Yes,No,2026-08-22
-J038,A002,Engineering,Rail Replacement,Maintenance required for A002,30,High,2026-09-01,Pending,Yes,No,2026-08-13
-J039,A020,Traction,OHE Repair,Maintenance required for A020,90,High,2026-09-03,Pending,Yes,No,2026-08-02
-J040,A009,Engineering,Track Inspection,Maintenance required for A009,120,High,2026-09-03,Pending,Yes,No,2026-08-15
+job_id,asset_id,department,work_type,description,duration_min,priority,deadline,status,block_required,isolation_required,created_date,id,section,block,start_time,end_time,date,created_by,remarks
+J001,A008,Engineering,Track Repair,Maintenance required for A008,90,Low,2026-09-04,Pending,Yes,Yes,2026-08-05,,,,,,,,
+J002,A022,S&T,Signal Inspection,Maintenance required for A022,90,Medium,2026-09-06,Pending,Yes,Yes,2026-08-16,,,,,,,,
+J003,A023,S&T,Signal Inspection,Maintenance required for A023,120,Medium,2026-09-05,Pending,Yes,Yes,2026-08-15,,,,,,,,
+J004,A008,Engineering,Track Inspection,Maintenance required for A008,30,Low,2026-09-05,Pending,Yes,Yes,2026-08-29,,,,,,,,
+J005,A008,Engineering,Ballast Maintenance,Maintenance required for A008,30,Low,2026-09-05,Pending,Yes,Yes,2026-08-21,,,,,,,,
+J006,A018,Traction,OHE Repair,Maintenance required for A018,90,Low,2026-09-07,Pending,Yes,Yes,2026-08-04,,,,,,,,
+J007,A004,Engineering,Track Inspection,Maintenance required for A004,75,Low,2026-09-07,Pending,Yes,Yes,2026-08-02,,,,,,,,
+J008,A002,Engineering,Ballast Maintenance,Maintenance required for A002,60,Medium,2026-09-03,Pending,Yes,Yes,2026-08-12,,,,,,,,
+J009,A014,S&T,Signal Inspection,Maintenance required for A014,75,Medium,2026-09-05,Pending,Yes,Yes,2026-08-26,,,,,,,,
+J010,A003,Engineering,Ballast Maintenance,Maintenance required for A003,45,Critical,2026-08-30,Pending,Yes,Yes,2026-08-23,,,,,,,,
+J011,A006,Engineering,Ballast Maintenance,Maintenance required for A006,75,Medium,2026-09-04,Pending,Yes,Yes,2026-08-07,,,,,,,,
+J012,A007,Engineering,Ballast Maintenance,Maintenance required for A007,30,Medium,2026-09-04,Pending,Yes,Yes,2026-08-28,,,,,,,,
+J013,A002,Engineering,Track Repair,Maintenance required for A002,30,Critical,2026-08-30,Pending,Yes,No,2026-08-08,,,,,,,,
+J014,A004,Engineering,Rail Replacement,Maintenance required for A004,90,Critical,2026-08-30,Pending,Yes,No,2026-08-16,,,,,,,,
+J015,A007,Engineering,Rail Replacement,Maintenance required for A007,60,High,2026-09-02,Pending,Yes,No,2026-08-08,,,,,,,,
+J016,A011,S&T,Signal Inspection,Maintenance required for A011,30,Critical,2026-08-30,Pending,Yes,Yes,2026-08-26,,,,,,,,
+J017,A017,Traction,OHE Repair,Maintenance required for A017,60,Medium,2026-09-04,Pending,Yes,No,2026-08-24,,,,,,,,
+J018,A020,Traction,Pantograph Clearance Check,Maintenance required for A020,120,Critical,2026-09-01,Pending,Yes,Yes,2026-07-31,,,,,,,,
+J019,A005,Engineering,Track Repair,Maintenance required for A005,30,Medium,2026-09-04,Pending,Yes,No,2026-08-10,,,,,,,,
+J020,A007,Engineering,Ballast Maintenance,Maintenance required for A007,60,High,2026-09-03,Pending,Yes,No,2026-08-27,,,,,,,,
+J021,A002,Engineering,Ballast Maintenance,Maintenance required for A002,45,Low,2026-09-09,Pending,Yes,Yes,2026-08-15,,,,,,,,
+J022,A004,Engineering,Track Repair,Maintenance required for A004,120,Low,2026-09-08,Pending,Yes,No,2026-08-12,,,,,,,,
+J023,A005,Engineering,Track Inspection,Maintenance required for A005,60,Low,2026-09-09,Pending,Yes,No,2026-08-22,,,,,,,,
+J024,A025,S&T,Signal Inspection,Maintenance required for A025,75,High,2026-09-01,Pending,Yes,No,2026-08-04,,,,,,,,
+J025,A001,Engineering,Track Inspection,Maintenance required for A001,60,Medium,2026-09-04,Pending,Yes,No,2026-08-04,,,,,,,,
+J026,A002,Engineering,Track Repair,Maintenance required for A002,45,Critical,2026-08-30,Pending,Yes,Yes,2026-08-03,,,,,,,,
+J027,A001,Engineering,Ballast Maintenance,Maintenance required for A001,75,High,2026-09-02,Pending,Yes,No,2026-08-18,,,,,,,,
+J028,A001,Engineering,Ballast Maintenance,Maintenance required for A001,60,Low,2026-09-04,Pending,Yes,No,2026-08-10,,,,,,,,
+J029,A024,S&T,Signal Repair,Maintenance required for A024,75,High,2026-08-31,Pending,Yes,Yes,2026-08-23,,,,,,,,
+J030,A023,S&T,Point Machine Maintenance,Maintenance required for A023,90,Medium,2026-09-04,Pending,Yes,No,2026-08-27,,,,,,,,
+J031,A020,Traction,OHE Repair,Maintenance required for A020,30,Medium,2026-09-06,Pending,Yes,No,2026-08-08,,,,,,,,
+J032,A013,S&T,Point Machine Maintenance,Maintenance required for A013,90,High,2026-09-01,Pending,Yes,Yes,2026-08-17,,,,,,,,
+J033,A020,Traction,OHE Repair,Maintenance required for A020,75,High,2026-08-31,Pending,Yes,No,2026-08-23,,,,,,,,
+J034,A015,S&T,Signal Repair,Maintenance required for A015,120,Medium,2026-09-03,Pending,Yes,No,2026-08-27,,,,,,,,
+J035,A003,Engineering,Track Inspection,Maintenance required for A003,45,High,2026-09-02,Pending,Yes,Yes,2026-08-25,,,,,,,,
+J036,A008,Engineering,Track Repair,Maintenance required for A008,90,Critical,2026-08-30,Pending,Yes,No,2026-08-11,,,,,,,,
+J037,A016,S&T,Signal Inspection,Maintenance required for A016,45,Medium,2026-09-02,Pending,Yes,No,2026-08-22,,,,,,,,
+J038,A002,Engineering,Rail Replacement,Maintenance required for A002,30,High,2026-09-01,Pending,Yes,No,2026-08-13,,,,,,,,
+J039,A020,Traction,OHE Repair,Maintenance required for A020,90,High,2026-09-03,Pending,Yes,No,2026-08-02,,,,,,,,
+J040,A009,Engineering,Track Inspection,Maintenance required for A009,120,High,2026-09-03,Pending,Yes,No,2026-08-15,,,,,,,,
+MR-41,A001,Engineering,Track Tamping,Track Tamping,90,High,2026-08-31,OPEN,Yes,Yes,2026-08-31,MR-41,S02,B003,10:00,12:00,2026-05-20,ENG001,
+MR-42,A001,Engineering,ai,ai,120,Critical,2026-08-31,OPEN,Yes,Yes,2026-08-31,MR-42,s04,B012,10:00,12:00,2026-05-20,ENG001,

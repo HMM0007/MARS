@@ -21,7 +21,7 @@ const parse = (value: any) => {
 }
 const time = (value: any) => {
   const d = parse(value)
-  return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : text(value)
+  return d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : text(value)
 }
 const dateLabel = (key: string) => {
   const d = new Date(`${key}T00:00:00`)
@@ -85,6 +85,25 @@ export default function PlannerGantt({ jobs, trains, onBack }: Props) {
       {visibleJobs.length === 0 ? <div className="pg-empty"><strong>No scheduled jobs for {dateLabel(activeDate)}.</strong><span>{dates.length ? 'Choose another plan date above.' : 'Run the optimizer to create a schedule.'}</span></div> : visibleJobs.map(job => <button className={`pg-job-row ${selectedJob?.job_id === job.job_id ? 'selected' : ''}`} key={job.job_id} onClick={() => setSelectedJob(job)}><div className="pg-job-label"><strong>{text(job.job_id)}</strong><span>{text(job.department)} · {text(job.section_id || job.section)} · {text(job.block_id || job.block)}</span></div><div className="pg-track"><div className="pg-grid-lines">{Array.from({ length: 17 }, (_, i) => <i key={i}/>)}</div><div className={`pg-job-bar ${deptClass(job.department)}`} style={{ left: `${x(job.scheduled_start)}%`, width: `${width(job)}%` }}><strong>{text(job.job_id)}</strong><small>{time(job.scheduled_start)}–{time(job.scheduled_end)}</small></div></div></button>)}
       {showTrains && <div className="pg-trains"><div className="pg-train-label"><strong>TRAIN MOVEMENTS</strong><span>{dateTrains.length}</span></div><div className="pg-train-track"><div className="pg-grid-lines">{Array.from({ length: 17 }, (_, i) => <i key={i}/>)}</div>{dateTrains.map((train, i) => { const left = trainX(train); return left === null ? null : <span className="pg-train-dot" key={i} style={{ left: `${left}%` }} title={`Train ${text(train.train_no || train.train_id)} · ${text(train.arrival || train.arrival_time || train.start_time)}`}><b>{text(train.train_no || train.train_id, 'Train')}</b></span> })}</div></div>}
     </div>
+
+    {/* UNSCHEDULED JOBS SUMMARY PANEL */}
+    {jobs.filter(j => String(j.plan_status || '').toUpperCase() !== 'SCHEDULED').length > 0 && (
+      <div style={{ marginTop: 20, padding: 16, background: '#fff9f9', border: '1px solid #f8c0c4', borderRadius: 10 }}>
+        <h4 style={{ margin: '0 0 8px 0', fontSize: 13, color: '#c8323c' }}>
+          Unscheduled Maintenance Jobs ({jobs.filter(j => String(j.plan_status || '').toUpperCase() !== 'SCHEDULED').length})
+        </h4>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+          {jobs.filter(j => String(j.plan_status || '').toUpperCase() !== 'SCHEDULED').slice(0, 8).map(j => (
+            <div key={j.job_id} style={{ background: '#fff', border: '1px solid #e1e8f0', borderRadius: 8, padding: 10, fontSize: 11 }}>
+              <strong style={{ color: '#17365d' }}>{text(j.job_id)}</strong> · {text(j.department)} · {text(j.section_id || j.section)}
+              <p style={{ margin: '4px 0 0', fontSize: 10, color: '#71809a' }}>
+                Reason: {text(j.optimizer_reason_detail || j.optimizer_reason_code || 'Feasible candidates were not selected by global objective.')}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
 
     {selectedJob && <aside className="pg-details"><div><div className="pg-eyebrow">JOB DETAILS</div><h3>{text(selectedJob.job_id)}</h3></div><button onClick={() => setSelectedJob(null)}>×</button><div className="pg-detail-grid"><span>Department<b>{text(selectedJob.department)}</b></span><span>Work type<b>{text(selectedJob.work_type || selectedJob.description)}</b></span><span>Section<b>{text(selectedJob.section_id || selectedJob.section)}</b></span><span>Block<b>{text(selectedJob.block_id || selectedJob.block)}</b></span><span>Start<b>{dateLabel(dateKey(selectedJob.scheduled_start))} · {time(selectedJob.scheduled_start)}</b></span><span>End<b>{time(selectedJob.scheduled_end)}</b></span></div></aside>}
   </section>

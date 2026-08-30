@@ -87,30 +87,27 @@
 }
 
 /* Clean Official Government MARS Typography */
-.mars-prof-lettering {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  position: relative;
-  margin: 6px 0 2px;
-}
-
-.mars-char {
-  font-size: clamp(72px, 9.4vw, 118px);
+/* OFFICIAL HIGH-TRUST GOVERNMENT BRANDING FOR MARS HERO */
+.mars-gov-title {
+  margin: 6px 0 0;
+  font-size: clamp(68px, 9vw, 108px);
   font-weight: 900;
-  line-height: 0.84;
-  letter-spacing: 0.12em;
+  line-height: 0.85;
+  letter-spacing: 0.04em;
   font-family: Arial, Helvetica, sans-serif;
   color: #ffffff;
-  text-shadow: 0 6px 20px rgba(0, 0, 0, 0.85);
-  transition: transform 0.25s ease;
+  text-shadow: 0 6px 22px rgba(0, 0, 0, 0.85);
+  user-select: none;
 }
 
-.mars-lettering-wrap:hover .mars-char {
-  transform: scale(1.02);
-  color: #ffffff;
-  text-shadow: 0 0 24px rgba(255, 255, 255, 0.45);
+/* SUBTLE OFFICIAL INDIAN TRICOLOR DIVIDER ACCENT */
+.mars-gov-tricolor-divider {
+  height: 3px;
+  width: 140px;
+  margin: 12px auto 14px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ff9933 0%, #ffffff 50%, #138808 100%);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 /* Container for Track & Continuous 3D Train under MARS */
@@ -249,7 +246,7 @@
 }
 
 /* ==========================================================================
-   RIGHT FORM PANEL (CLEAN OFFICIAL WEBSITE STYLE)
+   RIGHT FORM PANEL (STATIC, CLEAN OFFICIAL WEBSITE STYLE — ZERO HOVER EFFECTS)
    ========================================================================== */
 
 .login-form-panel {
@@ -308,96 +305,81 @@
 }
 
 .login-form-inner {
-  width: min(460px, 78%);
+  width: min(440px, 80%);
   margin: auto;
-  padding: 36px 0;
+  padding: 16px 0;
 }
 
 .login-welcome-hero {
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
 .login-welcome-hero .welcome-subtext {
   display: block;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.24em;
-  color: #000000;
+  letter-spacing: 0.22em;
+  color: #475569;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
+/* REVERTED TO SOLID CRISP OFFICIAL MARS BRANDING */
 .login-welcome-hero .highlight-mars-brand {
   display: block;
-  color: #dc2626;
-  font-size: 38px;
+  color: #b91c1c;
+  font-size: 34px;
   font-weight: 900;
   letter-spacing: 0.16em;
   line-height: 1;
+  background: none;
+  -webkit-text-fill-color: initial;
 }
 
+/* STATIC FORM HEADING — ZERO HOVER EFFECTS */
 .login-heading-centered {
   text-align: center;
-  margin-bottom: 30px;
-  cursor: pointer;
+  margin-bottom: 16px;
+  cursor: default;
   user-select: none;
 }
 
 .login-heading-centered .heading-line {
   display: inline-block;
-  width: 42px;
+  width: 36px;
   height: 2px;
-  background: #7c8a92;
+  background: #94a3b8;
   vertical-align: middle;
-  margin: 0 12px 7px;
-  transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease;
+  margin: 0 10px 5px;
 }
 
 .login-heading-centered h1 {
   display: inline-block;
   margin: 0;
-  color: #29455a;
-  font-size: 27px;
+  color: #0f2942;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   vertical-align: middle;
   position: relative;
-  transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
-}
-
-/* Interactive Hover & Active Click Effects for USER LOGIN */
-.login-heading-centered:hover h1 {
-  color: #187f9b;
-  transform: translateY(-2px);
-  text-shadow: 0 4px 12px rgba(24, 127, 155, 0.22);
-}
-
-.login-heading-centered:hover .heading-line {
-  width: 60px;
-  background: #187f9b;
-}
-
-.login-heading-centered:active h1 {
-  transform: scale(0.97);
 }
 
 .login-heading-centered p {
-  font-size: 9px;
-  color: #87929a;
-  margin: 11px 0 0;
-  letter-spacing: 0.04em;
-  transition: color 0.3s ease;
+  font-size: 10px;
+  color: #64748b;
+  margin: 6px 0 0;
+  letter-spacing: 0.02em;
 }
 
 .login-heading-centered p .highlight-mars {
-  color: #187f9b;
+  color: #0284c7;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
 
 .login-heading-centered:hover p {
-  color: #536575;
+  color: #334155;
 }
 
 .login-form {
@@ -408,21 +390,21 @@
   display: block;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: #334155;
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .field-label input,
 .field-label select {
   box-sizing: border-box;
   width: 100%;
-  height: 46px;
+  height: 40px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  margin-top: 8px;
-  padding: 0 14px;
+  margin-top: 3px;
+  padding: 0 12px;
   color: #0f172a;
   background: #f8fafc;
   font-size: 13px;
@@ -451,7 +433,7 @@
 
 .password-field {
   display: flex;
-  margin-top: 8px;
+  margin-top: 3px;
 }
 
 .password-field input {
@@ -483,8 +465,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 4px 0 24px;
-  font-size: 12px;
+  margin: 4px 0 10px;
+  font-size: 11px;
   color: #64748b;
 }
 
@@ -497,8 +479,8 @@
 }
 
 .form-options input {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   accent-color: #0284c7;
   cursor: pointer;
 }
@@ -507,7 +489,7 @@
   border: 0;
   background: none;
   color: #0284c7;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   padding: 0;
   cursor: pointer;
@@ -521,44 +503,46 @@
 
 /* Clean Formal Government Login Button */
 .login-button {
-  height: 46px;
+  height: 42px;
   width: 100%;
   border: 0;
-  border-radius: 4px;
-  background: #187f9b;
+  border-radius: 6px;
+  background: #0f2942;
   color: #ffffff;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .login-button:hover {
-  background: #136981;
+  background: #1e3a5f;
 }
 
 .login-button:active {
-  background: #0f5468;
+  background: #091c28;
 }
 
 .login-error {
-  background: #fff4f2;
-  border: 1px solid #e2b5ac;
-  color: #a04439;
-  padding: 10px;
-  font-size: 9px;
-  margin: -7px 0 13px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 8px 12px;
+  font-size: 11px;
+  border-radius: 6px;
+  margin: -4px 0 12px;
 }
 
 .login-security-box {
   display: flex;
   gap: 10px;
-  border: 1px solid #dce3e7;
-  background: #f7f9fa;
-  padding: 13px 14px;
-  margin-top: 23px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 14px;
 }
 
 .security-symbol {
