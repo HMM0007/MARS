@@ -101,6 +101,10 @@ class AllocationCheck(BaseModel):
     block_id: str
 
 
+def _allocation_result(job_id: str, block_id: str, section_id: str, feasible: bool, reason_code: str, reason: str, slots=None, **extra):
+    return {"feasible": feasible, "job_id": job_id, "block_id": block_id, "section_id": section_id, "reason_code": reason_code, "reason": reason, "slots": slots or [], **extra}
+
+
 @router.post("/check-allocation")
 def check_allocation(request: AllocationCheck):
     """Check a job/block pairing without changing the active plan or optimizer."""
@@ -118,23 +122,36 @@ def check_allocation(request: AllocationCheck):
             raise HTTPException(status_code=404, detail=f"Job {request.job_id} not found.")
         if block.empty:
             raise HTTPException(status_code=404, detail=f"Block {request.block_id} not found.")
-        job_row = job.iloc[0]; block_row = block.iloc[0]
+
+        job_row = job.iloc[0]
+        block_row = block.iloc[0]
         asset = assets[assets["asset_id"].astype(str) == str(job_row.get("asset_id", ""))]
         section_id = str(asset.iloc[0]["section_id"]) if not asset.empty else ""
-        if str(block_row["section_id"]) != section_id:
-            return {"feasible": False, "job_id": request.job_id, "block_id": request.block_id, "section_id": section_id, "reason_code": "SECTION_MISMATCH", "reason": "The selected block is not on the maintenance asset section.", "slots": []}
-        if str(block_row["status"]).upper() != "AVAILABLE":
-            return {"feasible": False, "job_id": request.job_id, "block_id": request.block_id, "section_id": section_id, "reason_code": "BLOCK_UNAVAILABLE", "reason": "The selected block is not currently available.", "slots": []}
-        if str(job_row.get("isolation_required", "NO")).upper() == "YES" and str(block_row.get("isolation_required", "NO")).upper() != "YES":
-            return {"feasible": False, "job_id": request.job_id, "block_id": request.block_id, "section_id": section_id, "reason_code": "ISOLATION_UNAVAILABLE", "reason": "The job requires isolation but the selected block does not provide it.", "slots": []}
-        if not RailwayAwareHeuristic._restriction_allows(job_row.get("department", ""), block_row.get("restrictions", "")):
-            return {"feasible": False, "job_id": request.job_id, "block_id": request.block_id, "section_id": section_id, "reason_code": "RESTRICTION_INCOMPATIBLE", "reason": "The block restriction does not permit this department's work.", "slots": []}
 
-        generator = CandidateGenerator(service.runtime_priority_file if service.runtime_priority_file.exists() else service._ensure_runtime_priority_results(), JOBS_FILE, ASSETS_FILE, BLOCKS_FILE, TRAIN_SCHEDULE_FILE, TRAIN_SECTIONS_FILE)
+        if not section_id:
+            return _allocation_result(request.job_id, request.block_id, section_id, False, "SECTION_UNKNOWN", "The maintenance asset has no mapped railway section. Please correct the asset mapping before allocation.")
+        if str(block_row.get("section_id", "")) != section_id:
+            return _allocation_result(request.job_id, request.block_id, section_id, False, "SECTION_MISMATCH", "The selected block is not on the maintenance asset section.")
+        if str(block_row.get("status", "")).upper() != "AVAILABLE":
+            return _allocation_result(request.job_id, request.block_id, section_id, False, "BLOCK_UNAVAILABLE", "The selected block is not currently available.")
+        if str(job_row.get("isolation_required", "NO")).upper() == "YES" and str(block_row.get("isolation_required", "NO")).upper() != "YES":
+            return _allocation_result(request.job_id, request.block_id, section_id, False, "ISOLATION_UNAVAILABLE", "The job requires isolation but the selected block does not provide it.")
+        if not RailwayAwareHeuristic._restriction_allows(job_row.get("department", ""), block_row.get("restrictions", "")):
+            return _allocation_result(request.job_id, request.block_id, section_id, False, "RESTRICTION_INCOMPATIBLE", "The block restriction does not permit this department's work.")
+
+        # Candidate generation must use normalized runtime inputs when available. This
+        # keeps manually added requests such as MR-41 consistent with optimization.
+        runtime_jobs = service.runtime_jobs_file if service.runtime_jobs_file.exists() else service._ensure_runtime_jobs()
+        runtime_priority = service.runtime_priority_file if service.runtime_priority_file.exists() else service._ensure_runtime_priority_results(runtime_jobs)
+        generator = CandidateGenerator(runtime_priority, runtime_jobs, ASSETS_FILE, BLOCKS_FILE, TRAIN_SCHEDULE_FILE, TRAIN_SECTIONS_FILE)
         _, _, _, candidates, reasons = generator.generate()
         matches = [c for c in candidates if str(c.job_id) == request.job_id and str(c.block_id) == request.block_id]
         slots = [{"start": c.start.isoformat(), "end": c.end.isoformat()} for c in matches]
-        return {"feasible": bool(slots), "job_id": request.job_id, "block_id": request.block_id, "section_id": section_id, "reason_code": "FEASIBLE" if slots else reasons.get(request.job_id, ("NO_FEASIBLE_WINDOW", "No train-free contiguous window is available."))[0], "reason": "A train-free feasible maintenance window exists." if slots else reasons.get(request.job_id, ("", "No train-free contiguous window is available."))[1], "slots": slots}
+
+        if slots:
+            return _allocation_result(request.job_id, request.block_id, section_id, True, "FEASIBLE", "A train-free feasible maintenance window exists for this job and block.", slots, candidate_count=len(slots))
+        reason_code, reason = reasons.get(request.job_id, ("NO_FEASIBLE_WINDOW", "No train-free contiguous window is available for the requested maintenance duration."))
+        return _allocation_result(request.job_id, request.block_id, section_id, False, reason_code, reason, [], candidate_count=0)
     except HTTPException:
         raise
     except Exception as exc:
