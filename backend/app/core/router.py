@@ -1,12 +1,15 @@
 from fastapi import APIRouter
 from typing import List, Dict, Any
+from datetime import datetime
 
 from app.models.job import MaintenanceJob
 from app.adapters.tms_adapter import TMSAdapter
 from app.adapters.smms_adapter import SMMSAdapter
 from app.adapters.tdms_adapter import TDMSAdapter
+from app.adapters.coa_adapter import COAAdapter
 from app.core.priority_engine import PriorityEngine
 from app.core.monthly_allocator import MonthlyAllocator
+from app.core.weekly_solver import WeeklyCPSATSolver
 
 router = APIRouter(prefix="/api/v1/core", tags=["MARS Core AI Engine"])
 
@@ -42,3 +45,28 @@ def get_monthly_strategic_plan():
 
     monthly_plan = MonthlyAllocator.generate_monthly_plan(scored_jobs)
     return monthly_plan
+
+
+@router.get("/plan/weekly", response_model=Dict[str, Any])
+def get_weekly_tactical_plan():
+    """
+    Level 2 Tactical Optimization Engine:
+    Unified Google OR-Tools CP-SAT Solver. Optimizes Engineering, S&T, and Traction 
+    simultaneously against passenger train timetables into a 100% conflict-free schedule.
+    """
+    eng_jobs = TMSAdapter.fetch_engineering_jobs()
+    snt_jobs = SMMSAdapter.fetch_snt_jobs()
+    trc_jobs = TDMSAdapter.fetch_traction_jobs()
+
+    all_raw_jobs = eng_jobs + snt_jobs + trc_jobs
+    scored_jobs = PriorityEngine.process_job_batch(all_raw_jobs)
+
+    # Fetch train timetables from COA
+    trains = COAAdapter.fetch_passenger_timetable()
+
+    # Solve for target week (starting next Monday)
+    start_monday = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    solver_engine = WeeklyCPSATSolver(scored_jobs[:40], trains, start_monday)
+    weekly_plan = solver_engine.solve()
+    return weekly_plan
