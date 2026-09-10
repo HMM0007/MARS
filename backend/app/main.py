@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
+from app.adapters.router import router as adapters_router
 
 app = FastAPI(
     title=settings.app_name,
     description="AI-Powered Automatic Block Planning System for Indian Railways",
-    version="2.0.0"
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -16,14 +17,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Register Adapters Router
+app.include_router(adapters_router)
+
+
 @app.get("/")
 def root():
     return {
         "system": "MARS 2.0",
         "status": "online",
         "division": settings.default_division,
-        "message": "Automatic Block Planning Decision-Support Layer"
+        "message": "Automatic Block Planning Decision-Support Layer",
     }
+
 
 @app.get("/health")
 def health():
