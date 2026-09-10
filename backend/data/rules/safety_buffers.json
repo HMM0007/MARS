@@ -1,0 +1,5 @@
+{
+  "pre_block_setup_minutes": 15,
+  "post_block_clearance_minutes": 15,
+  "min_machine_block_hours": 2.5
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "section_id": "PUNE-LNL",
+    "section_name": "Pune-Lonavala",
+    "from_station": "PUNE",
+    "to_station": "LNL",
+    "length_km": 63.84,
+    "traffic_density": "HIGH"
+  },
+  {
+    "section_id": "PUNE-DD",
+    "section_name": "Pune-Daund",
+    "from_station": "PUNE",
+    "to_station": "DD",
+    "length_km": 75.0,
+    "traffic_density": "HIGH"
+  },
+  {
+    "section_id": "PUNE-MRJ",
+    "section_name": "Pune-Miraj",
+    "from_station": "PUNE",
+    "to_station": "MRJ",
+    "length_km": 280.0,
+    "traffic_density": "MEDIUM"
+  },
+  {
+    "section_id": "LNL-KJT",
+    "section_name": "Lonavala-Karjat",
+    "from_station": "LNL",
+    "to_station": "KJT",
+    "length_km": 28.0,
+    "traffic_density": "HIGH"
+  },
+  {
+    "section_id": "CWD-YARD",
+    "section_name": "Chinchwad Yard",
+    "from_station": "CWD",
+    "to_station": "CWD",
+    "length_km": 5.0,
+    "traffic_density": "MEDIUM"
+  }
+]

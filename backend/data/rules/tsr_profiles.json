@@ -1,0 +1,14 @@
+{
+  "RAIL_REPLACEMENT": [
+    {"stage": 1, "duration_hours": 2, "max_speed_kmh": 20, "train_padding_mins": 12},
+    {"stage": 2, "duration_hours": 4, "max_speed_kmh": 45, "train_padding_mins": 5},
+    {"stage": 3, "duration_hours": 18, "max_speed_kmh": 75, "train_padding_mins": 2}
+  ],
+  "BALLAST_DEEP_SCREENING": [
+    {"stage": 1, "duration_hours": 4, "max_speed_kmh": 20, "train_padding_mins": 15},
+    {"stage": 2, "duration_hours": 8, "max_speed_kmh": 45, "train_padding_mins": 6}
+  ],
+  "SIGNAL_CALIBRATION": [
+    {"stage": 1, "duration_hours": 0, "max_speed_kmh": 110, "train_padding_mins": 0}
+  ]
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "forecast_id": "FGT-1",
+    "section_id": "PUNE-LNL",
+    "date": "2026-09-11",
+    "freight_level": "NORMAL",
+    "expected_trains_count": 8,
+    "busy_window_start": "2026-09-11T01:30:00",
+    "busy_window_end": "2026-09-11T03:30:00",
+    "confidence": 0.85
+  },
+  {
+    "forecast_id": "FGT-2",
+    "section_id": "PUNE-LNL",
+    "date": "2026-09-12",
+    "freight_level": "NORMAL",
+    "expected_trains_count": 8,
+    "busy_window_start": "2026-09-12T01:30:00",
+    "busy_window_end": "2026-09-12T03:30:00",
+    "confidence": 0.85
+  },
+  {
+    "forecast_id": "FGT-3",
+    "section_id": "PUNE-LNL",
+    "date": "2026-09-13",
+    "freight_level": "NORMAL",
+    "expected_trains_count": 8,
+    "busy_window_start": "2026-09-13T01:30:00",
+    "busy_window_end": "2026-09-13T03:30:00",
+    "confidence": 0.85
+  },
+  {
+    "forecast_id": "FGT-4",
+    "section_id": "PUNE-LNL",
+    "date": "2026-09-14",
+    "freight_level": "HIGH",
+    "expected_trains_count": 12,
+    "busy_window_start": "2026-09-14T01:30:00",
+    "busy_window_end": "2026-09-14T03:30:00",
+    "confidence": 0.85
+  },
+  {
+    "forecast_id": "FGT-5",
+    "section_id": "PUNE-LNL",
+    "date": "2026-09-15",
+    "freight_level": "NORMAL",
+    "expected_trains_count": 8,
+    "busy_window_start": "2026-09-15T01:30:00",
+    "busy_window_end": "2026-09-15T03:30:00",
+    "confidence": 0.85
+  },
+  {
+    "forecast_id": "FGT-6",
+    "section_id": "PUNE-LNL",
+    "date": "2026-09-16",
+    "freight_level": "SURGE",
+    "expected_trains_count": 16,
+    "busy_window_start": "2026-09-16T01:30:00",
+    "busy_window_end": "2026-09-16T03:30:00",
+    "confidence": 0.85
+  },
+  {
+    "forecast_id": "FGT-7",
+    "section_id": "PUNE-LNL",
+    "date": "2026-09-17",
+    "freight_level": "NORMAL",
+    "expected_trains_count": 8,
+    "busy_window_start": "2026-09-17T01:30:00",
+    "busy_window_end": "2026-09-17T03:30:00",
+    "confidence": 0.85
+  }
+]

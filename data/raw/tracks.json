@@ -1,0 +1,80 @@
+[
+  {
+    "track_id": "PUNE-LNL-UP",
+    "section_id": "PUNE-LNL",
+    "track_name": "TRACK_1_UP",
+    "is_electrified": true
+  },
+  {
+    "track_id": "PUNE-LNL-DN",
+    "section_id": "PUNE-LNL",
+    "track_name": "TRACK_2_DN",
+    "is_electrified": true
+  },
+  {
+    "track_id": "PUNE-LNL-LOOP",
+    "section_id": "PUNE-LNL",
+    "track_name": "LOOP_LINE",
+    "is_electrified": true
+  },
+  {
+    "track_id": "PUNE-DD-UP",
+    "section_id": "PUNE-DD",
+    "track_name": "TRACK_1_UP",
+    "is_electrified": true
+  },
+  {
+    "track_id": "PUNE-DD-DN",
+    "section_id": "PUNE-DD",
+    "track_name": "TRACK_2_DN",
+    "is_electrified": true
+  },
+  {
+    "track_id": "PUNE-MRJ-UP",
+    "section_id": "PUNE-MRJ",
+    "track_name": "TRACK_1_UP",
+    "is_electrified": true
+  },
+  {
+    "track_id": "PUNE-MRJ-DN",
+    "section_id": "PUNE-MRJ",
+    "track_name": "TRACK_2_DN",
+    "is_electrified": true
+  },
+  {
+    "track_id": "LNL-KJT-UP",
+    "section_id": "LNL-KJT",
+    "track_name": "TRACK_1_UP",
+    "is_electrified": true
+  },
+  {
+    "track_id": "LNL-KJT-DN",
+    "section_id": "LNL-KJT",
+    "track_name": "TRACK_2_DN",
+    "is_electrified": true
+  },
+  {
+    "track_id": "LNL-KJT-LOOP",
+    "section_id": "LNL-KJT",
+    "track_name": "LOOP_LINE",
+    "is_electrified": true
+  },
+  {
+    "track_id": "CWD-YARD-UP",
+    "section_id": "CWD-YARD",
+    "track_name": "TRACK_1_UP",
+    "is_electrified": true
+  },
+  {
+    "track_id": "CWD-YARD-DN",
+    "section_id": "CWD-YARD",
+    "track_name": "TRACK_2_DN",
+    "is_electrified": true
+  },
+  {
+    "track_id": "CWD-YARD-LOOP",
+    "section_id": "CWD-YARD",
+    "track_name": "LOOP_LINE",
+    "is_electrified": true
+  }
+]

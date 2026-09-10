@@ -1,0 +1,107 @@
+[
+  {
+    "station_id": "STN-PUNE",
+    "station_code": "PUNE",
+    "station_name": "Pune Junction",
+    "section_id": "PUNE-LNL",
+    "location_km": 191.0
+  },
+  {
+    "station_id": "STN-SVJR",
+    "station_code": "SVJR",
+    "station_name": "Shivajinagar",
+    "section_id": "PUNE-LNL",
+    "location_km": 193.5
+  },
+  {
+    "station_id": "STN-KK",
+    "station_code": "KK",
+    "station_name": "Khadki",
+    "section_id": "PUNE-LNL",
+    "location_km": 197.2
+  },
+  {
+    "station_id": "STN-DAPD",
+    "station_code": "DAPD",
+    "station_name": "Dapodi",
+    "section_id": "PUNE-LNL",
+    "location_km": 201.0
+  },
+  {
+    "station_id": "STN-KSWD",
+    "station_code": "KSWD",
+    "station_name": "Kasarwadi",
+    "section_id": "PUNE-LNL",
+    "location_km": 204.1
+  },
+  {
+    "station_id": "STN-PMP",
+    "station_code": "PMP",
+    "station_name": "Pimpri",
+    "section_id": "PUNE-LNL",
+    "location_km": 207.3
+  },
+  {
+    "station_id": "STN-CWD",
+    "station_code": "CWD",
+    "station_name": "Chinchwad",
+    "section_id": "PUNE-LNL",
+    "location_km": 210.6
+  },
+  {
+    "station_id": "STN-AKRD",
+    "station_code": "AKRD",
+    "station_name": "Akurdi",
+    "section_id": "PUNE-LNL",
+    "location_km": 214.2
+  },
+  {
+    "station_id": "STN-DEHR",
+    "station_code": "DEHR",
+    "station_name": "Dehu Road",
+    "section_id": "PUNE-LNL",
+    "location_km": 219.8
+  },
+  {
+    "station_id": "STN-BGWI",
+    "station_code": "BGWI",
+    "station_name": "Begdewadi",
+    "section_id": "PUNE-LNL",
+    "location_km": 223.1
+  },
+  {
+    "station_id": "STN-TGN",
+    "station_code": "TGN",
+    "station_name": "Talegaon",
+    "section_id": "PUNE-LNL",
+    "location_km": 227.4
+  },
+  {
+    "station_id": "STN-VDN",
+    "station_code": "VDN",
+    "station_name": "Vadgaon",
+    "section_id": "PUNE-LNL",
+    "location_km": 233.2
+  },
+  {
+    "station_id": "STN-KMST",
+    "station_code": "KMST",
+    "station_name": "Kamshet",
+    "section_id": "PUNE-LNL",
+    "location_km": 240.0
+  },
+  {
+    "station_id": "STN-MVL",
+    "station_code": "MVL",
+    "station_name": "Malavli",
+    "section_id": "PUNE-LNL",
+    "location_km": 248.5
+  },
+  {
+    "station_id": "STN-LNL",
+    "station_code": "LNL",
+    "station_name": "Lonavala",
+    "section_id": "PUNE-LNL",
+    "location_km": 254.84
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "section_id": "PUNE-LNL",
+        "track_name": "TRACK_1_UP"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [73.8567, 18.5204],
+          [73.8478, 18.5300],
+          [73.7800, 18.6200],
+          [73.7500, 18.6900],
+          [73.4072, 18.7540]
+        ]
+      }
+    }
+  ]
+}

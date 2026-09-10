@@ -1,0 +1,34 @@
+[
+  {
+    "user_id": "U-PLANNER-01",
+    "name": "Sr. DOM Pune",
+    "role": "Planner",
+    "department": "Operations",
+    "division": "Pune",
+    "login_id": "planner"
+  },
+  {
+    "user_id": "U-ENG-01",
+    "name": "SSE P.Way",
+    "role": "Engineering",
+    "department": "Engineering",
+    "division": "Pune",
+    "login_id": "engg"
+  },
+  {
+    "user_id": "U-SNT-01",
+    "name": "SSE Signal",
+    "role": "S&T",
+    "department": "S&T",
+    "division": "Pune",
+    "login_id": "snt"
+  },
+  {
+    "user_id": "U-TRC-01",
+    "name": "SSE OHE",
+    "role": "Traction",
+    "department": "Traction",
+    "division": "Pune",
+    "login_id": "trac"
+  }
+]

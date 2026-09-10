@@ -1,0 +1,19 @@
+{
+  "compatible_pairs": [
+    ["Engineering Inspection", "S&T Inspection"],
+    ["Engineering Repair", "Traction Inspection"],
+    ["S&T Calibration", "Traction Inspection"]
+  ],
+  "incompatible_pairs": [
+    {
+      "a": "THERMIT_WELDING",
+      "b": "OFC_CABLE_REPAIR",
+      "reason": "High heat welding can damage telecom fiber"
+    },
+    {
+      "a": "BALLAST_DEEP_SCREENING",
+      "b": "DIGITAL_AXLE_COUNTER_RESET",
+      "reason": "Heavy ballast displacement can damage axle counters"
+    }
+  ]
+}
