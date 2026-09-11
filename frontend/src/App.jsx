@@ -4,12 +4,12 @@
  * Railway Blue Theme - No Neon Colors
  */
 
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import PlannerDashboard from './pages/PlannerDashboard';
 
-// Placeholder pages (will be built next)
 const WeeklyPlanPage = () => (
   <main className="flex-1 bg-[#F4F6F8] p-6">
     <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
@@ -98,18 +98,9 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-[#F4F6F8] flex">
-        {/* Sidebar */}
         <Sidebar />
-
-        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-h-screen">
-          {/* Header */}
-          <Header 
-            onDivisionChange={setCurrentDivision}
-            onRoleChange={setCurrentRole}
-          />
-
-          {/* Page Content */}
+          <Header onDivisionChange={setCurrentDivision} onRoleChange={setCurrentRole} />
           <div className="flex-1">
             <Routes>
               <Route path="/" element={<PlannerDashboard />} />
@@ -124,8 +115,6 @@ function App() {
               <Route path="/help" element={<HelpPage />} />
             </Routes>
           </div>
-
-          {/* Footer */}
           <footer className="bg-white border-t border-[#D6DEE6] py-3 px-6">
             <p className="text-xs text-[#52606D] text-center">
               MARS 2.0 | Ministry of Railways, Government of India | Pune Division (CR)

@@ -1,8 +1,3 @@
-/**
- * MARS 2.0 Header Component
- * Professional Government Railway Application Header
- * Railway Blue Theme - No Neon Colors
- */
 
 import { useState } from 'react';
 import { ChevronDown, Bell, User } from 'lucide-react';
