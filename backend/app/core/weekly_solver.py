@@ -107,12 +107,10 @@ class WeeklyCPSATSolver:
             self.model.AddImplication(share, b1)
             self.model.AddImplication(share, b2)
 
-        # If both jobs are present, exactly one legal relationship must hold.
         self.model.AddBoolOr([b1.Not(), b2.Not()] + choices)
         self.model.Add(sum(choices) <= 1)
         self.model.Add(e1 <= s2).OnlyEnforceIf(before)
         self.model.Add(e2 <= s1).OnlyEnforceIf(after)
-
         return share
 
     def _add_fixed_train_protection(
@@ -275,35 +273,26 @@ class WeeklyCPSATSolver:
         # Every scheduled job is assigned to exactly one day according to its
         # start time; the charged duration cannot exceed the daily ceiling.
         for section_id, s_jobs in section_jobs.items():
+            day_literals_by_job: Dict[str, List[cp_model.IntVar]] = {j.job_id: [] for j in s_jobs}
             for day in range(7):
                 day_start = day * STEPS_PER_DAY
                 day_end = day_start + STEPS_PER_DAY
                 day_terms = []
                 for job in s_jobs:
                     v = job_vars[job.job_id]
-                    lit = self.model.NewBoolVar(f"capacity_{section_id}_{day}_{job.job_id}")
+                    lit = self.model.NewBoolVar(f"sectionday_{section_id}_{day}_{job.job_id}")
                     self.model.Add(v["start"] >= day_start).OnlyEnforceIf(lit)
                     self.model.Add(v["start"] < day_end).OnlyEnforceIf(lit)
                     self.model.AddImplication(lit, scheduled[job.job_id])
+                    day_literals_by_job[job.job_id].append(lit)
                     day_terms.append((lit, v["duration_steps"]))
                 self.model.Add(sum(lit * duration for lit, duration in day_terms) <= SECTION_DAILY_CAPACITY_STEPS)
 
-            # Each scheduled job belongs to exactly one start day.
             for job in s_jobs:
-                day_literals = []
-                for day in range(7):
-                    # Locate the already-created literal by its stable name in
-                    # the model is not exposed by OR-Tools, so recreate the
-                    # relationship using a compact auxiliary literal set.
-                    day_start = day * STEPS_PER_DAY
-                    day_end = day_start + STEPS_PER_DAY
-                    lit = self.model.NewBoolVar(f"startday_{section_id}_{job.job_id}_{day}")
-                    v = job_vars[job.job_id]
-                    self.model.Add(v["start"] >= day_start).OnlyEnforceIf(lit)
-                    self.model.Add(v["start"] < day_end).OnlyEnforceIf(lit)
-                    self.model.AddImplication(lit, scheduled[job.job_id])
-                    day_literals.append(lit)
-                self.model.Add(sum(day_literals) == scheduled[job.job_id])
+                # A scheduled job must activate exactly one start-day literal.
+                # The same literals feed the capacity equation above, so the
+                # section capacity cannot be bypassed by an unrelated helper var.
+                self.model.Add(sum(day_literals_by_job[job.job_id]) == scheduled[job.job_id])
 
         # 7. Objective: priority first, then safe consolidation, then night preference.
         objective_terms = []
@@ -331,9 +320,10 @@ class WeeklyCPSATSolver:
 
         objective_terms.extend(40 * share for share in share_literals)
 
-        # Adjacent-track overlap remains a soft operational preference rather
-        # than an O(n^2) reified model. Track/train/safety hard constraints above
-        # still prevent unsafe overlap; the priority objective drives selection.
+        # Adjacent-track overlap is a soft preference, not a safety gate. The
+        # old implementation reified every pair into three extra Booleans and
+        # made the 45-job model unnecessarily difficult to solve. Track/train/
+        # safety hard constraints above remain intact.
         self.model.Maximize(sum(objective_terms) if objective_terms else 0)
 
         # 8. Greedy constructive warm-start + CP-SAT.
