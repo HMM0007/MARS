@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
@@ -68,7 +68,40 @@ def get_weekly_tactical_plan(
     monthly_job_ids = _monthly_week_job_ids(monthly_plan, week)
 
     scored_by_id = {job.job_id: job for job in scored_jobs}
+    missing_job_ids = sorted(monthly_job_ids - set(scored_by_id))
+    if missing_job_ids:
+        # A strategic plan referencing a job that is not present in the
+        # current unified pool is a data-integrity failure. Do not silently
+        # drop it and produce a seemingly valid railway plan.
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "MONTHLY_WEEK_JOB_INTEGRITY_FAILURE",
+                "message": "Monthly allocation contains job IDs missing from the unified job pool.",
+                "planning_week": week,
+                "missing_job_ids": missing_job_ids,
+            },
+        )
+
     weekly_jobs = [job for job in scored_jobs if job.job_id in monthly_job_ids]
+    weekly_job_ids = {job.job_id for job in weekly_jobs}
+
+    # Fail closed if the strategic-to-tactical handoff ever diverges. This
+    # prevents a future refactor from scheduling jobs outside the approved
+    # monthly allocation.
+    if weekly_job_ids != monthly_job_ids:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "MONTHLY_WEEK_HANDOFF_MISMATCH",
+                "message": "Weekly CP-SAT candidate set does not exactly match the selected monthly week.",
+                "planning_week": week,
+                "monthly_candidate_count": len(monthly_job_ids),
+                "weekly_candidate_count": len(weekly_job_ids),
+                "missing_from_weekly": sorted(monthly_job_ids - weekly_job_ids),
+                "unexpected_in_weekly": sorted(weekly_job_ids - monthly_job_ids),
+            },
+        )
 
     trains = COAAdapter.fetch_passenger_timetable()
     start_monday = _current_week_monday() + timedelta(weeks=week - 1)
@@ -84,12 +117,8 @@ def get_weekly_tactical_plan(
     result["monthly_plan_month"] = monthly_plan.get("month")
     result["monthly_unallocated_count"] = monthly_plan.get("summary", {}).get("deferred_next_month", 0)
 
-    # Defensive consistency check: every solver input must have come from the
-    # selected monthly week. This catches future regressions in this endpoint.
-    result["weekly_candidate_ids"] = [job.job_id for job in weekly_jobs]
+    result["weekly_candidate_ids"] = sorted(weekly_job_ids)
     result["monthly_candidate_ids"] = sorted(monthly_job_ids)
-    result["weekly_candidate_lookup_complete"] = all(
-        job_id in scored_by_id for job_id in monthly_job_ids
-    )
+    result["weekly_candidate_lookup_complete"] = True
 
     return result
