@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.adapters.router import router as adapters_router
 from app.core.router import router as core_router
+from app.api.dataset import router as dataset_router
 
 app = FastAPI(
     title=settings.app_name,
@@ -21,6 +22,7 @@ app.add_middleware(
 # Register Routers
 app.include_router(adapters_router)
 app.include_router(core_router)
+app.include_router(dataset_router)
 
 
 @app.get("/")
@@ -35,4 +37,5 @@ def root():
 
 @app.get("/health")
 def health():
+    """Application health only; use /api/v1/dataset/status for data health."""
     return {"status": "ok"}
