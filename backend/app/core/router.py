@@ -10,6 +10,7 @@ from app.adapters.coa_adapter import COAAdapter
 from app.core.priority_engine import PriorityEngine
 from app.core.monthly_allocator import MonthlyAllocator
 from app.core.weekly_solver import WeeklyCPSATSolver
+from app.core.compliance_validator import RailwayComplianceValidator
 
 router = APIRouter(prefix="/api/v1/core", tags=["MARS Core AI Engine"])
 
@@ -70,9 +71,6 @@ def get_weekly_tactical_plan(
     scored_by_id = {job.job_id: job for job in scored_jobs}
     missing_job_ids = sorted(monthly_job_ids - set(scored_by_id))
     if missing_job_ids:
-        # A strategic plan referencing a job that is not present in the
-        # current unified pool is a data-integrity failure. Do not silently
-        # drop it and produce a seemingly valid railway plan.
         raise HTTPException(
             status_code=409,
             detail={
@@ -86,9 +84,6 @@ def get_weekly_tactical_plan(
     weekly_jobs = [job for job in scored_jobs if job.job_id in monthly_job_ids]
     weekly_job_ids = {job.job_id for job in weekly_jobs}
 
-    # Fail closed if the strategic-to-tactical handoff ever diverges. This
-    # prevents a future refactor from scheduling jobs outside the approved
-    # monthly allocation.
     if weekly_job_ids != monthly_job_ids:
         raise HTTPException(
             status_code=500,
@@ -109,14 +104,29 @@ def get_weekly_tactical_plan(
     solver_engine = WeeklyCPSATSolver(weekly_jobs, trains, start_monday)
     result = solver_engine.solve()
 
-    # Keep solver output intact while exposing the strategic-to-tactical
-    # linkage for the dashboard and audit trail.
+    # Independent post-solve audit. It never modifies or re-solves CP-SAT.
+    if result.get("status") in ("OPTIMAL", "FEASIBLE"):
+        result["compliance"] = RailwayComplianceValidator(
+            jobs=weekly_jobs,
+            trains=trains,
+            scheduled_blocks=result.get("scheduled_blocks", []),
+        ).validate()
+    else:
+        result["compliance"] = {
+            "overall_status": "NOT_EVALUATED",
+            "compliance_score": 0.0,
+            "hard_rules_passed": 0,
+            "hard_rules_total": 8,
+            "advisory_count": 0,
+            "rules": [],
+            "details": "No compliance score is produced because CP-SAT did not return a usable weekly plan.",
+        }
+
     result["planning_week"] = week
     result["monthly_candidate_count"] = len(monthly_job_ids)
     result["weekly_candidate_count"] = len(weekly_jobs)
     result["monthly_plan_month"] = monthly_plan.get("month")
     result["monthly_unallocated_count"] = monthly_plan.get("summary", {}).get("deferred_next_month", 0)
-
     result["weekly_candidate_ids"] = sorted(weekly_job_ids)
     result["monthly_candidate_ids"] = sorted(monthly_job_ids)
     result["weekly_candidate_lookup_complete"] = True
