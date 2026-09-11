@@ -1,131 +1,143 @@
 /**
- * MARS 2.0 Main Application
- * Professional Government Railway Application
- * Railway Blue Theme - No Neon Colors
+ * MARS 2.0 Main Application Shell
+ * Multi-department AI-based Railway Scheduling System 2.0
+ * Modernized Indian Railways Enterprise Software Architecture
  */
 
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
+import OperationalStrip from './components/OperationalStrip';
 import Sidebar from './components/Sidebar';
 import PlannerDashboard from './pages/PlannerDashboard';
+import WeeklyPlanPage from './pages/WeeklyPlanPage';
+import MonthlyPlanPage from './pages/MonthlyPlanPage';
+import DepartmentPage from './pages/DepartmentPage';
+import ImpactReportsPage from './pages/ImpactReportsPage';
+import IntegrationStatusPage from './pages/IntegrationStatusPage';
+import CorridorMapPage from './pages/CorridorMapPage';
+import LoginPage from './pages/LoginPage';
+import { fetchWeeklyPlan } from './services/api';
 
-// Placeholder pages (will be built next)
-const WeeklyPlanPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Weekly Plan</h2>
-      <p className="text-[#52606D]">Interactive Gantt Timeline coming soon...</p>
-    </div>
-  </main>
-);
+function AppContent() {
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
 
-const MonthlyPlanPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Monthly Plan</h2>
-      <p className="text-[#52606D]">Section-wise allocation view coming soon...</p>
-    </div>
-  </main>
-);
+  const [selectedDivision, setSelectedDivision] = useState({
+    id: 'pune-cr',
+    name: 'Pune Division (CR)',
+    code: 'PUNE-CR',
+  });
 
-const EngineeringPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Engineering Department</h2>
-      <p className="text-[#52606D]">Department dashboard with ghost blocks coming soon...</p>
-    </div>
-  </main>
-);
+  const [selectedRole, setSelectedRole] = useState(() => {
+    const saved = localStorage.getItem('mars_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return {
+      id: 'planner',
+      name: 'Planner (Sr. DOM)',
+      badge: 'DOM',
+      dept: 'Operations',
+    };
+  });
 
-const SNTPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">S&T Department</h2>
-      <p className="text-[#52606D]">Department dashboard with ghost blocks coming soon...</p>
-    </div>
-  </main>
-);
+  const [weeklyPlan, setWeeklyPlan] = useState(null);
 
-const TractionPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Traction Department</h2>
-      <p className="text-[#52606D]">Department dashboard with ghost blocks coming soon...</p>
-    </div>
-  </main>
-);
+  useEffect(() => {
+    fetchWeeklyPlan()
+      .then((data) => setWeeklyPlan(data))
+      .catch((err) => console.warn('Shell weekly plan fetch error:', err));
+  }, []);
 
-const ImpactReportsPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Impact Reports</h2>
-      <p className="text-[#52606D]">Analytics and impact analysis coming soon...</p>
-    </div>
-  </main>
-);
+  const handleRoleChange = (role) => {
+    setSelectedRole(role);
+    localStorage.setItem('mars_user', JSON.stringify(role));
+  };
 
-const IntegrationStatusPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Integration Status</h2>
-      <p className="text-[#52606D]">Live adapter health monitoring coming soon...</p>
-    </div>
-  </main>
-);
-
-const SettingsPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Settings</h2>
-      <p className="text-[#52606D]">System configuration coming soon...</p>
-    </div>
-  </main>
-);
-
-const HelpPage = () => (
-  <main className="flex-1 bg-[#F4F6F8] p-6">
-    <div className="bg-white border border-[#D6DEE6] rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-medium text-[#1F2933] mb-4">Help</h2>
-      <p className="text-[#52606D]">Documentation and support coming soon...</p>
-    </div>
-  </main>
-);
-
-function App() {
-  const [currentDivision, setCurrentDivision] = useState(null);
-  const [currentRole, setCurrentRole] = useState(null);
+  if (isLoginPage) {
+    return <LoginPage onLoginSuccess={handleRoleChange} />;
+  }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-[#F4F6F8] flex">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-h-screen">
-          <Header
-            onDivisionChange={setCurrentDivision}
-            onRoleChange={setCurrentRole}
-          />
+    <div className="min-h-screen bg-[#F4F6F8] flex flex-col font-sans text-[#1F2933]">
+      {/* TIER 1: Institutional Railway Header */}
+      <Header
+        selectedDivision={selectedDivision}
+        selectedRole={selectedRole}
+        onDivisionChange={setSelectedDivision}
+        onRoleChange={handleRoleChange}
+      />
+
+      {/* TIER 2: SMMS-Inspired Operational Status Ticker Strip */}
+      <OperationalStrip
+        planData={weeklyPlan}
+        selectedDivision={selectedDivision.name}
+      />
+
+      {/* THREE-ZONE APPLICATION BODY */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Navigation Rail (240px) - Role Adaptive */}
+        <Sidebar currentRole={selectedRole} />
+
+        {/* Main Operational Viewport */}
+        <div className="flex-1 overflow-y-auto flex flex-col bg-[#F4F6F8]">
           <div className="flex-1">
             <Routes>
-              <Route path="/" element={<PlannerDashboard />} />
-              <Route path="/weekly-plan" element={<WeeklyPlanPage />} />
-              <Route path="/monthly-plan" element={<MonthlyPlanPage />} />
-              <Route path="/engineering" element={<EngineeringPage />} />
-              <Route path="/snt" element={<SNTPage />} />
-              <Route path="/traction" element={<TractionPage />} />
-              <Route path="/impact-reports" element={<ImpactReportsPage />} />
-              <Route path="/integration-status" element={<IntegrationStatusPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/help" element={<HelpPage />} />
+              <Route path="/" element={<PlannerDashboard currentRole={selectedRole} />} />
+              <Route path="/corridor" element={<CorridorMapPage currentRole={selectedRole} />} />
+              <Route path="/weekly" element={<WeeklyPlanPage currentRole={selectedRole} />} />
+              <Route path="/monthly" element={<MonthlyPlanPage currentRole={selectedRole} />} />
+              <Route
+                path="/dept/engineering"
+                element={<DepartmentPage deptKey="Engineering" currentRole={selectedRole} />}
+              />
+              <Route
+                path="/dept/snt"
+                element={<DepartmentPage deptKey="S&T" currentRole={selectedRole} />}
+              />
+              <Route
+                path="/dept/traction"
+                element={<DepartmentPage deptKey="Traction" currentRole={selectedRole} />}
+              />
+              <Route path="/impact" element={<ImpactReportsPage currentRole={selectedRole} />} />
+              <Route path="/integration" element={<IntegrationStatusPage currentRole={selectedRole} />} />
             </Routes>
           </div>
-          <footer className="bg-white border-t border-[#D6DEE6] py-3 px-6">
-            <p className="text-xs text-[#52606D] text-center">
-              MARS 2.0 | Ministry of Railways, Government of India | Pune Division (CR)
-            </p>
+
+          {/* Institutional Enterprise Footer */}
+          <footer className="bg-white border-t border-[#D6DEE6] py-2 px-4 select-none">
+            <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#52606D]">
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-[#1E3A5F]">MARS 2.0</span>
+                <span>|</span>
+                <span>Ministry of Railways, Government of India</span>
+                <span>•</span>
+                <span>Central Railway (Pune Division)</span>
+              </div>
+              <div className="flex items-center space-x-2 mt-1 sm:mt-0 font-mono text-[10px]">
+                <span>PS 26027</span>
+                <span>•</span>
+                <span className="text-[#2F9E44] font-bold">12/12 RULES AUDITED</span>
+                <span>•</span>
+                <span className="uppercase text-[#1E3A5F] font-bold">
+                  ROLE: {selectedRole?.name}
+                </span>
+              </div>
+            </div>
           </footer>
         </div>
       </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
