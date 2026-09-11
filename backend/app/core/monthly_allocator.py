@@ -66,8 +66,6 @@ class MonthlyAllocator:
         if tag1 != "NORMAL" or tag2 != "NORMAL":
             return False
 
-        # Keep the explicit incompatible safety relationship documented here
-        # even though the NORMAL-tag gate already rejects non-normal pairs.
         if {tag1, tag2} == {"WELDING", "SIGNAL_SENSITIVE"}:
             return False
         return True
@@ -116,7 +114,7 @@ class MonthlyAllocator:
         section_jobs: List[MaintenanceJob],
         weekly_capacity: float = DEFAULT_WEEKLY_CAPACITY_HOURS,
     ) -> Dict[str, Any]:
-        """Allocate work with first-fit decreasing while preserving groups."""
+        """Allocate work with consolidation protection followed by FFD."""
         weeks = {
             f"week_{index}": {
                 "jobs": [],
@@ -131,26 +129,23 @@ class MonthlyAllocator:
         groups, grouped_job_ids = cls._build_consolidation_groups(section_jobs)
 
         # A shared possession consumes the maximum simultaneous work duration,
-        # not the sum of department task durations. For the deterministic demo
-        # pair (2h + 2h), the strategic possession requirement is therefore 2h.
-        allocation_items: List[Tuple[List[MaintenanceJob], float, float, str]] = []
+        # not the sum of department task durations. For a 2h + 2h pair the
+        # strategic possession therefore consumes 2h of section capacity.
+        consolidation_items: List[Tuple[List[MaintenanceJob], float, float, str]] = []
         for group in groups:
             possession_hours = max(float(job.estimated_duration_hours) for job in group)
             priority = sum(float(job.ai_priority_score or 0.0) for job in group)
             key = "+".join(job.job_id for job in group)
-            allocation_items.append((group, possession_hours, priority, key))
+            consolidation_items.append((group, possession_hours, priority, key))
 
-        for job in section_jobs:
-            if job.job_id in grouped_job_ids:
-                continue
-            allocation_items.append(
-                ([job], float(job.estimated_duration_hours), float(job.ai_priority_score or 0.0), job.job_id)
-            )
+        # Consolidation opportunities are protected first. Otherwise a valid
+        # pair can be pushed into next month by ordinary high-duration work,
+        # which defeats the purpose of opportunistic maintenance grouping.
+        consolidation_items.sort(key=lambda item: (-item[2], -item[1], item[3]))
 
-        allocation_items.sort(key=lambda item: (-item[1], -item[2], item[3]))
-
-        for group, possession_hours, _, _ in allocation_items:
-            placed = False
+        def place_item(
+            group: List[MaintenanceJob], possession_hours: float
+        ) -> bool:
             for week_key, week in weeks.items():
                 if week["used_hours"] + possession_hours <= week["capacity"]:
                     week["jobs"].extend(group)
@@ -159,10 +154,26 @@ class MonthlyAllocator:
                         week["consolidation_groups"].append(
                             [job.job_id for job in group]
                         )
-                    placed = True
-                    break
+                    return True
+            return False
 
-            if not placed:
+        for group, possession_hours, _, _ in consolidation_items:
+            if not place_item(group, possession_hours):
+                deferred_to_next_month.extend(group)
+
+        # Remaining jobs use the locked First-Fit Decreasing strategy.
+        ordinary_items: List[Tuple[List[MaintenanceJob], float, float, str]] = []
+        for job in section_jobs:
+            if job.job_id in grouped_job_ids:
+                continue
+            ordinary_items.append(
+                ([job], float(job.estimated_duration_hours), float(job.ai_priority_score or 0.0), job.job_id)
+            )
+
+        ordinary_items.sort(key=lambda item: (-item[1], -item[2], item[3]))
+
+        for group, possession_hours, _, _ in ordinary_items:
+            if not place_item(group, possession_hours):
                 deferred_to_next_month.extend(group)
 
         return {"weeks": weeks, "deferred_next_month": deferred_to_next_month}
