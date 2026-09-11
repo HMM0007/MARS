@@ -9,7 +9,7 @@ from app.adapters.tdms_adapter import TDMSAdapter
 from app.adapters.coa_adapter import COAAdapter
 from app.core.priority_engine import PriorityEngine
 from app.core.monthly_allocator import MonthlyAllocator
-from app.core.weekly_solver import WeeklyCPSATSolver
+from app.core.hardened_weekly_solver import HardenedWeeklyCPSATSolver
 from app.core.compliance_validator import RailwayComplianceValidator
 
 router = APIRouter(prefix="/api/v1/core", tags=["MARS Core AI Engine"])
@@ -63,8 +63,6 @@ def get_weekly_tactical_plan(
     """Generate the Level 2 CP-SAT plan for jobs allocated to the requested monthly week."""
     scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
 
-    # Level 1 must precede Level 2: only jobs allocated to the requested
-    # strategic week are eligible for tactical CP-SAT planning.
     monthly_plan = MonthlyAllocator.generate_monthly_plan(scored_jobs)
     monthly_job_ids = _monthly_week_job_ids(monthly_plan, week)
 
@@ -101,10 +99,9 @@ def get_weekly_tactical_plan(
     trains = COAAdapter.fetch_passenger_timetable()
     start_monday = _current_week_monday() + timedelta(weeks=week - 1)
 
-    solver_engine = WeeklyCPSATSolver(weekly_jobs, trains, start_monday)
+    solver_engine = HardenedWeeklyCPSATSolver(weekly_jobs, trains, start_monday)
     result = solver_engine.solve()
 
-    # Independent post-solve audit. It never modifies or re-solves CP-SAT.
     if result.get("status") in ("OPTIMAL", "FEASIBLE"):
         result["compliance"] = RailwayComplianceValidator(
             jobs=weekly_jobs,
@@ -121,6 +118,12 @@ def get_weekly_tactical_plan(
             "rules": [],
             "details": "No compliance score is produced because CP-SAT did not return a usable weekly plan.",
         }
+
+    # The base solver historically used W1 in block IDs. Normalize the public
+    # API identifier to the actual requested strategic week without touching
+    # solver decisions or compliance semantics.
+    for index, block in enumerate(result.get("scheduled_blocks", []), start=1):
+        block["block_id"] = f"BLK-W{week}-{index:03d}"
 
     result["planning_week"] = week
     result["monthly_candidate_count"] = len(monthly_job_ids)
