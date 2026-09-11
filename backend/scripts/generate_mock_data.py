@@ -1,4 +1,5 @@
 import json
+import os
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -6,6 +7,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "data" / "raw"
 RAW.mkdir(parents=True, exist_ok=True)
+
+# Fixed seed keeps the SIH demo dataset reproducible. A different dataset can
+# still be generated deliberately by changing MARS_DATA_SEED.
+RANDOM_SEED = int(os.getenv("MARS_DATA_SEED", "26027"))
 
 SECTIONS = [
     {"section_id": "PUNE-LNL", "section_name": "Pune-Lonavala", "from_station": "PUNE", "to_station": "LNL", "length_km": 63.84, "traffic_density": "HIGH"},
@@ -54,26 +59,30 @@ TRC_DEFECTS = [
     ("OHE_CANTILEVER_OVERHAUL", "MEDIUM", 2.0, "POWER_BLOCK_OHE_GANG", True),
 ]
 
+
 def save_json(name, data):
     path = RAW / name
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, default=str)
     print(f"Created: {path}")
 
+
 def generate_sections():
     return SECTIONS
 
+
 def generate_stations():
-    stations = []
-    for code, name, km in STATIONS_PUNE_LNL:
-        stations.append({
+    return [
+        {
             "station_id": f"STN-{code}",
             "station_code": code,
             "station_name": name,
             "section_id": "PUNE-LNL",
-            "location_km": km
-        })
-    return stations
+            "location_km": km,
+        }
+        for code, name, km in STATIONS_PUNE_LNL
+    ]
+
 
 def generate_tracks():
     tracks = []
@@ -85,68 +94,86 @@ def generate_tracks():
             tracks.append({"track_id": f"{sid}-LOOP", "section_id": sid, "track_name": "LOOP_LINE", "is_electrified": True})
     return tracks
 
+
+def _location_km(rng, section_id):
+    if section_id == "PUNE-LNL":
+        # Keep maintenance locations close to recognizable station/yard
+        # reference points instead of generating arbitrary kilometre values.
+        station_kms = [km for _, _, km in STATIONS_PUNE_LNL]
+        anchor = rng.choice(station_kms)
+        return round(anchor + rng.uniform(-0.25, 0.25), 3)
+    if section_id == "CWD-YARD":
+        return round(rng.uniform(0.5, 4.8), 3)
+    return round(rng.uniform(0.5, 50.0), 3)
+
+
 def generate_jobs(count=150):
+    rng = random.Random(RANDOM_SEED)
     jobs = []
     base = datetime.now().date()
+    hero_tracks = ["PUNE-LNL-UP", "PUNE-LNL-DN", "PUNE-LNL-LOOP"]
+
     for i in range(1, count + 1):
-        dept = random.choices(["Engineering", "S&T", "Traction"], weights=[45, 30, 25])[0]
-        section = random.choice(SECTIONS)["section_id"]
-        track = random.choice([f"{section}-UP", f"{section}-DN"])
+        dept = rng.choices(["Engineering", "S&T", "Traction"], weights=[45, 30, 25])[0]
+        section = rng.choice(SECTIONS)["section_id"]
 
         if dept == "Engineering":
-            defect, crit, dur, work, pblock = random.choice(ENG_DEFECTS)
-            job_id = f"ENG-{1000+i}"
+            defect, crit, dur, work, pblock = rng.choice(ENG_DEFECTS)
+            job_id = f"ENG-{1000 + i}"
         elif dept == "S&T":
-            defect, crit, dur, work, pblock = random.choice(SNT_DEFECTS)
-            job_id = f"SNT-{800+i}"
+            defect, crit, dur, work, pblock = rng.choice(SNT_DEFECTS)
+            job_id = f"SNT-{800 + i}"
         else:
-            defect, crit, dur, work, pblock = random.choice(TRC_DEFECTS)
-            job_id = f"TRC-{300+i}"
+            defect, crit, dur, work, pblock = rng.choice(TRC_DEFECTS)
+            job_id = f"TRC-{300 + i}"
 
-        # Keep many jobs on hero section for demo density
+        # Keep the hero corridor dense enough for the SIH operational demo.
         if i <= 45:
             section = "PUNE-LNL"
-            track = random.choice(["PUNE-LNL-UP", "PUNE-LNL-DN", "PUNE-LNL-LOOP"])
+            track = rng.choice(hero_tracks)
+        else:
+            track = rng.choice([f"{section}-UP", f"{section}-DN"])
 
-        km = random.uniform(191.0, 254.8) if section == "PUNE-LNL" else random.uniform(0, 50)
+        km = _location_km(rng, section)
+        due_offset = rng.randint(3, 20)
+        created_offset = rng.randint(0, min(12, due_offset))
 
         jobs.append({
             "job_id": job_id,
             "department": dept,
-            "asset_id": f"AST-{section}-{int(km)}",
+            "asset_id": f"AST-{section}-{int(round(km * 10))}",
             "asset_type": dept,
             "section_id": section,
             "track_id": track,
-            "location_km": round(km, 3),
+            "location_km": km,
             "defect_type": defect,
             "criticality_level": crit,
             "estimated_duration_hours": dur,
-            "due_date": str(base + timedelta(days=random.randint(3, 20))),
-            "preferred_window": "NIGHT" if dur >= 2.5 else random.choice(["NIGHT", "ANY", "DAY"]),
-            "machine_required": work if "MACHINE" in work or "BCM" in work or "PQRS" in work or "TAMPING" in work else None,
+            "due_date": str(base + timedelta(days=due_offset)),
+            "preferred_window": "NIGHT" if dur >= 2.5 else rng.choice(["NIGHT", "ANY", "DAY"]),
+            "machine_required": work if any(token in work for token in ["MACHINE", "BCM", "PQRS", "TAMPING"]) else None,
             "power_block_required": pblock,
             "dependency_job_id": None,
             "work_type": work,
-            "safety_conflict_tag": "WELDING" if "WELDING" in work else ("SIGNAL_SENSITIVE" if dept=="S&T" else "NORMAL"),
-            "created_date": str(base - timedelta(days=random.randint(0, 12))),
+            "safety_conflict_tag": "WELDING" if "WELDING" in work else ("SIGNAL_SENSITIVE" if dept == "S&T" else "NORMAL"),
+            "created_date": str(base - timedelta(days=created_offset)),
             "status": "PENDING",
-            "deferral_count": random.choice([0, 0, 0, 1, 2])
+            "deferral_count": rng.choice([0, 0, 0, 1, 2]),
         })
 
-    # Deterministic compatible Engineering + S&T demonstration pair.
-    # They are deliberately placed on the same hero section/track, use normal
-    # safety tags, require no power block, and have overlapping feasible windows.
-    # This does not change solver constraints; it makes the locked Purple Block
-    # capability reproducible in the synthetic SIH dataset.
+    # Realistic cross-department consolidation case. These are normal
+    # maintenance identifiers, not "DEMO" records, while their fixed location
+    # and compatibility make the Purple Block scenario reproducible.
     if count >= 45:
         pair_track = "PUNE-LNL-UP"
+        pair_location = 227.4  # TGN reference location
         pair_due = str(base + timedelta(days=14))
-        pair_location = 227.4
+
         jobs[43].update({
-            "job_id": "ENG-DEMO-PAIR",
+            "job_id": "ENG-PLN-044",
             "department": "Engineering",
-            "asset_id": "AST-PUNE-LNL-227",
-            "asset_type": "Engineering",
+            "asset_id": "PWAY-PUNE-LNL-TGN-01",
+            "asset_type": "Permanent Way",
             "section_id": "PUNE-LNL",
             "track_id": pair_track,
             "location_km": pair_location,
@@ -165,10 +192,10 @@ def generate_jobs(count=150):
             "deferral_count": 0,
         })
         jobs[44].update({
-            "job_id": "SNT-DEMO-PAIR",
+            "job_id": "SNT-PLN-044",
             "department": "S&T",
-            "asset_id": "AST-PUNE-LNL-227-SNT",
-            "asset_type": "S&T",
+            "asset_id": "SNT-PUNE-LNL-TGN-01",
+            "asset_type": "Signalling",
             "section_id": "PUNE-LNL",
             "track_id": pair_track,
             "location_km": pair_location,
@@ -180,13 +207,15 @@ def generate_jobs(count=150):
             "machine_required": None,
             "power_block_required": False,
             "dependency_job_id": None,
-            "work_type": "TRACK_CIRCUIT_MAINTENANCE",
+            "work_type": "TRACK_CIRCUIT_BOND_MAINTENANCE",
             "safety_conflict_tag": "NORMAL",
             "created_date": str(base - timedelta(days=4)),
             "status": "PENDING",
             "deferral_count": 0,
         })
+
     return jobs
+
 
 def generate_trains():
     base_day = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -201,13 +230,13 @@ def generate_trains():
     ]
 
     output = []
-    for d in range(7):  # one week
+    for d in range(7):
         day = base_day + timedelta(days=d)
         for t in trains:
             entry_h, entry_m = map(int, t["entry"].split(":"))
             exit_h, exit_m = map(int, t["exit"].split(":"))
             output.append({
-                "train_id": f"{t['train_id']}-D{d+1}",
+                "train_id": f"{t['train_id']}-D{d + 1}",
                 "train_number": t["train_number"],
                 "train_name": t["train_name"],
                 "train_type": t["train_type"],
@@ -217,27 +246,28 @@ def generate_trains():
                 "exit_time": datetime(day.year, day.month, day.day, exit_h, exit_m).isoformat(),
                 "priority": t["priority"],
                 "direction": t["direction"],
-                "is_fixed": True
+                "is_fixed": True,
             })
     return output
 
+
 def generate_freight():
     base = datetime.now().date()
-    data = []
     levels = ["NORMAL", "NORMAL", "NORMAL", "HIGH", "NORMAL", "SURGE", "NORMAL"]
-    for i, level in enumerate(levels):
-        day = base + timedelta(days=i)
-        data.append({
-            "forecast_id": f"FGT-{i+1}",
+    return [
+        {
+            "forecast_id": f"FGT-{i + 1}",
             "section_id": "PUNE-LNL",
-            "date": str(day),
+            "date": str(base + timedelta(days=i)),
             "freight_level": level,
             "expected_trains_count": {"NORMAL": 8, "HIGH": 12, "SURGE": 16}[level],
-            "busy_window_start": f"{day}T01:30:00",
-            "busy_window_end": f"{day}T03:30:00",
-            "confidence": 0.85
-        })
-    return data
+            "busy_window_start": f"{base + timedelta(days=i)}T01:30:00",
+            "busy_window_end": f"{base + timedelta(days=i)}T03:30:00",
+            "confidence": 0.85,
+        }
+        for i, level in enumerate(levels)
+    ]
+
 
 def generate_users():
     return [
@@ -246,6 +276,7 @@ def generate_users():
         {"user_id": "U-SNT-01", "name": "SSE Signal", "role": "S&T", "department": "S&T", "division": "Pune", "login_id": "snt"},
         {"user_id": "U-TRC-01", "name": "SSE OHE", "role": "Traction", "department": "Traction", "division": "Pune", "login_id": "trac"},
     ]
+
 
 def main():
     save_json("sections.json", generate_sections())
@@ -256,6 +287,7 @@ def main():
     save_json("freight_forecast.json", generate_freight())
     save_json("users.json", generate_users())
     print("\nPhase 1 mock data generated successfully.")
+
 
 if __name__ == "__main__":
     main()
