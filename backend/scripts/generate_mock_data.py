@@ -132,6 +132,60 @@ def generate_jobs(count=150):
             "status": "PENDING",
             "deferral_count": random.choice([0, 0, 0, 1, 2])
         })
+
+    # Deterministic compatible Engineering + S&T demonstration pair.
+    # They are deliberately placed on the same hero section/track, use normal
+    # safety tags, require no power block, and have overlapping feasible windows.
+    # This does not change solver constraints; it makes the locked Purple Block
+    # capability reproducible in the synthetic SIH dataset.
+    if count >= 45:
+        pair_track = "PUNE-LNL-UP"
+        pair_due = str(base + timedelta(days=14))
+        pair_location = 227.4
+        jobs[43].update({
+            "job_id": "ENG-DEMO-PAIR",
+            "department": "Engineering",
+            "asset_id": "AST-PUNE-LNL-227",
+            "asset_type": "Engineering",
+            "section_id": "PUNE-LNL",
+            "track_id": pair_track,
+            "location_km": pair_location,
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "criticality_level": "HIGH",
+            "estimated_duration_hours": 2.0,
+            "due_date": pair_due,
+            "preferred_window": "NIGHT",
+            "machine_required": None,
+            "power_block_required": False,
+            "dependency_job_id": None,
+            "work_type": "TRACK_GEOMETRY_INSPECTION",
+            "safety_conflict_tag": "NORMAL",
+            "created_date": str(base - timedelta(days=5)),
+            "status": "PENDING",
+            "deferral_count": 0,
+        })
+        jobs[44].update({
+            "job_id": "SNT-DEMO-PAIR",
+            "department": "S&T",
+            "asset_id": "AST-PUNE-LNL-227-SNT",
+            "asset_type": "S&T",
+            "section_id": "PUNE-LNL",
+            "track_id": pair_track,
+            "location_km": pair_location,
+            "defect_type": "TRACK_CIRCUIT_BOND_FAILURE",
+            "criticality_level": "HIGH",
+            "estimated_duration_hours": 2.0,
+            "due_date": pair_due,
+            "preferred_window": "NIGHT",
+            "machine_required": None,
+            "power_block_required": False,
+            "dependency_job_id": None,
+            "work_type": "TRACK_CIRCUIT_MAINTENANCE",
+            "safety_conflict_tag": "NORMAL",
+            "created_date": str(base - timedelta(days=4)),
+            "status": "PENDING",
+            "deferral_count": 0,
+        })
     return jobs
 
 def generate_trains():
