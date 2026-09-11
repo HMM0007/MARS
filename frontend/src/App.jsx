@@ -17,7 +17,7 @@ import ImpactReportsPage from './pages/ImpactReportsPage';
 import IntegrationStatusPage from './pages/IntegrationStatusPage';
 import CorridorMapPage from './pages/CorridorMapPage';
 import LoginPage from './pages/LoginPage';
-import { fetchWeeklyPlan } from './services/api';
+import { fetchMonthlyPlan, fetchWeeklyPlan } from './services/api';
 
 function AppContent() {
   const location = useLocation();
@@ -29,12 +29,19 @@ function AppContent() {
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { /* use default */ }
     }
-    return { id: 'planner', name: 'Planner (Sr. DOM)', badge: 'DOM', dept: 'Operations' };
+    return { id: 'planner', name: 'Planner (Sr. DOM)', shortName: 'Sr. DOM Pune', badge: 'D', dept: 'Operations' };
   });
   const [weeklyPlan, setWeeklyPlan] = useState(null);
+  const [monthlyPlan, setMonthlyPlan] = useState(null);
 
   useEffect(() => {
-    fetchWeeklyPlan().then(setWeeklyPlan).catch((err) => console.warn('Shell weekly plan fetch error:', err));
+    Promise.all([
+      fetchWeeklyPlan().catch((err) => { console.warn('Shell weekly plan fetch error:', err); return null; }),
+      fetchMonthlyPlan().catch((err) => { console.warn('Shell monthly plan fetch error:', err); return null; }),
+    ]).then(([weekly, monthly]) => {
+      setWeeklyPlan(weekly);
+      setMonthlyPlan(monthly);
+    });
   }, []);
 
   const handleRoleChange = (role) => {
@@ -47,7 +54,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-[#EEF2F6] font-sans text-[#17345C]">
       <Header selectedDivision={selectedDivision} selectedRole={selectedRole} onDivisionChange={setSelectedDivision} onRoleChange={handleRoleChange} />
-      <OperationalStrip planData={weeklyPlan} selectedDivision={selectedDivision.name} />
+      <OperationalStrip planData={weeklyPlan} monthlyData={monthlyPlan} selectedDivision={selectedDivision.name} />
       <div className="flex min-h-[calc(100vh-118px)]">
         <Sidebar currentRole={selectedRole} />
         <div className="min-w-0 flex-1 overflow-y-auto">
