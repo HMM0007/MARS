@@ -68,8 +68,8 @@ export default function MARSHomePage({ currentRole }) {
             </div>
 
             <div className="flex flex-col items-start">
-              <h1 className="m-0 font-[Arial_Black,Inter,sans-serif] text-[66px] font-black leading-[.82] tracking-[.035em] text-[#F39A24] drop-shadow-[0_4px_12px_rgba(0,0,0,.45)] sm:text-[78px] lg:text-[94px]">MARS 2.0</h1>
-              <div className="mt-8 font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[23px] font-semibold leading-[1.18] tracking-[.012em] text-white drop-shadow-[0_2px_7px_rgba(0,0,0,.55)] sm:text-[26px] lg:text-[29px]">
+              <h1 className="m-0 text-[66px] font-black leading-[.82] tracking-[-.07em] text-[#F39A24] drop-shadow-[0_4px_12px_rgba(0,0,0,.45)] sm:text-[76px] lg:text-[92px]">MARS 2.0</h1>
+              <div className="mt-3 font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[24px] font-semibold leading-[1.12] tracking-[-.02em] text-white drop-shadow-[0_2px_7px_rgba(0,0,0,.55)] sm:text-[27px] lg:text-[30px]">
                 सुरक्षित पथ<br />सशक्त भारत
               </div>
             </div>
