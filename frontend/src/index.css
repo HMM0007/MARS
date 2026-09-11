@@ -3,144 +3,44 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color: #1F2933;
-  background: #F4F6F8;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #17345C;
+  background: #EEF2F6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background: #F4F6F8;
-}
+html { background: #EEF2F6; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: #EEF2F6; }
+button, a { -webkit-tap-highlight-color: transparent; }
 
-/* ============================================================================
-   MARS 2.0 Gantt Timeline Overrides (Section 5 Feature 10)
-   ============================================================================ */
-.react-calendar-timeline {
-  font-family: Inter, system-ui, sans-serif;
-  background: #FFFFFF;
-}
+/* MARS 2.0 — institutional command-centre scrollbar */
+* { scrollbar-width: thin; scrollbar-color: #B8C5D2 #EEF2F6; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: #EEF2F6; }
+*::-webkit-scrollbar-thumb { background: #B8C5D2; border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: #8FA3B7; }
 
-.react-calendar-timeline .rct-header-root {
-  background: #F4F6F8 !important;
-  border-bottom: 1px solid #D6DEE6 !important;
-}
+/* Timeline / Gantt enterprise overrides */
+.react-calendar-timeline { font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #FFFFFF; }
+.react-calendar-timeline .rct-header-root { background: #F4F6F8 !important; border-bottom: 1px solid #D6DEE6 !important; }
+.react-calendar-timeline .rct-sidebar-header { background: #F4F6F8 !important; color: #1F2933 !important; font-size: 12px !important; font-weight: 700 !important; border-right: 1px solid #D6DEE6 !important; border-bottom: 1px solid #D6DEE6 !important; display: flex !important; align-items: center !important; padding: 0 12px !important; }
+.react-calendar-timeline .rct-dateHeader { background: #FFFFFF !important; color: #1F2933 !important; border-color: #D6DEE6 !important; }
+.react-calendar-timeline .rct-dateHeader-primary { background: #F4F6F8 !important; color: #1F2933 !important; font-size: 13px !important; font-weight: 600 !important; }
+.react-calendar-timeline .rct-sidebar { background: #FFFFFF !important; border-right: 1px solid #D6DEE6 !important; }
+.react-calendar-timeline .rct-sidebar-row { background: #FFFFFF !important; color: #1F2933 !important; font-size: 12px !important; font-weight: 500 !important; border-bottom: 1px solid #F4F6F8 !important; padding: 0 12px !important; display: flex !important; align-items: center !important; }
+.react-calendar-timeline .rct-sidebar-row-even { background: #F8FAFB !important; }
+.react-calendar-timeline .rct-vertical-lines .rct-vl { border-color: #F4F6F8 !important; }
+.react-calendar-timeline .rct-vertical-lines .rct-vl.rct-day-start { border-left: 2px solid #D6DEE6 !important; }
+.react-calendar-timeline .rct-horizontal-lines .rct-hl-even, .react-calendar-timeline .rct-horizontal-lines .rct-hl-odd { border-color: #F4F6F8 !important; }
+.react-calendar-timeline .rct-item { cursor: pointer !important; transition: all .15s ease !important; border: none; }
+.react-calendar-timeline .rct-item:hover { filter: brightness(1.06) !important; transform: translateY(-1px) !important; box-shadow: 0 2px 8px rgba(0,0,0,.15) !important; z-index: 10; }
+.react-calendar-timeline .rct-item-content { padding: 4px 8px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; display: flex !important; align-items: center !important; height: 100% !important; }
+.react-calendar-timeline .rct-scroll { background: #FFFFFF !important; }
 
-.react-calendar-timeline .rct-sidebar-header {
-  background: #F4F6F8 !important;
-  color: #1F2933 !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  border-right: 1px solid #D6DEE6 !important;
-  border-bottom: 1px solid #D6DEE6 !important;
-  display: flex !important;
-  align-items: center !important;
-  padding: 0 12px !important;
-  font-family: Inter, system-ui, sans-serif !important;
-}
+.mars-now-marker { position: absolute; top: 0; bottom: 0; width: 2px; background-color: #C92A2A; opacity: .65; border-right: 1px dashed #C92A2A; z-index: 5; pointer-events: none; }
+.mars-now-badge { position: absolute; top: 2px; left: -16px; background-color: #C92A2A; color: #FFFFFF; font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 3px; text-transform: uppercase; letter-spacing: .05em; box-shadow: 0 1px 3px rgba(0,0,0,.25); pointer-events: none; }
 
-.react-calendar-timeline .rct-dateHeader {
-  background: #FFFFFF !important;
-  color: #1F2933 !important;
-  border-color: #D6DEE6 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-}
-
-.react-calendar-timeline .rct-dateHeader-primary {
-  background: #F4F6F8 !important;
-  color: #1F2933 !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-}
-
-.react-calendar-timeline .rct-sidebar {
-  background: #FFFFFF !important;
-  border-right: 1px solid #D6DEE6 !important;
-}
-
-.react-calendar-timeline .rct-sidebar-row {
-  background: #FFFFFF !important;
-  color: #1F2933 !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  border-bottom: 1px solid #F4F6F8 !important;
-  padding: 0 12px !important;
-  display: flex !important;
-  align-items: center !important;
-  font-family: Inter, system-ui, sans-serif !important;
-}
-
-.react-calendar-timeline .rct-sidebar-row-even {
-  background: #F8FAFB !important;
-}
-
-.react-calendar-timeline .rct-vertical-lines .rct-vl {
-  border-color: #F4F6F8 !important;
-}
-
-.react-calendar-timeline .rct-vertical-lines .rct-vl.rct-day-start {
-  border-left: 2px solid #D6DEE6 !important;
-}
-
-.react-calendar-timeline .rct-horizontal-lines .rct-hl-even,
-.react-calendar-timeline .rct-horizontal-lines .rct-hl-odd {
-  border-color: #F4F6F8 !important;
-}
-
-.react-calendar-timeline .rct-item {
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
-  border: none;
-}
-
-.react-calendar-timeline .rct-item:hover {
-  filter: brightness(1.1) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-  z-index: 10;
-}
-
-.react-calendar-timeline .rct-item-content {
-  padding: 4px 8px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
-}
-
-.react-calendar-timeline .rct-scroll {
-  background: #FFFFFF !important;
-}
-
-/* Custom Marker Styling for 'Now' indicator */
-.mars-now-marker {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background-color: #C92A2A;
-  opacity: 0.65;
-  border-right: 1px dashed #C92A2A;
-  z-index: 5;
-  pointer-events: none;
-}
-
-.mars-now-badge {
-  position: absolute;
-  top: 2px;
-  left: -16px;
-  background-color: #C92A2A;
-  color: #FFFFFF;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-  pointer-events: none;
+@media (max-width: 900px) {
+  .react-calendar-timeline { min-width: 760px; }
 }
