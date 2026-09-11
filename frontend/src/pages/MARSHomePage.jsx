@@ -77,9 +77,9 @@ export default function MARSHomePage({ currentRole }) {
 
           <div className="relative flex items-end justify-between gap-5 pt-8">
             <BrandAsset
-              name="india-pencil.jpg"
+              name="india-pencil.png"
               alt="Indian railway heritage line illustration"
-              className="pointer-events-none absolute bottom-[-10px] left-[-22px] z-0 h-[175px] w-[430px] object-contain object-left-bottom opacity-65 drop-shadow-[0_3px_5px_rgba(0,0,0,.18)]"
+              className="pointer-events-none absolute bottom-[-90px] left-[-55px] z-0 h-[175px] w-[430px] object-contain object-left-bottom opacity-75 drop-shadow-[0_3px_5px_rgba(0,0,0,.18)]"
               fallback={null}
             />
             <div className="relative z-10 w-[390px] border-l-[3px] border-[#F2C94C] pl-4 py-1 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,.7)]">
