@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, CalendarDays, CheckCircle2, FileCheck2, Gauge, Layers3, ListChecks, Map, Play, ShieldCheck, TrainFront, Wrench } from 'lucide-react';
 import BrandAsset from '../components/BrandAsset';
 import { fetchMonthlyPlan, fetchWeeklyPlan } from '../services/api';
@@ -53,8 +54,6 @@ export default function MARSHomePage({ currentRole }) {
           className="absolute inset-0 h-full w-full object-cover object-[64%_center]"
           fallback={null}
         />
-
-        {/* Deliberately asymmetric overlays: dense readable copy on the left, clean train imagery on the right. */}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,20,39,.97)_0%,rgba(3,23,43,.91)_27%,rgba(4,30,55,.67)_46%,rgba(4,30,55,.12)_74%,rgba(4,30,55,.02)_100%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,18,35,.18)_0%,transparent_46%,rgba(2,18,35,.76)_100%)]" />
         <div className="absolute inset-y-0 left-0 w-[42%] bg-[#061E39]/25 blur-2xl" />
