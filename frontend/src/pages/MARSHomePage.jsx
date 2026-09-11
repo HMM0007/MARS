@@ -47,8 +47,8 @@ export default function MARSHomePage({ currentRole }) {
           className="absolute inset-0 h-full w-full object-cover object-[64%_center]"
           fallback={null}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,20,39,.78)_0%,rgba(3,23,43,.54)_25%,rgba(4,30,55,.14)_52%,rgba(4,30,55,.02)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,18,35,.08)_0%,transparent_58%,rgba(2,18,35,.72)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.68)_0%,rgba(0,0,0,.44)_24%,rgba(0,0,0,.10)_52%,rgba(0,0,0,.02)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.04)_0%,transparent_58%,rgba(0,0,0,.68)_100%)]" />
         <div className="absolute left-0 top-0 h-full w-[3px] bg-[#F2C94C]" />
 
         <div className="absolute right-7 top-6 z-20 flex max-w-[270px] flex-col items-end gap-2.5 lg:right-10 lg:top-7">
@@ -83,7 +83,7 @@ export default function MARSHomePage({ currentRole }) {
           </div>
 
           <div className="flex items-end justify-between gap-5 pt-8">
-            <div className="w-[270px] border-l-[3px] border-[#F2C94C] bg-[#041A32]/72 px-4.5 py-3 shadow-[0_8px_24px_rgba(0,0,0,.18)] backdrop-blur-md">
+            <div className="w-[270px] border-l-[3px] border-[#F2C94C] bg-black/45 px-4.5 py-3 shadow-[0_8px_24px_rgba(0,0,0,.18)] backdrop-blur-md">
               <div className="flex items-center gap-2 text-[13px] font-extrabold text-white"><TrainFront className="h-4 w-4" /> Pune Division (CR)</div>
               <div className="mt-1 text-[9px] font-medium tracking-wide text-white/75">People &nbsp;|&nbsp; Performance &nbsp;|&nbsp; Progress</div>
               <div className="mt-2.5 flex h-[3px] w-full overflow-hidden bg-white/15"><span className="w-[34%] bg-[#F2C94C]" /><span className="w-[33%] bg-white/75" /><span className="w-[33%] bg-[#16A878]" /></div>
