@@ -47,11 +47,11 @@ export default function MARSHomePage({ currentRole }) {
           className="absolute inset-0 h-full w-full object-cover object-[64%_center]"
           fallback={null}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.68)_0%,rgba(0,0,0,.44)_24%,rgba(0,0,0,.10)_52%,rgba(0,0,0,.02)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.04)_0%,transparent_58%,rgba(0,0,0,.68)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.62)_0%,rgba(0,0,0,.34)_25%,rgba(0,0,0,.07)_52%,rgba(0,0,0,.01)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.02)_0%,transparent_60%,rgba(0,0,0,.62)_100%)]" />
         <div className="absolute left-0 top-0 h-full w-[3px] bg-[#F2C94C]" />
 
-        <div className="absolute right-7 top-6 z-20 flex max-w-[270px] flex-col items-end gap-2.5 lg:right-10 lg:top-7">
+        <div className="absolute right-7 top-6 z-20 flex max-w-[270px] flex-col items-end gap-2 lg:right-10 lg:top-7">
           <BrandAsset
             name="viksit_bharat_railways.png"
             alt="Viksit Bharat Viksit Railways"
@@ -61,33 +61,52 @@ export default function MARSHomePage({ currentRole }) {
           <BrandAsset
             name="on-track-better-tomorrow.png"
             alt="On Track for a Better Tomorrow"
-            className="max-h-[64px] max-w-[225px] object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,.45)]"
-            fallback={<div className="text-right font-serif text-[18px] font-semibold italic leading-tight text-white/95">On Track<br />for a Better Tomorrow</div>}
+            className="max-h-[58px] max-w-[215px] object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,.45)]"
+            fallback={<div className="text-right font-serif text-[17px] font-semibold italic leading-tight text-white/95">On Track<br />for a Better Tomorrow</div>}
           />
         </div>
 
         <div className="relative z-10 flex min-h-[500px] flex-col justify-between px-6 py-7 sm:px-8 lg:min-h-[525px] lg:px-14 lg:py-8">
-          <div className="max-w-[700px] pt-1">
+          <div className="max-w-[620px] pt-1">
             <div className="mb-4 flex items-center gap-3">
               <span className="h-8 w-[3px] bg-[#F2C94C]" />
               <span className="text-[10px] font-extrabold uppercase tracking-[.26em] text-white/90">Pune Division (CR)</span>
             </div>
 
-            <div className="flex items-center gap-3.5 lg:gap-4">
-              <h1 className="m-0 text-[52px] font-black leading-[.88] tracking-[-.055em] text-white drop-shadow-[0_3px_10px_rgba(0,0,0,.38)] sm:text-[58px] lg:text-[66px]">MARS 2.0</h1>
-              <span className="h-[54px] w-[3px] shrink-0 bg-[#2B82F6] lg:h-[62px]" />
-              <div className="font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[21px] font-semibold leading-[1.16] tracking-[-.02em] text-white sm:text-[23px] lg:text-[25px]">
+            <div className="flex flex-col items-start">
+              <h1 className="m-0 text-[52px] font-black leading-[.9] tracking-[-.055em] text-white drop-shadow-[0_3px_10px_rgba(0,0,0,.38)] sm:text-[58px] lg:text-[66px]">MARS 2.0</h1>
+              <div className="mt-2 font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[22px] font-semibold leading-[1.18] tracking-[-.02em] text-white sm:text-[24px] lg:text-[26px]">
                 सुरक्षित पथ<br />सशक्त भारत
               </div>
             </div>
           </div>
 
           <div className="flex items-end justify-between gap-5 pt-8">
-            <div className="w-[270px] border-l-[3px] border-[#F2C94C] bg-black/45 px-4.5 py-3 shadow-[0_8px_24px_rgba(0,0,0,.18)] backdrop-blur-md">
-              <div className="flex items-center gap-2 text-[13px] font-extrabold text-white"><TrainFront className="h-4 w-4" /> Pune Division (CR)</div>
-              <div className="mt-1 text-[9px] font-medium tracking-wide text-white/75">People &nbsp;|&nbsp; Performance &nbsp;|&nbsp; Progress</div>
-              <div className="mt-2.5 flex h-[3px] w-full overflow-hidden bg-white/15"><span className="w-[34%] bg-[#F2C94C]" /><span className="w-[33%] bg-white/75" /><span className="w-[33%] bg-[#16A878]" /></div>
-              <div className="mt-2 flex justify-between text-[8px] font-bold uppercase tracking-wider text-white/55"><span>Division</span><span>Operational</span><span>On Track</span></div>
+            <div className="relative w-[330px] overflow-hidden border-l-[3px] border-[#F2C94C] bg-black/48 px-4 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,.22)] backdrop-blur-[2px]">
+              <BrandAsset
+                name="india-pencil.jpg"
+                alt="Indian railway heritage line illustration"
+                className="pointer-events-none absolute bottom-0 left-0 h-[105px] w-[290px] object-contain object-left-bottom opacity-30 mix-blend-screen"
+                fallback={null}
+              />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 text-[13px] font-extrabold text-white"><TrainFront className="h-4 w-4" /> Pune Division (CR)</div>
+                <div className="mt-2 flex items-center gap-1.5 text-[9px] font-semibold text-white/85">
+                  <span className="rounded-full bg-white/12 px-2 py-1">People</span>
+                  <span className="text-white/35">|</span>
+                  <span className="rounded-full bg-white/12 px-2 py-1">Performance</span>
+                  <span className="text-white/35">|</span>
+                  <span className="rounded-full bg-[#16A878]/75 px-2 py-1 text-white">Progress</span>
+                </div>
+                <div className="mt-2.5 h-[4px] w-full overflow-hidden rounded-full bg-white/15">
+                  <span className="inline-block h-full w-[34%] bg-[#F2C94C]" />
+                  <span className="inline-block h-full w-[33%] bg-white/80" />
+                  <span className="inline-block h-full w-[33%] bg-[#16A878]" />
+                </div>
+                <div className="mt-1.5 flex justify-between text-[8px] font-bold uppercase tracking-wider text-white/65">
+                  <span>Division</span><span>Operational</span><span>On Track</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
