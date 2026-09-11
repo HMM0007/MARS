@@ -61,15 +61,15 @@ export default function MARSHomePage({ currentRole }) {
         </div>
 
         <div className="relative z-10 flex min-h-[500px] flex-col justify-between px-6 py-7 sm:px-8 lg:min-h-[525px] lg:px-14 lg:py-8">
-          <div className="max-w-[620px] pt-1">
-            <div className="mb-5 flex items-center gap-3">
+          <div className="max-w-[700px] pt-1">
+            <div className="mb-4 flex items-center gap-3">
               <span className="h-8 w-[3px] bg-[#F2C94C]" />
               <span className="text-[10px] font-extrabold uppercase tracking-[.26em] text-white/90">Pune Division (CR)</span>
             </div>
 
             <div className="flex flex-col items-start">
-              <h1 className="m-0 text-[58px] font-black leading-[.86] tracking-[-.065em] text-[#F39A24] drop-shadow-[0_3px_10px_rgba(0,0,0,.42)] sm:text-[66px] lg:text-[76px]">MARS 2.0</h1>
-              <div className="mt-3 font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[24px] font-semibold leading-[1.15] tracking-[-.02em] text-white drop-shadow-[0_2px_7px_rgba(0,0,0,.5)] sm:text-[26px] lg:text-[29px]">
+              <h1 className="m-0 text-[66px] font-black leading-[.82] tracking-[-.07em] text-[#F39A24] drop-shadow-[0_4px_12px_rgba(0,0,0,.45)] sm:text-[76px] lg:text-[92px]">MARS 2.0</h1>
+              <div className="mt-3 font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[24px] font-semibold leading-[1.12] tracking-[-.02em] text-white drop-shadow-[0_2px_7px_rgba(0,0,0,.55)] sm:text-[27px] lg:text-[30px]">
                 सुरक्षित पथ<br />सशक्त भारत
               </div>
             </div>
@@ -77,9 +77,9 @@ export default function MARSHomePage({ currentRole }) {
 
           <div className="relative flex items-end justify-between gap-5 pt-8">
             <BrandAsset
-              name="india-pencil.jpg"
-              alt="Indian railway heritage illustration"
-              className="pointer-events-none absolute bottom-[-8px] left-[-18px] z-0 h-[150px] w-[390px] object-contain object-left-bottom opacity-42 mix-blend-screen drop-shadow-[0_3px_5px_rgba(0,0,0,.25)]"
+              name="india-pencil.png"
+              alt="Indian railway heritage line illustration"
+              className="pointer-events-none absolute bottom-[-10px] left-[-22px] z-0 h-[175px] w-[430px] object-contain object-left-bottom opacity-65 drop-shadow-[0_3px_5px_rgba(0,0,0,.18)]"
               fallback={null}
             />
             <div className="relative z-10 w-[390px] border-l-[3px] border-[#F2C94C] pl-4 py-1 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,.7)]">
