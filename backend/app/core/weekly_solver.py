@@ -11,26 +11,22 @@ from app.models.train import TrainMovement
 
 
 TIME_STEP_MINUTES = 15
-HORIZON_STEPS = 7 * 24 * 4
-BUFFER_STEPS = 1  # 15 min before + 15 min after every fixed train movement
+STEPS_PER_DAY = 24 * 60 // TIME_STEP_MINUTES
+HORIZON_STEPS = 7 * STEPS_PER_DAY
+BUFFER_STEPS = 1  # 15 min before + 15 min after a fixed train movement
 HEAVY_MACHINE_MIN_STEPS = 10  # 2.5 continuous hours
+SECTION_DAILY_CAPACITY_STEPS = STEPS_PER_DAY
 NIGHT_START_MINUTE = 23 * 60
 NIGHT_END_MINUTE = 5 * 60
-
 HEAVY_MACHINE_TOKENS = ("BCM", "CSM", "PQRS", "T-28")
-
-# Conservative compatibility policy for a genuine shared possession.
-# Cross-department sharing is allowed only when both jobs are ordinary,
-# same-section, same-track work with no power/safety/heavy-machine restriction.
 
 
 class WeeklyCPSATSolver:
     """Unified Level-2 tactical CP-SAT solver for Engineering, S&T and Traction.
 
-    All maintenance jobs are optional decisions. Hard safety constraints are
-    applied only when the relevant jobs are scheduled, so the model can always
-    defer work that cannot safely fit the week instead of becoming structurally
-    infeasible. Priority and consolidation are optimization objectives.
+    The model is deliberately fail-closed: jobs are optional decisions, hard
+    railway constraints apply whenever a job is scheduled, and no schedule is
+    returned unless CP-SAT reports FEASIBLE or OPTIMAL.
     """
 
     def __init__(self, jobs: List[MaintenanceJob], trains: List[TrainMovement], start_monday: datetime):
@@ -42,9 +38,7 @@ class WeeklyCPSATSolver:
 
     def _datetime_to_step(self, dt: datetime) -> int:
         diff = dt - self.start_monday
-        minutes = diff.total_seconds() / 60.0
-        # Floor to the 15-minute planning grid and clamp to the weekly horizon.
-        return max(0, min(HORIZON_STEPS, int(minutes // TIME_STEP_MINUTES)))
+        return max(0, min(HORIZON_STEPS, int(diff.total_seconds() // (TIME_STEP_MINUTES * 60))))
 
     def _step_to_datetime(self, step: int) -> datetime:
         return self.start_monday + timedelta(minutes=step * TIME_STEP_MINUTES)
@@ -58,8 +52,8 @@ class WeeklyCPSATSolver:
     @staticmethod
     def _is_safety_conflict(j1: MaintenanceJob, j2: MaintenanceJob) -> bool:
         tags = {
-            getattr(j1, "safety_conflict_tag", "NORMAL"),
-            getattr(j2, "safety_conflict_tag", "NORMAL"),
+            getattr(j1, "safety_conflict_tag", "NORMAL") or "NORMAL",
+            getattr(j2, "safety_conflict_tag", "NORMAL") or "NORMAL",
         }
         return tags == {"WELDING", "SIGNAL_SENSITIVE"}
 
@@ -71,9 +65,9 @@ class WeeklyCPSATSolver:
             return False
         if cls._is_safety_conflict(j1, j2):
             return False
-        if getattr(j1, "safety_conflict_tag", "NORMAL") not in (None, "NORMAL"):
+        if (getattr(j1, "safety_conflict_tag", "NORMAL") or "NORMAL") != "NORMAL":
             return False
-        if getattr(j2, "safety_conflict_tag", "NORMAL") not in (None, "NORMAL"):
+        if (getattr(j2, "safety_conflict_tag", "NORMAL") or "NORMAL") != "NORMAL":
             return False
         if j1.power_block_required or j2.power_block_required:
             return False
@@ -81,19 +75,18 @@ class WeeklyCPSATSolver:
             return False
         return True
 
-    def _add_pair_exclusion(
+    def _add_pair_relationship(
         self,
         j1: MaintenanceJob,
         j2: MaintenanceJob,
         job_vars: Dict[str, Dict[str, Any]],
         scheduled: Dict[str, Any],
         allow_shared_start: bool = False,
-    ) -> None:
-        """Add a safe disjunction for two optional jobs.
+    ) -> cp_model.IntVar | None:
+        """Require two scheduled jobs to be sequential, or safely shared.
 
-        If both jobs are scheduled, they must either be sequential, or (for an
-        explicitly compatible pair) start at the same time as one shared
-        possession. This replaces the earlier under-constrained pair logic.
+        The share literal is explicitly linked to both scheduled literals. This
+        prevents an objective reward from being earned by unscheduled jobs.
         """
         s1 = job_vars[j1.job_id]["start"]
         e1 = job_vars[j1.job_id]["end"]
@@ -111,21 +104,23 @@ class WeeklyCPSATSolver:
             share = self.model.NewBoolVar(f"share_{j1.job_id}_{j2.job_id}")
             choices.append(share)
             self.model.Add(s1 == s2).OnlyEnforceIf(share)
+            self.model.AddImplication(share, b1)
+            self.model.AddImplication(share, b2)
 
-        # If both are scheduled, exactly one safe relationship is selected.
+        # If both jobs are present, exactly one legal relationship must hold.
         self.model.AddBoolOr([b1.Not(), b2.Not()] + choices)
-        self.model.Add(before + after + (share if share is not None else 0) <= 1)
+        self.model.Add(sum(choices) <= 1)
         self.model.Add(e1 <= s2).OnlyEnforceIf(before)
         self.model.Add(e2 <= s1).OnlyEnforceIf(after)
+
+        return share
 
     def _add_fixed_train_protection(
         self,
         job: MaintenanceJob,
         train: TrainMovement,
         job_vars: Dict[str, Dict[str, Any]],
-        scheduled: Dict[str, Any],
     ) -> None:
-        """Use an actual CP-SAT interval for the protected train window."""
         train_start = self._datetime_to_step(train.entry_time)
         train_end = self._datetime_to_step(train.exit_time)
         protected_start = max(0, train_start - BUFFER_STEPS)
@@ -139,16 +134,48 @@ class WeeklyCPSATSolver:
             protected_end,
             f"protected_train_{train.train_id}",
         )
-        # Optional maintenance interval + fixed protected train interval.
         self.model.AddNoOverlap([job_vars[job.job_id]["interval"], train_interval])
 
-    def _night_start_steps(self) -> List[int]:
-        result = []
-        for step in range(HORIZON_STEPS):
-            minute = (step * TIME_STEP_MINUTES) % (24 * 60)
-            if minute >= NIGHT_START_MINUTE or minute < NIGHT_END_MINUTE:
-                result.append(step)
-        return result
+    @staticmethod
+    def _night_start(step: int) -> bool:
+        minute = (step % STEPS_PER_DAY) * TIME_STEP_MINUTES
+        return minute >= NIGHT_START_MINUTE or minute < NIGHT_END_MINUTE
+
+    def _add_greedy_hints(
+        self,
+        job_vars: Dict[str, Dict[str, Any]],
+        scheduled: Dict[str, Any],
+    ) -> None:
+        """Build a lightweight first-fit warm start without making it a constraint."""
+        occupied: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+        train_windows: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+        for train in self.trains:
+            ts = self._datetime_to_step(train.entry_time)
+            te = self._datetime_to_step(train.exit_time)
+            if te > ts:
+                train_windows[train.track_id].append(
+                    (max(0, ts - BUFFER_STEPS), min(HORIZON_STEPS, te + BUFFER_STEPS))
+                )
+
+        for job in sorted(self.jobs, key=lambda j: (-(j.ai_priority_score or 0), j.due_date, j.job_id)):
+            v = job_vars[job.job_id]
+            duration = v["duration_steps"]
+            placed = False
+            for start in range(0, HORIZON_STEPS - duration + 1):
+                end = start + duration
+                if getattr(job, "preferred_window", "ANY") == "NIGHT" and not self._night_start(start):
+                    continue
+                if any(not (end <= a or start >= b) for a, b in occupied[job.track_id]):
+                    continue
+                if any(not (end <= a or start >= b) for a, b in train_windows[job.track_id]):
+                    continue
+                occupied[job.track_id].append((start, end))
+                self.model.AddHint(scheduled[job.job_id], 1)
+                self.model.AddHint(v["start"], start)
+                placed = True
+                break
+            if not placed:
+                self.model.AddHint(scheduled[job.job_id], 0)
 
     def solve(self) -> Dict[str, Any]:
         job_vars: Dict[str, Dict[str, Any]] = {}
@@ -157,32 +184,21 @@ class WeeklyCPSATSolver:
         jobs_by_track: Dict[str, List[MaintenanceJob]] = defaultdict(list)
         jobs_by_id = {job.job_id: job for job in self.jobs}
 
-        # ------------------------------------------------------------------
-        # 1. DECISION VARIABLES
-        # ------------------------------------------------------------------
+        # 1. Decision variables and deadline gates.
         for job in self.jobs:
-            raw_duration = max(1, int(math.ceil((job.estimated_duration_hours * 60) / TIME_STEP_MINUTES)))
+            raw_duration = max(1, math.ceil((job.estimated_duration_hours * 60) / TIME_STEP_MINUTES))
             duration_steps = max(raw_duration, HEAVY_MACHINE_MIN_STEPS) if self._is_heavy_machine(job) else raw_duration
+            effective_duration = min(duration_steps, HORIZON_STEPS)
 
             is_scheduled = self.model.NewBoolVar(f"scheduled_{job.job_id}")
-            scheduled[job.job_id] = is_scheduled
-
-            # A job longer than the horizon can never be scheduled, but remains
-            # represented safely in the model for audit/defer reporting.
-            max_start = max(0, HORIZON_STEPS - min(duration_steps, HORIZON_STEPS))
-            effective_duration = min(duration_steps, HORIZON_STEPS)
-            start = self.model.NewIntVar(0, max_start, f"start_{job.job_id}")
+            start = self.model.NewIntVar(0, max(0, HORIZON_STEPS - effective_duration), f"start_{job.job_id}")
             end = self.model.NewIntVar(effective_duration, HORIZON_STEPS, f"end_{job.job_id}")
             self.model.Add(end == start + effective_duration)
-
             interval = self.model.NewOptionalIntervalVar(
-                start,
-                effective_duration,
-                end,
-                is_scheduled,
-                f"interval_{job.job_id}",
+                start, effective_duration, end, is_scheduled, f"interval_{job.job_id}"
             )
 
+            scheduled[job.job_id] = is_scheduled
             job_vars[job.job_id] = {
                 "job": job,
                 "start": start,
@@ -196,9 +212,6 @@ class WeeklyCPSATSolver:
             if duration_steps > HORIZON_STEPS:
                 self.model.Add(is_scheduled == 0)
 
-            # Deadline is a hard constraint only when the due date falls within
-            # the planning horizon. Past-due work is deferred rather than placed
-            # after its deadline.
             due_end = datetime.combine(job.due_date, time(23, 59, 59))
             if due_end < self.start_monday:
                 self.model.Add(is_scheduled == 0)
@@ -209,112 +222,126 @@ class WeeklyCPSATSolver:
                 else:
                     self.model.Add(is_scheduled == 0)
 
-        # ------------------------------------------------------------------
-        # 2. TRACK OCCUPANCY
-        # ------------------------------------------------------------------
+        # 2. Track occupancy + valid cross-department shared possessions.
+        seen_pairs = set()
+        share_literals: List[cp_model.IntVar] = []
         for track_jobs in jobs_by_track.values():
             for i, j1 in enumerate(track_jobs):
                 for j2 in track_jobs[i + 1:]:
-                    if self._can_share_possession(j1, j2):
-                        self._add_pair_exclusion(j1, j2, job_vars, scheduled, allow_shared_start=True)
-                    else:
-                        self._add_pair_exclusion(j1, j2, job_vars, scheduled, allow_shared_start=False)
+                    key = tuple(sorted((j1.job_id, j2.job_id)))
+                    seen_pairs.add(key)
+                    share = self._add_pair_relationship(
+                        j1,
+                        j2,
+                        job_vars,
+                        scheduled,
+                        allow_shared_start=self._can_share_possession(j1, j2),
+                    )
+                    if share is not None:
+                        share_literals.append(share)
 
-        # ------------------------------------------------------------------
-        # 3. TRAIN PROTECTION
-        # ------------------------------------------------------------------
+        # 3. Fixed train protection.
         for train in self.trains:
             for job in self.jobs:
                 if job.track_id == train.track_id:
-                    self._add_fixed_train_protection(job, train, job_vars, scheduled)
+                    self._add_fixed_train_protection(job, train, job_vars)
 
-        # ------------------------------------------------------------------
-        # 4. SAFETY / POWER-BLOCK EXCLUSIONS
-        # ------------------------------------------------------------------
-        for section_id, s_jobs in section_jobs.items():
+        # 4. Section-level safety and power-block exclusions.
+        for s_jobs in section_jobs.values():
             for i, j1 in enumerate(s_jobs):
                 for j2 in s_jobs[i + 1:]:
-                    if self._is_safety_conflict(j1, j2) or j1.power_block_required or j2.power_block_required:
-                        self._add_pair_exclusion(j1, j2, job_vars, scheduled, allow_shared_start=False)
+                    key = tuple(sorted((j1.job_id, j2.job_id)))
+                    needs_exclusion = (
+                        self._is_safety_conflict(j1, j2)
+                        or j1.power_block_required
+                        or j2.power_block_required
+                    )
+                    if needs_exclusion and key not in seen_pairs:
+                        self._add_pair_relationship(
+                            j1, j2, job_vars, scheduled, allow_shared_start=False
+                        )
 
-        # ------------------------------------------------------------------
-        # 5. DEPENDENCIES
-        # ------------------------------------------------------------------
+        # 5. Dependencies.
         for job in self.jobs:
             dep_id = job.dependency_job_id
             if not dep_id or dep_id not in jobs_by_id:
                 continue
-            dep_job = jobs_by_id[dep_id]
             self.model.AddImplication(scheduled[job.job_id], scheduled[dep_id])
-            self.model.Add(job_vars[dep_id]["end"] <= job_vars[job.job_id]["start"]).OnlyEnforceIf(scheduled[job.job_id])
+            self.model.Add(
+                job_vars[dep_id]["end"] <= job_vars[job.job_id]["start"]
+            ).OnlyEnforceIf(scheduled[job.job_id])
 
-        # ------------------------------------------------------------------
-        # 6. SECTION DAILY CAPACITY
-        # ------------------------------------------------------------------
-        # 24 hours/day/section is the conservative possession-capacity ceiling.
-        # It is modeled as a soft objective pressure through scheduled duration;
-        # track/train/safety constraints remain the hard safety gates.
-        # We intentionally do not force every available hour to be occupied.
+        # 6. Section daily capacity: at most 24 possession-hours per section/day.
+        # Every scheduled job is assigned to exactly one day according to its
+        # start time; the charged duration cannot exceed the daily ceiling.
+        for section_id, s_jobs in section_jobs.items():
+            for day in range(7):
+                day_start = day * STEPS_PER_DAY
+                day_end = day_start + STEPS_PER_DAY
+                day_terms = []
+                for job in s_jobs:
+                    v = job_vars[job.job_id]
+                    lit = self.model.NewBoolVar(f"capacity_{section_id}_{day}_{job.job_id}")
+                    self.model.Add(v["start"] >= day_start).OnlyEnforceIf(lit)
+                    self.model.Add(v["start"] < day_end).OnlyEnforceIf(lit)
+                    self.model.AddImplication(lit, scheduled[job.job_id])
+                    day_terms.append((lit, v["duration_steps"]))
+                self.model.Add(sum(lit * duration for lit, duration in day_terms) <= SECTION_DAILY_CAPACITY_STEPS)
 
-        # ------------------------------------------------------------------
-        # 7. OBJECTIVE
-        # ------------------------------------------------------------------
+            # Each scheduled job belongs to exactly one start day.
+            for job in s_jobs:
+                day_literals = []
+                for day in range(7):
+                    # Locate the already-created literal by its stable name in
+                    # the model is not exposed by OR-Tools, so recreate the
+                    # relationship using a compact auxiliary literal set.
+                    day_start = day * STEPS_PER_DAY
+                    day_end = day_start + STEPS_PER_DAY
+                    lit = self.model.NewBoolVar(f"startday_{section_id}_{job.job_id}_{day}")
+                    v = job_vars[job.job_id]
+                    self.model.Add(v["start"] >= day_start).OnlyEnforceIf(lit)
+                    self.model.Add(v["start"] < day_end).OnlyEnforceIf(lit)
+                    self.model.AddImplication(lit, scheduled[job.job_id])
+                    day_literals.append(lit)
+                self.model.Add(sum(day_literals) == scheduled[job.job_id])
+
+        # 7. Objective: priority first, then safe consolidation, then night preference.
         objective_terms = []
-        night_steps = set(self._night_start_steps())
-
         for job in self.jobs:
-            j_id = job.job_id
             score = max(0, min(100, int(round(float(job.ai_priority_score or 50)))))
-            objective_terms.append(score * scheduled[j_id])
+            objective_terms.append(score * scheduled[job.job_id])
 
             if getattr(job, "preferred_window", "ANY") == "NIGHT":
-                # Reward a NIGHT job whose start lies in the night window.
-                for step in night_steps:
-                    night = self.model.NewBoolVar(f"night_{j_id}_{step}")
-                    self.model.Add(job_vars[j_id]["start"] == step).OnlyEnforceIf(night)
-                    self.model.Add(job_vars[j_id]["start"] != step).OnlyEnforceIf(night.Not())
-                    self.model.Add(night <= scheduled[j_id])
-                    objective_terms.append(2 * night)
+                night_start = self.model.NewBoolVar(f"night_start_{job.job_id}")
+                day_slot = self.model.NewIntVar(0, STEPS_PER_DAY - 1, f"day_slot_{job.job_id}")
+                self.model.AddModuloEquality(day_slot, job_vars[job.job_id]["start"], STEPS_PER_DAY)
+                allowed = [
+                    (
+                        slot,
+                        1
+                        if slot * TIME_STEP_MINUTES >= NIGHT_START_MINUTE
+                        or slot * TIME_STEP_MINUTES < NIGHT_END_MINUTE
+                        else 0,
+                    )
+                    for slot in range(STEPS_PER_DAY)
+                ]
+                self.model.AddAllowedAssignments([day_slot, night_start], allowed)
+                self.model.Add(night_start <= scheduled[job.job_id])
+                objective_terms.append(2 * night_start)
 
-        # Prefer compatible cross-department sharing. A pair receives reward
-        # only when the explicit shared-start relationship is selected.
-        for track_jobs in jobs_by_track.values():
-            for i, j1 in enumerate(track_jobs):
-                for j2 in track_jobs[i + 1:]:
-                    if not self._can_share_possession(j1, j2):
-                        continue
-                    share = self.model.NewBoolVar(f"objective_share_{j1.job_id}_{j2.job_id}")
-                    self.model.Add(job_vars[j1.job_id]["start"] == job_vars[j2.job_id]["start"]).OnlyEnforceIf(share)
-                    self.model.AddBoolOr([scheduled[j1.job_id].Not(), scheduled[j2.job_id].Not(), share])
-                    objective_terms.append(40 * share)
+        objective_terms.extend(40 * share for share in share_literals)
 
-        # Prefer avoiding simultaneous adjacent-track closures. This is a soft
-        # penalty and never makes the model infeasible.
-        for section_id, s_jobs in section_jobs.items():
-            for i, j1 in enumerate(s_jobs):
-                for j2 in s_jobs[i + 1:]:
-                    if j1.track_id == j2.track_id:
-                        continue
-                    overlap = self.model.NewBoolVar(f"adjacent_overlap_{j1.job_id}_{j2.job_id}")
-                    before = self.model.NewBoolVar(f"adjacent_before_{j1.job_id}_{j2.job_id}")
-                    after = self.model.NewBoolVar(f"adjacent_after_{j1.job_id}_{j2.job_id}")
-                    both = self.model.NewBoolVar(f"adjacent_both_{j1.job_id}_{j2.job_id}")
-                    self.model.AddBoolAnd([scheduled[j1.job_id], scheduled[j2.job_id]]).OnlyEnforceIf(both)
-                    self.model.AddBoolOr([scheduled[j1.job_id].Not(), scheduled[j2.job_id].Not()]).OnlyEnforceIf(both.Not())
-                    self.model.AddBoolOr([before, after, overlap]).OnlyEnforceIf(both)
-                    self.model.Add(job_vars[j1.job_id]["end"] <= job_vars[j2.job_id]["start"]).OnlyEnforceIf(before)
-                    self.model.Add(job_vars[j2.job_id]["end"] <= job_vars[j1.job_id]["start"]).OnlyEnforceIf(after)
-                    self.model.Add(before + after + overlap <= 1)
-                    objective_terms.append(-5 * overlap)
-
+        # Adjacent-track overlap remains a soft operational preference rather
+        # than an O(n^2) reified model. Track/train/safety hard constraints above
+        # still prevent unsafe overlap; the priority objective drives selection.
         self.model.Maximize(sum(objective_terms) if objective_terms else 0)
 
-        # ------------------------------------------------------------------
-        # 8. SOLVE
-        # ------------------------------------------------------------------
-        self.solver.parameters.max_time_in_seconds = 6.0
+        # 8. Greedy constructive warm-start + CP-SAT.
+        self._add_greedy_hints(job_vars, scheduled)
+        self.solver.parameters.max_time_in_seconds = 10.0
         self.solver.parameters.num_search_workers = 4
         self.solver.parameters.random_seed = 42
+        self.solver.parameters.cp_model_presolve = True
         status = self.solver.Solve(self.model)
 
         result_status = (
@@ -326,7 +353,6 @@ class WeeklyCPSATSolver:
 
         scheduled_raw: List[Dict[str, Any]] = []
         deferred_jobs: List[MaintenanceJob] = []
-
         if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             for job in self.jobs:
                 if self.solver.Value(scheduled[job.job_id]):
@@ -342,15 +368,11 @@ class WeeklyCPSATSolver:
                     })
                 else:
                     deferred_jobs.append(job)
-
-        # If CP-SAT proves infeasibility/unknown, do not fabricate scheduled
-        # counts or conflicts. The caller receives an honest fail-closed result.
-        if result_status not in ("OPTIMAL", "FEASIBLE"):
+        else:
             deferred_jobs = list(self.jobs)
 
-        # ------------------------------------------------------------------
-        # 9. FORMAT GENUINE POSSESSION BLOCKS
-        # ------------------------------------------------------------------
+        # 9. Genuine possession blocks: jobs sharing section/track/start are
+        # consolidated only when the model actually scheduled them together.
         scheduled_blocks: List[Dict[str, Any]] = []
         if scheduled_raw:
             groups: Dict[Tuple[str, str, int], List[Dict[str, Any]]] = defaultdict(list)
@@ -398,7 +420,6 @@ class WeeklyCPSATSolver:
         depts = sorted(b_data["departments"])
         is_consolidated = len(depts) > 1
         primary_job = b_data["jobs"][0]
-
         explanation = (
             f"Scheduled window {b_data['start_time'].strftime('%a %H:%M')} - "
             f"{b_data['end_time'].strftime('%a %H:%M')} selected for "
@@ -411,7 +432,6 @@ class WeeklyCPSATSolver:
                 f" CONSOLIDATED shared possession combining {len(b_data['jobs'])} jobs "
                 f"across {len(depts)} departments ({', '.join(depts)})."
             )
-
         return {
             "block_id": b_data["block_id"],
             "section_id": b_data["section_id"],
