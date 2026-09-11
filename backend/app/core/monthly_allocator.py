@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Tuple
 from collections import defaultdict
+from datetime import date
 from app.models.job import MaintenanceJob
 
 # Strategic planning capacity target per week per section.
@@ -33,6 +34,8 @@ class MonthlyAllocator:
         if j1.department == j2.department:
             return False
         if j1.section_id != j2.section_id or j1.track_id != j2.track_id:
+            return False
+        if abs(float(j1.location_km) - float(j2.location_km)) > 0.01:
             return False
         if j1.power_block_required or j2.power_block_required:
             return False
@@ -100,7 +103,7 @@ class MonthlyAllocator:
         # enter the same strategic week and remain eligible for Level-2 sharing.
         allocation_items: List[Tuple[List[MaintenanceJob], float, float, str]] = []
         for group in groups:
-            duration = sum(job.estimated_duration_hours for job in group)
+            duration = sum(float(job.estimated_duration_hours) for job in group)
             priority = sum(float(job.ai_priority_score or 0.0) for job in group)
             key = "+".join(sorted(job.job_id for job in group))
             allocation_items.append((group, duration, priority, key))
@@ -174,7 +177,7 @@ class MonthlyAllocator:
             }
 
         return {
-            "month": __import__("datetime").date.today().strftime("%B %Y"),
+            "month": date.today().strftime("%B %Y"),
             "division": "Pune Division (CR)",
             "summary": {
                 "total_jobs_evaluated": len(jobs),
