@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CalendarDays, CheckCircle2, FileCheck2, Gauge, Layers3, ListChecks, Map, Play, ShieldCheck, TrainFront, Wrench } from 'lucide-react';
+import { ArrowRight, CalendarDays, CheckCircle2, FileCheck2, Layers3, ListChecks, Map, Play, ShieldCheck, TrainFront } from 'lucide-react';
 import BrandAsset from '../components/BrandAsset';
 import { fetchMonthlyPlan, fetchWeeklyPlan } from '../services/api';
 
@@ -13,13 +13,6 @@ const quickActions = [
 ];
 
 const toneClasses = { blue: 'bg-[#2374E1] text-white', green: 'bg-[#16A878] text-white' };
-
-const heroCapabilities = [
-  [Gauge, 'OPTIMIZE', 'BLOCKS'],
-  [Wrench, 'MAXIMIZE', 'ASSET AVAILABILITY'],
-  [Layers3, 'UNIFY', 'DEPARTMENTS'],
-  [ListChecks, 'ENABLE', 'DATA-DRIVEN DECISIONS'],
-];
 
 export default function MARSHomePage({ currentRole }) {
   const [weekly, setWeekly] = useState(null);
@@ -47,64 +40,54 @@ export default function MARSHomePage({ currentRole }) {
 
   return (
     <main className="min-h-full bg-[#EEF2F6] text-[#17345C]">
-      <section className="relative min-h-[535px] overflow-hidden border-b border-[#CBD6E2] bg-[#061E39] lg:min-h-[575px]">
+      <section className="relative min-h-[500px] overflow-hidden border-b border-[#CBD6E2] bg-[#061E39] lg:min-h-[525px]">
         <BrandAsset
           name="vande_bharat_hero.jpg"
           alt="Vande Bharat train on an Indian railway corridor"
           className="absolute inset-0 h-full w-full object-cover object-[64%_center]"
           fallback={null}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,20,39,.97)_0%,rgba(3,23,43,.91)_27%,rgba(4,30,55,.67)_46%,rgba(4,30,55,.12)_74%,rgba(4,30,55,.02)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,18,35,.18)_0%,transparent_46%,rgba(2,18,35,.76)_100%)]" />
-        <div className="absolute inset-y-0 left-0 w-[42%] bg-[#061E39]/25 blur-2xl" />
-        <div className="absolute left-0 top-0 h-full w-1 bg-[#F2C94C]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,20,39,.78)_0%,rgba(3,23,43,.54)_25%,rgba(4,30,55,.14)_52%,rgba(4,30,55,.02)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,18,35,.08)_0%,transparent_58%,rgba(2,18,35,.72)_100%)]" />
+        <div className="absolute left-0 top-0 h-full w-[3px] bg-[#F2C94C]" />
 
-        <div className="relative z-10 flex min-h-[535px] flex-col justify-between px-6 py-8 sm:px-8 lg:min-h-[575px] lg:px-14 lg:py-9">
-          <div className="max-w-[790px] pt-1">
-            <div className="mb-5 flex items-center gap-3">
-              <span className="h-9 w-[3px] bg-[#F2C94C]" />
-              <span className="text-[11px] font-extrabold uppercase tracking-[.28em] text-white/90">Pune Division (CR)</span>
+        <div className="absolute right-7 top-6 z-20 flex max-w-[270px] flex-col items-end gap-2.5 lg:right-10 lg:top-7">
+          <BrandAsset
+            name="viksit_bharat_railways.png"
+            alt="Viksit Bharat Viksit Railways"
+            className="max-h-[88px] max-w-[205px] object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,.45)]"
+            fallback={null}
+          />
+          <BrandAsset
+            name="on-track-better-tomorrow.png"
+            alt="On Track for a Better Tomorrow"
+            className="max-h-[64px] max-w-[225px] object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,.45)]"
+            fallback={<div className="text-right font-serif text-[18px] font-semibold italic leading-tight text-white/95">On Track<br />for a Better Tomorrow</div>}
+          />
+        </div>
+
+        <div className="relative z-10 flex min-h-[500px] flex-col justify-between px-6 py-7 sm:px-8 lg:min-h-[525px] lg:px-14 lg:py-8">
+          <div className="max-w-[700px] pt-1">
+            <div className="mb-4 flex items-center gap-3">
+              <span className="h-8 w-[3px] bg-[#F2C94C]" />
+              <span className="text-[10px] font-extrabold uppercase tracking-[.26em] text-white/90">Pune Division (CR)</span>
             </div>
 
-            <div className="flex items-center gap-4 lg:gap-5">
-              <h1 className="m-0 text-[56px] font-black leading-[.9] tracking-[-.045em] text-white drop-shadow-[0_3px_12px_rgba(0,0,0,.35)] sm:text-[64px] lg:text-[72px]">MARS 2.0</h1>
-              <span className="h-[62px] w-[3px] shrink-0 bg-[#2B82F6] lg:h-[70px]" />
-              <div className="font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[25px] font-semibold leading-[1.22] tracking-tight text-white sm:text-[28px] lg:text-[31px]">
+            <div className="flex items-center gap-3.5 lg:gap-4">
+              <h1 className="m-0 text-[52px] font-black leading-[.88] tracking-[-.055em] text-white drop-shadow-[0_3px_10px_rgba(0,0,0,.38)] sm:text-[58px] lg:text-[66px]">MARS 2.0</h1>
+              <span className="h-[54px] w-[3px] shrink-0 bg-[#2B82F6] lg:h-[62px]" />
+              <div className="font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[21px] font-semibold leading-[1.16] tracking-[-.02em] text-white sm:text-[23px] lg:text-[25px]">
                 सुरक्षित पथ<br />सशक्त भारत
               </div>
             </div>
-
-            <div className="mt-5 max-w-[560px] border-l-2 border-white/20 pl-4">
-              <p className="m-0 text-[19px] font-semibold leading-[1.35] tracking-[-.01em] text-white sm:text-[21px] lg:text-[23px]">AI-Powered Maintenance Planning<br />for a More Reliable Tomorrow</p>
-              <p className="mt-2 text-[10px] font-medium uppercase tracking-[.16em] text-white/60">Divisional decision support for safe, coordinated railway possessions</p>
-            </div>
-
-            <div className="mt-8 flex max-w-[780px] flex-wrap items-stretch border-y border-white/20 bg-[#03172B]/20 backdrop-blur-[2px]">
-              {heroCapabilities.map(([Icon, title, sub], i) => (
-                <div key={title} className={`flex min-h-[72px] flex-1 basis-[180px] items-center gap-3 py-3 pr-4 ${i > 0 ? 'border-l border-white/20 pl-4' : 'pl-1'}`}>
-                  <Icon className="h-7 w-7 shrink-0 text-white" strokeWidth={1.65} />
-                  <div className="text-[9px] font-extrabold leading-[1.25] tracking-[.06em] text-white sm:text-[10px]">{title}<br />{sub}</div>
-                </div>
-              ))}
-            </div>
           </div>
 
-          <div className="flex items-end justify-between gap-5 pt-7">
-            <div className="w-[275px] border-l-[3px] border-[#F2C94C] bg-[#041A32]/78 px-5 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,.18)] backdrop-blur-md">
+          <div className="flex items-end justify-between gap-5 pt-8">
+            <div className="w-[270px] border-l-[3px] border-[#F2C94C] bg-[#041A32]/72 px-4.5 py-3 shadow-[0_8px_24px_rgba(0,0,0,.18)] backdrop-blur-md">
               <div className="flex items-center gap-2 text-[13px] font-extrabold text-white"><TrainFront className="h-4 w-4" /> Pune Division (CR)</div>
               <div className="mt-1 text-[9px] font-medium tracking-wide text-white/75">People &nbsp;|&nbsp; Performance &nbsp;|&nbsp; Progress</div>
               <div className="mt-2.5 flex h-[3px] w-full overflow-hidden bg-white/15"><span className="w-[34%] bg-[#F2C94C]" /><span className="w-[33%] bg-white/75" /><span className="w-[33%] bg-[#16A878]" /></div>
               <div className="mt-2 flex justify-between text-[8px] font-bold uppercase tracking-wider text-white/55"><span>Division</span><span>Operational</span><span>On Track</span></div>
-            </div>
-
-            <div className="hidden items-end gap-4 lg:flex">
-              <BrandAsset
-                name="on-track-better-tomorrow.png"
-                alt="On Track for a Better Tomorrow"
-                className="max-h-[72px] max-w-[250px] object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,.4)]"
-                fallback={<div className="text-right font-serif text-[19px] font-semibold italic leading-tight text-white/90">On Track<br />for a Better Tomorrow</div>}
-              />
-              <BrandAsset name="viksit_bharat_railways.png" alt="Viksit Bharat Viksit Railways" className="max-h-[105px] max-w-[225px] object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,.4)]" fallback={null} />
             </div>
           </div>
         </div>
