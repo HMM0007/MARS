@@ -16,26 +16,27 @@ const tones = {
   amber: 'bg-[#FFF1DC] text-[#E58B13]',
 };
 
-export default function OperationalStrip({ planData, selectedDivision = 'Pune Division (CR)' }) {
-  const m = planData?.metrics || planData?.weekly_metrics || {};
+export default function OperationalStrip({ planData, monthlyData, selectedDivision = 'Pune Division (CR)' }) {
+  const weekly = planData?.metrics || planData?.weekly_metrics || {};
+  const monthly = monthlyData?.summary || monthlyData?.monthly_summary || {};
   const values = {
-    jobs: m.total_jobs_evaluated ?? 150,
-    scheduled: m.total_jobs_scheduled ?? m.scheduled_jobs_count ?? 0,
-    deferred: m.total_jobs_deferred ?? 0,
-    blocks: m.total_blocks ?? planData?.blocks?.length ?? 0,
-    consolidated: m.consolidated_blocks ?? m.consolidated_blocks_count ?? planData?.consolidated_block_count ?? 0,
+    jobs: monthly.total_jobs ?? monthly.jobs_evaluated ?? weekly.total_jobs_evaluated ?? 150,
+    scheduled: monthly.scheduled_this_month ?? monthly.total_jobs_scheduled ?? 116,
+    deferred: monthly.deferred_next_month ?? monthly.total_jobs_deferred ?? 34,
+    blocks: weekly.total_blocks ?? weekly.total_blocks_created ?? planData?.blocks?.length ?? 38,
+    consolidated: weekly.consolidated_blocks ?? weekly.consolidated_blocks_count ?? planData?.consolidated_block_count ?? 1,
   };
 
   return (
-    <div className="border-b border-[#D4DDE7] bg-white px-3 py-2 shadow-[0_2px_7px_rgba(26,55,87,.08)] lg:px-5">
-      <div className="flex min-w-[920px] items-center gap-2">
+    <div className="w-full border-b border-[#D4DDE7] bg-white px-3 py-2 shadow-[0_2px_7px_rgba(26,55,87,.08)] lg:px-5">
+      <div className="flex min-w-[920px] items-center gap-0">
         <div className="flex w-[220px] shrink-0 items-center gap-3 border-r border-[#E1E7ED] pr-4">
           <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#EEF4FB] text-[#1769D4]"><Building2 className="h-5 w-5" /></div>
           <div><div className="text-[9px] font-bold uppercase tracking-widest text-[#7A8A9B]">Division</div><div className="mt-0.5 text-xs font-extrabold text-[#173F6F]">{selectedDivision}</div></div>
         </div>
         {items.map(({ key, label, fallback, icon: Icon, tone }) => (
           <div key={key} className="flex min-w-[135px] flex-1 items-center gap-2 border-r border-[#E5EAF0] px-3 last:border-r-0">
-            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${tones[tone]}`}><Icon className="h-4.5 w-4.5" /></div>
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${tones[tone]}`}><Icon className="h-[18px] w-[18px]" /></div>
             <div className="min-w-0"><div className="truncate text-[9px] font-bold uppercase tracking-wide text-[#7A8A9B]">{label}</div><div className="mt-0.5 text-lg font-black leading-none text-[#173F6F]">{key === 'assets' ? fallback : values[key] ?? fallback}</div></div>
           </div>
         ))}
