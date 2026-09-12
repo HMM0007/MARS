@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Header from './components/Header';
 import OperationalStrip from './components/OperationalStrip';
 import Sidebar from './components/Sidebar';
+import OperationalWorkflowBridge from './components/OperationalWorkflowBridge';
 import MARSHomePage from './pages/MARSHomePage';
 import WeeklyPlanPage from './pages/WeeklyPlanPage';
 import MonthlyPlanPage from './pages/MonthlyPlanPage';
@@ -41,6 +42,7 @@ function AppContent() {
   return <div className="min-h-screen bg-[#EEF2F6] font-sans text-[#17345C]">
     <Header selectedDivision={selectedDivision} selectedRole={selectedRole} onDivisionChange={setSelectedDivision} onRoleChange={handleRoleChange} />
     <OperationalStrip planData={weeklyPlan} monthlyData={monthlyPlan} selectedDivision={selectedDivision.name} />
+    <OperationalWorkflowBridge />
     <div className="flex min-h-[calc(100vh-118px)]"><Sidebar currentRole={selectedRole}/><div className="min-w-0 flex-1 overflow-y-auto">
       <Routes>
         <Route path="/" element={<MARSHomePage currentRole={selectedRole}/>}/>
