@@ -24,14 +24,6 @@ const safeCoord = (km, trackId) => {
   return Array.isArray(p) && p.length >= 2 ? p : [73.64, 18.65];
 };
 
-function fallbackRouteFeatures() {
-  const stations = PUNE_LNL_STATIONS || [];
-  return [
-    { type: 'Feature', properties: { section_id: 'PUNE-LNL', track_id: 'PUNE-LNL-UP', direction: 'UP', track_name: 'TRACK_1_UP (Main Line - To Mumbai)' }, geometry: { type: 'LineString', coordinates: stations.map((s) => [s.lng, s.lat]) } },
-    { type: 'Feature', properties: { section_id: 'PUNE-LNL', track_id: 'PUNE-LNL-DN', direction: 'DN', track_name: 'TRACK_2_DN (Main Line - To Pune)' }, geometry: { type: 'LineString', coordinates: stations.map((s) => [s.lng + 0.00018, s.lat + 0.00012]) } },
-  ];
-}
-
 function blockJobs(block, jobsById) {
   const direct = Array.isArray(block?.jobs_detail) ? block.jobs_detail : [];
   const ids = Array.isArray(block?.job_ids) ? block.job_ids : [];
@@ -70,7 +62,6 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
   const mapRef = useRef(null);
   const stationMarkersRef = useRef([]);
   const jobMarkersRef = useRef([]);
-  const routeFeaturesRef = useRef(fallbackRouteFeatures());
   const [loaded, setLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
   const [dept, setDept] = useState('ALL');
@@ -99,11 +90,21 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
   const renderStations = () => {
     const map = mapRef.current; if (!map) return;
     clearMarkers(stationMarkersRef);
-    stationMarkersRef.current = (PUNE_LNL_STATIONS || []).map((station) => {
-      const el = document.createElement('button'); el.type = 'button'; el.textContent = `${station.code} · ${station.name}`; el.title = `${station.name} • ${station.code} • Km ${Number(station.km).toFixed(2)}`;
-      el.style.cssText = 'background:#fff;border:1px solid #53718d;border-radius:5px;padding:3px 6px;color:#123e73;font:800 10px/12px Arial,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.28);white-space:nowrap;cursor:pointer;';
+    stationMarkersRef.current = (PUNE_LNL_STATIONS || []).map((station, index) => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.title = `${station.name} • ${station.code} • Km ${Number(station.km).toFixed(2)}`;
+      el.setAttribute('aria-label', `${station.name}, ${station.code}, Km ${Number(station.km).toFixed(2)}`);
+      el.style.cssText = 'display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.97);border:1px solid #6B7F91;border-radius:5px;padding:3px 6px 3px 4px;color:#123E73;font:800 10px/12px Arial,sans-serif;box-shadow:0 2px 7px rgba(0,0,0,.32);white-space:nowrap;cursor:pointer;pointer-events:auto;z-index:25;';
+      const dot = document.createElement('span');
+      dot.textContent = '●';
+      dot.style.cssText = 'display:inline-block;color:#B42318;font-size:10px;line-height:10px;';
+      const label = document.createElement('span');
+      label.textContent = `${station.code} · ${station.name}`;
+      el.append(dot, label);
       el.onclick = () => setInspection({ type: 'STATION', data: station });
-      return new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([station.lng, station.lat]).addTo(map);
+      const xOffset = index % 2 === 0 ? -10 : 10;
+      return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [xOffset, -2] }).setLngLat([station.lng, station.lat]).addTo(map);
     });
   };
 
@@ -124,7 +125,7 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return undefined;
     let map;
-    let initTimeout;
+    let disposed = false;
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
@@ -132,20 +133,21 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
           version: 8,
           sources: {
             osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' },
-            railway: { type: 'geojson', data: { type: 'FeatureCollection', features: routeFeaturesRef.current } },
+            // Intentionally starts empty: we never display a fake straight corridor while the real geometry loads.
+            railway: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
             maintenance: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
           },
           layers: [
             { id: 'osm-base', type: 'raster', source: 'osm' },
-            { id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 10, 11, 13, 14, 17, 17, 22], 'line-opacity': 0.98 } },
-            { id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 5, 11, 6, 14, 8, 18, 11], 'line-opacity': 1 } },
-            { id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 5, 11, 6, 14, 8, 18, 11], 'line-opacity': 1 } },
-            { id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 12, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#6FA8D8', 'line-width': 1.5, 'line-opacity': 0.95 } },
-            { id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 12, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#78C9CF', 'line-width': 1.5, 'line-opacity': 0.95 } },
-            { id: 'block-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 13, 'line-opacity': 0.98 } },
-            { id: 'block-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 8, 'line-opacity': 0.98 } },
-            { id: 'job-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 8, 'line-opacity': 0.98 } },
-            { id: 'job-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': ['get', 'color'], 'line-width': 4, 'line-opacity': 1 } },
+            { id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 7, 11, 9, 14, 12, 18, 15], 'line-opacity': 0.96, 'line-blur': 0.25 } },
+            { id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 3.2, 11, 3.8, 14, 5, 18, 7], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
+            { id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 3.2, 11, 3.8, 14, 5, 18, 7], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
+            { id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#8FC4E8', 'line-width': 1.1, 'line-opacity': 0.95, 'line-cap': 'round' } },
+            { id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#8AD8DC', 'line-width': 1.1, 'line-opacity': 0.95, 'line-cap': 'round' } },
+            { id: 'block-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 11, 'line-opacity': 0.96 } },
+            { id: 'block-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 6, 'line-opacity': 0.98 } },
+            { id: 'job-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 7, 'line-opacity': 0.96 } },
+            { id: 'job-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': ['get', 'color'], 'line-width': 3.5, 'line-opacity': 1 } },
           ],
         },
         center: [73.64, 18.65], zoom: 10.45, minZoom: 10.25, maxZoom: 18, maxBounds: MAP_BOUNDS, maxBoundsViscosity: 1, renderWorldCopies: false, attributionControl: true,
@@ -153,35 +155,38 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
       mapRef.current = map;
       map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
 
-      // The map shell is usable as soon as MapLibre has been constructed. Do not make the
-      // entire dashboard wait for the raster tiles, GeoJSON worker, or optional markers.
-      setLoaded(true);
-      initTimeout = window.setTimeout(() => setLoaded(true), 5000);
-
       map.once('load', () => {
+        if (disposed) return;
         try {
           map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
           renderStations();
           renderJobs();
           map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
         } catch (error) {
-          console.error('Railway map layer setup failed:', error);
-          setMapError(error?.message || 'Railway map layers could not be rendered.');
+          console.error('Railway corridor layer rendering failed:', error);
+          setMapError(error?.message || 'Railway corridor layers could not be rendered.');
         } finally {
+          // Base map is usable independently of OSM tile/GeoJSON timing.
           setLoaded(true);
         }
 
         fetch('/geojson/pune_lonavala_railways.geojson', { cache: 'no-store' })
           .then((response) => { if (!response.ok) throw new Error(`Railway geometry HTTP ${response.status}`); return response.json(); })
           .then((data) => {
-            const exact = (data?.features || []).filter((f) => f?.geometry?.type === 'LineString' && Array.isArray(f.geometry.coordinates) && f.geometry.coordinates.length > 1 && (f.properties?.section_id === 'PUNE-LNL' || String(f.properties?.track_id || '').startsWith('PUNE-LNL-')));
-            if (exact.length < 2) throw new Error('PUNE-LNL UP/DN route geometry not found');
-            const route = exact.map((f) => ({ ...f, properties: { ...(f.properties || {}), direction: String(f.properties?.direction || f.properties?.track_id || '').toUpperCase().includes('DN') ? 'DN' : 'UP' } }));
-            routeFeaturesRef.current = route;
+            if (disposed) return;
+            const candidates = (data?.features || []).filter((f) => f?.geometry?.type === 'LineString' && Array.isArray(f.geometry.coordinates) && f.geometry.coordinates.length > 1 && f.properties?.section_id === 'PUNE-LNL');
+            const directions = new Set(candidates.map((f) => String(f.properties?.direction || '').toUpperCase()));
+            if (!directions.has('UP') || !directions.has('DN')) throw new Error('PUNE-LNL UP/DN route geometry not found');
+            const route = candidates
+              .filter((f) => ['UP', 'DN'].includes(String(f.properties?.direction || '').toUpperCase()))
+              .map((f) => ({ ...f, properties: { ...(f.properties || {}), direction: String(f.properties.direction).toUpperCase() } }));
+            if (route.length < 2) throw new Error('PUNE-LNL double-line geometry is incomplete');
             map.getSource('railway')?.setData({ type: 'FeatureCollection', features: route });
-            map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 250 });
           })
-          .catch((error) => console.warn('Exact PUNE-LNL railway geometry unavailable; fallback retained.', error));
+          .catch((error) => {
+            console.error('Authoritative PUNE-LNL railway geometry could not be loaded:', error);
+            setMapError('Authoritative Pune–Lonavala railway geometry could not be loaded. The map remains available without a fabricated route.');
+          });
       });
       map.on('error', (event) => { if (event?.error?.message) console.warn('MapLibre:', event.error.message); });
     } catch (error) {
@@ -192,13 +197,17 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
 
     const resize = () => map?.resize();
     window.addEventListener('resize', resize);
-    return () => { if (initTimeout) window.clearTimeout(initTimeout); clearMarkers(stationMarkersRef); clearMarkers(jobMarkersRef); map?.remove(); mapRef.current = null; window.removeEventListener('resize', resize); };
+    return () => { disposed = true; clearMarkers(stationMarkersRef); clearMarkers(jobMarkersRef); map?.remove(); mapRef.current = null; window.removeEventListener('resize', resize); };
   }, []);
 
   useEffect(() => {
     const map = mapRef.current; if (!map || !map.isStyleLoaded()) return;
-    map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
-    renderJobs();
+    try {
+      map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
+      renderJobs();
+    } catch (error) {
+      console.warn('Maintenance layer update failed:', error);
+    }
   }, [features]);
 
   useEffect(() => { const map = mapRef.current; if (!map) return; requestAnimationFrame(() => map.resize()); }, [isFullScreenMode]);
@@ -211,11 +220,11 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
     <div className="absolute left-4 top-[140px] z-40 w-[330px]"><div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#718294]" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search job / asset / defect / block / chainage" className="h-9 w-full rounded-md border border-[#C9D4DE] bg-white/96 pl-8 pr-8 text-[10px] font-mono shadow-lg outline-none focus:border-[#173E6C]" />{query && <button onClick={() => setQuery('')} className="absolute right-2.5 top-2.5 text-[#718294]"><X className="h-3.5 w-3.5" /></button>}</div></div>
     <div className="absolute right-4 top-4 z-40 flex gap-2"><button onClick={resetView} className="flex h-9 items-center gap-1.5 rounded-md border border-[#C9D4DE] bg-white px-3 text-[10px] font-extrabold text-[#173E6C] shadow-lg"><LocateFixed className="h-3.5 w-3.5" />Reset</button><button onClick={onToggleFullScreen} className="flex h-9 items-center gap-1.5 rounded-md border border-[#C9D4DE] bg-white px-3 text-[10px] font-extrabold text-[#173E6C] shadow-lg"><Maximize2 className="h-3.5 w-3.5" />{isFullScreenMode ? 'Exit' : 'Full Screen'}</button></div>
     <div className="absolute right-4 top-[94px] z-40 w-[270px] rounded-md border border-[#C9D4DE] bg-[#F8FAFC]/96 p-2 shadow-lg"><div className="mb-1.5 flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#52606D]"><Activity className="h-3 w-3 text-[#12805C]" /> LIVE OPERATIONAL LAYERS</div><div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[9px] font-bold text-[#52606D]"><span><i className="mr-1 inline-block h-2 w-7 rounded bg-[#0B4F8A]" />UP route</span><span><i className="mr-1 inline-block h-2 w-7 rounded bg-[#00838F]" />DN route</span><span><i className="mr-1 inline-block h-2 w-7 rounded bg-[#1769AA]" />Possession</span><span><i className="mr-1 inline-block h-2 w-7 rounded border border-[#E45718] bg-[#FFF4E8]" />Maintenance job</span></div><div className="mt-2 grid grid-cols-3 divide-x border-t border-[#D6DEE6] pt-1.5 text-center"><div><div className="text-[8px] uppercase text-[#8796A5]">Jobs</div><div className="text-sm font-extrabold text-[#173E6C]">{counts.jobs}</div></div><div><div className="text-[8px] uppercase text-[#8796A5]">Blocks</div><div className="text-sm font-extrabold text-[#12805C]">{counts.blocks}</div></div><div><div className="text-[8px] uppercase text-[#8796A5]">Critical</div><div className="text-sm font-extrabold text-[#B42318]">{counts.critical}</div></div></div><div className="mt-1 grid grid-cols-3 divide-x border-t border-[#D6DEE6] pt-1.5 text-center"><div><div className="text-[8px] uppercase text-[#8796A5]">Scheduled</div><div className="text-[11px] font-extrabold text-[#1769AA]">{counts.scheduled}</div></div><div><div className="text-[8px] uppercase text-[#8796A5]">Pending</div><div className="text-[11px] font-extrabold text-[#E45718]">{counts.pending}</div></div><div><div className="text-[8px] uppercase text-[#8796A5]">Deferred</div><div className="text-[11px] font-extrabold text-[#6B7280]">{counts.deferred}</div></div></div></div>
-    <div className="pointer-events-none absolute left-4 bottom-4 z-40 rounded-md border border-[#C9D4DE] bg-white/96 px-3 py-2 shadow-lg text-[9px] font-bold text-[#52606D]"><div className="mb-1 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.12em] text-[#8796A5]"><Clock3 className="h-3 w-3" /> CONTROL-CENTRE MAP KEY</div><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#0B4F8A]" />UP route</span><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#00838F]" />DN route</span><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#1769AA]" />Possession</span><span><i className="mr-1 inline-block h-2 w-7 rounded border border-[#E45718] bg-[#FFF4E8]" />Job</span><div className="mt-1 text-[8px] font-normal text-[#8796A5]">UP/DN route geometry is loaded from the repository PUNE-LNL railway GeoJSON, not drawn as a straight station-to-station line.</div></div>
+    <div className="pointer-events-none absolute left-4 bottom-4 z-40 rounded-md border border-[#C9D4DE] bg-white/96 px-3 py-2 shadow-lg text-[9px] font-bold text-[#52606D]"><div className="mb-1 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.12em] text-[#8796A5]"><Clock3 className="h-3 w-3" /> CONTROL-CENTRE MAP KEY</div><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#0B4F8A]" />UP route</span><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#00838F]" />DN route</span><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#1769AA]" />Possession</span><span><i className="mr-1 inline-block h-2 w-7 rounded border border-[#E45718] bg-[#FFF4E8]" />Job</span><div className="mt-1 text-[8px] font-normal text-[#8796A5]">Route highlight follows the authoritative PUNE-LNL railway GeoJSON alignment.</div></div>
     <div className="absolute right-4 bottom-4 z-40 rounded-md border border-[#C9D4DE] bg-white/96 px-3 py-2 shadow-lg text-[9px] font-semibold text-[#52606D]"><div className="flex items-center gap-2"><TrainFront className="h-3.5 w-3.5 text-[#B42318]" />Train paths: protected operational constraints</div><div className="mt-1 flex items-center gap-2"><MapPinned className="h-3.5 w-3.5 text-[#173E6C]" />Stations: fixed corridor reference points</div></div>
     {!loaded && <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#E9EEF2]/35"><div className="rounded-md border border-[#C9D4DE] bg-white px-5 py-3 text-[10px] font-extrabold text-[#52606D] shadow-xl">Initializing railway control-centre…</div></div>}
     {mapError && <div className="absolute left-4 bottom-24 z-50 max-w-[480px] rounded-md border border-[#F1B6B6] bg-white px-3 py-2 text-[9px] font-semibold text-[#B42318] shadow-lg">{mapError}</div>}
-    {inspection && <aside className="absolute bottom-24 right-4 z-[60] w-[350px] rounded-lg border border-[#C9D4DE] bg-white p-3 shadow-2xl"><div className="flex items-start justify-between gap-3"><div><div className="text-[8px] font-extrabold uppercase tracking-[0.16em] text-[#8796A5]">{inspection.type === 'STATION' ? 'RAILWAY STATION' : 'MAINTENANCE ACTIVITY'}</div><div className="mt-0.5 text-sm font-extrabold text-[#173E6C]">{inspection.type === 'STATION' ? `${inspection.data.code} · ${inspection.data.name}` : inspection.data.block_id || inspection.data.job_id}</div></div><button onClick={() => setInspection(null)} className="rounded p-1 text-[#718294] hover:bg-[#F4F6F8]"><X className="h-4 w-4" /></button></div>{inspection.type === 'STATION' ? <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.km).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Type</div><div className="font-bold">{inspection.data.category}</div></div></div> : <div className="mt-3 space-y-2 text-[10px]"><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Department</div><div className="font-bold">{inspection.data.department || 'Maintenance'}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Status</div><div className="font-bold">{inspection.data.status}</div></div></div><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#F8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.location_km || 0).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Track</div><div className="font-mono font-bold">{inspection.data.track_id || 'PUNE-LNL-UP'}</div></div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Asset / Defect</div><div className="font-bold">{inspection.data.asset_id || '—'} · {inspection.data.defect_type || 'Maintenance'}</div></div><button onClick={() => onOpenExplainability?.(inspection.data)} className="w-full rounded bg-[#173E6C] px-3 py-2 text-[10px] font-extrabold text-white">Open Block Details</button></div>}</aside>}
+    {inspection && <aside className="absolute bottom-24 right-4 z-[60] w-[350px] rounded-lg border border-[#C9D4DE] bg-white p-3 shadow-2xl"><div className="flex items-start justify-between gap-3"><div><div className="text-[8px] font-extrabold uppercase tracking-[0.16em] text-[#8796A5]">{inspection.type === 'STATION' ? 'RAILWAY STATION' : 'MAINTENANCE ACTIVITY'}</div><div className="mt-0.5 text-sm font-extrabold text-[#173E6C]">{inspection.type === 'STATION' ? `${inspection.data.code} · ${inspection.data.name}` : inspection.data.block_id || inspection.data.job_id}</div></div><button onClick={() => setInspection(null)} className="rounded p-1 text-[#718294] hover:bg-[#F4F6F8]"><X className="h-4 w-4" /></button></div>{inspection.type === 'STATION' ? <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.km).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Type</div><div className="font-bold">{inspection.data.category}</div></div></div> : <div className="mt-3 space-y-2 text-[10px]"><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Department</div><div className="font-bold">{inspection.data.department || 'Maintenance'}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Status</div><div className="font-bold">{inspection.data.status}</div></div></div><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.location_km || 0).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Track</div><div className="font-mono font-bold">{inspection.data.track_id || 'PUNE-LNL-UP'}</div></div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Asset / Defect</div><div className="font-bold">{inspection.data.asset_id || '—'} · {inspection.data.defect_type || 'Maintenance'}</div></div><button onClick={() => onOpenExplainability?.(inspection.data)} className="w-full rounded bg-[#173E6C] px-3 py-2 text-[10px] font-extrabold text-white">Open Block Details</button></div>}</aside>}
   </div>;
   return isFullScreenMode && typeof document !== 'undefined' ? createPortal(shell, document.body) : shell;
 }
