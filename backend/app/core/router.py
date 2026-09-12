@@ -20,7 +20,6 @@ router = APIRouter(prefix="/api/v1/core", tags=["MARS Core AI Engine"])
 
 
 class IncrementalPlanRequest(BaseModel):
-    """Request payload for emergency/changed-job weekly plan repair."""
     week: int = Field(default=1, ge=1, le=4)
     new_job: MaintenanceJob
     existing_plan: Dict[str, Any]
@@ -33,7 +32,6 @@ class WeeklyPlanApprovalRequest(BaseModel):
 
 
 class JobIntakeRequest(BaseModel):
-    """Department intake payload. Department is supplied by the authenticated UI role."""
     job_id: str = Field(min_length=1, max_length=80)
     department: Literal["Engineering", "S&T", "Traction"]
     asset_id: str = Field(min_length=1, max_length=120)
@@ -55,16 +53,9 @@ class JobIntakeRequest(BaseModel):
 
 
 def _load_unified_jobs() -> List[MaintenanceJob]:
-    """Ingest all three maintenance departments plus durable runtime intake jobs."""
-    source_jobs = (
-        TMSAdapter.fetch_engineering_jobs()
-        + SMMSAdapter.fetch_snt_jobs()
-        + TDMSAdapter.fetch_traction_jobs()
-    )
+    """Ingest the CRIS feeds and durable runtime intake overlay as one pool."""
+    source_jobs = TMSAdapter.fetch_engineering_jobs() + SMMSAdapter.fetch_snt_jobs() + TDMSAdapter.fetch_traction_jobs()
     runtime_jobs = [MaintenanceJob(**item) for item in list_intake_jobs()]
-
-    # Runtime intake is an overlay on the synthetic CRIS feed. De-duplicate by
-    # job ID so a restart or repeated adapter read cannot duplicate a job.
     by_id = {job.job_id: job for job in source_jobs}
     for job in runtime_jobs:
         by_id[job.job_id] = job
@@ -72,14 +63,12 @@ def _load_unified_jobs() -> List[MaintenanceJob]:
 
 
 def _current_week_monday() -> datetime:
-    """Return Monday 00:00 for the current planning week."""
     now = datetime.now()
     monday = now - timedelta(days=now.weekday())
     return monday.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 def _monthly_week_job_ids(monthly_plan: Dict[str, Any], week: int) -> set[str]:
-    """Extract job IDs allocated to one of the four strategic planning weeks."""
     week_key = f"week_{week}"
     job_ids: set[str] = set()
     for section in monthly_plan.get("section_allocations", {}).values():
@@ -90,19 +79,17 @@ def _monthly_week_job_ids(monthly_plan: Dict[str, Any], week: int) -> set[str]:
 
 @router.get("/jobs/all-scored", response_model=List[MaintenanceJob])
 def get_all_scored_jobs():
-    """Ingest and score the complete unified Engineering/S&T/Traction job pool."""
     return PriorityEngine.process_job_batch(_load_unified_jobs())
 
 
 @router.get("/jobs/intake", response_model=List[MaintenanceJob])
 def get_intake_jobs():
-    """Return durable jobs submitted through the department intake workflow."""
     return [MaintenanceJob(**item) for item in list_intake_jobs()]
 
 
 @router.post("/jobs/intake", response_model=Dict[str, Any])
 def submit_job_intake(request: JobIntakeRequest):
-    """Persist a department job and, when a weekly baseline exists, create a local repair proposal."""
+    """Persist a department job and propose a controlled weekly revision when a baseline exists."""
     existing_ids = {job.job_id for job in _load_unified_jobs()}
     if request.job_id in existing_ids:
         raise HTTPException(status_code=409, detail={"error": "DUPLICATE_JOB_ID", "message": "Job ID already exists.", "job_id": request.job_id})
@@ -135,47 +122,26 @@ def submit_job_intake(request: JobIntakeRequest):
         status="PENDING",
     )
     scored_job = PriorityEngine.score_job(job)
-    add_intake_job(scored_job.model_dump(mode="json"))
-
     approved = get_approved_plan()
-    if not approved:
-        return {
-            "status": "INTAKE_ONLY",
-            "message": "Job accepted into the Unified Job Pool. No approved weekly baseline exists yet, so no incremental repair was required.",
-            "job": scored_job,
-        }
 
-    # Use the planner-approved baseline, never an arbitrary freshly generated plan.
+    if not approved:
+        add_intake_job(scored_job.model_dump(mode="json"))
+        return {"status": "INTAKE_ONLY", "message": "Job accepted into the Unified Job Pool. No approved weekly baseline exists yet, so no incremental repair was required.", "job": scored_job}
+
     baseline_week = int(approved.get("planning_week", request.planning_week))
     try:
-        repair = get_incremental_weekly_plan(IncrementalPlanRequest(
-            week=baseline_week,
-            new_job=scored_job,
-            existing_plan=approved.get("plan", {}),
-        ))
+        repair = get_incremental_weekly_plan(IncrementalPlanRequest(week=baseline_week, new_job=scored_job, existing_plan=approved.get("plan", {})))
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail={
-            "error": "INCREMENTAL_REPAIR_FAILED",
-            "message": "Job was accepted, but no safe repair proposal could be produced.",
-            "job_id": job.job_id,
-            "reason": str(exc),
-        }) from exc
+        raise HTTPException(status_code=500, detail={"error": "INCREMENTAL_REPAIR_FAILED", "message": "The job was not committed because the incremental repair could not be evaluated.", "job_id": job.job_id, "reason": str(exc)}) from exc
 
-    return {
-        "status": "REPAIR_PROPOSED",
-        "message": "Job accepted and an incremental revision proposal was generated from the approved weekly baseline.",
-        "job": scored_job,
-        "baseline_revision": approved.get("revision"),
-        "proposal": repair,
-        "requires_planner_approval": True,
-    }
+    add_intake_job(scored_job.model_dump(mode="json"))
+    return {"status": "REPAIR_PROPOSED", "message": "Job accepted and an incremental revision proposal was generated from the approved weekly baseline.", "job": scored_job, "baseline_revision": approved.get("revision"), "proposal": repair, "requires_planner_approval": True}
 
 
 @router.get("/plan/weekly/approved", response_model=Dict[str, Any])
 def get_approved_weekly_plan():
-    """Return the latest planner-approved weekly baseline, if one exists."""
     record = get_approved_plan()
     if not record:
         return {"approved": False, "plan": None}
@@ -184,7 +150,6 @@ def get_approved_weekly_plan():
 
 @router.post("/plan/weekly/approve", response_model=Dict[str, Any])
 def approve_weekly_plan(request: WeeklyPlanApprovalRequest):
-    """Persist a planner-approved baseline or an incremental revision as the new baseline."""
     status = request.plan.get("status") or request.plan.get("solver_status")
     if status not in ("OPTIMAL", "FEASIBLE"):
         raise HTTPException(status_code=409, detail={"error": "PLAN_NOT_APPROVABLE", "message": "Only a FEASIBLE or OPTIMAL solver result can be approved."})
@@ -199,23 +164,18 @@ def get_monthly_demand_forecast(
     months: int = Query(1, ge=1, le=12, description="Number of future calendar months to forecast"),
     history: int = Query(18, ge=6, le=60, description="Historical monthly observations used for Prophet"),
 ):
-    """Forecast future monthly maintenance workload with Prophet."""
     jobs = _load_unified_jobs()
     return MonthlyForecastEngine.forecast(jobs, forecast_months=months, history_months=history)
 
 
 @router.get("/plan/monthly", response_model=Dict[str, Any])
 def get_monthly_strategic_plan():
-    """Generate the Level 1 four-week strategic workload allocation."""
     scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
     return MonthlyAllocator.generate_monthly_plan(scored_jobs)
 
 
 @router.get("/plan/weekly", response_model=Dict[str, Any])
-def get_weekly_tactical_plan(
-    week: int = Query(1, ge=1, le=4, description="Monthly planning week (1-4)"),
-):
-    """Generate the Level 2 CP-SAT plan for jobs allocated to the requested monthly week."""
+def get_weekly_tactical_plan(week: int = Query(1, ge=1, le=4, description="Monthly planning week (1-4)")):
     scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
     monthly_plan = MonthlyAllocator.generate_monthly_plan(scored_jobs)
     monthly_job_ids = _monthly_week_job_ids(monthly_plan, week)
@@ -229,8 +189,7 @@ def get_weekly_tactical_plan(
         raise HTTPException(status_code=500, detail={"error": "MONTHLY_WEEK_HANDOFF_MISMATCH", "message": "Weekly CP-SAT candidate set does not exactly match the selected monthly week.", "planning_week": week, "monthly_candidate_count": len(monthly_job_ids), "weekly_candidate_count": len(weekly_jobs), "missing_from_weekly": sorted(monthly_job_ids - weekly_job_ids), "unexpected_in_weekly": sorted(weekly_job_ids - monthly_job_ids)})
     trains = COAAdapter.fetch_passenger_timetable()
     start_monday = _current_week_monday() + timedelta(weeks=week - 1)
-    solver_engine = HardenedWeeklyCPSATSolver(weekly_jobs, trains, start_monday)
-    result = solver_engine.solve()
+    result = HardenedWeeklyCPSATSolver(weekly_jobs, trains, start_monday).solve()
     if result.get("status") in ("OPTIMAL", "FEASIBLE"):
         result["compliance"] = RailwayComplianceValidator(jobs=weekly_jobs, trains=trains, scheduled_blocks=result.get("scheduled_blocks", [])).validate()
     else:
@@ -250,7 +209,6 @@ def get_weekly_tactical_plan(
 
 @router.post("/plan/incremental", response_model=Dict[str, Any])
 def get_incremental_weekly_plan(request: IncrementalPlanRequest):
-    """Repair an existing weekly plan around a new or changed maintenance job."""
     scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
     existing_ids = {job.job_id for job in scored_jobs}
     if request.new_job.job_id in existing_ids:
@@ -263,8 +221,7 @@ def get_incremental_weekly_plan(request: IncrementalPlanRequest):
         raise HTTPException(status_code=409, detail={"error": "EXISTING_PLAN_JOB_INTEGRITY_FAILURE", "message": "The supplied plan contains job IDs that are not in the current unified pool.", "unknown_job_ids": unknown_plan_ids})
     trains = COAAdapter.fetch_passenger_timetable()
     start_monday = _current_week_monday() + timedelta(weeks=request.week - 1)
-    solver_engine = IncrementalCPSATSolver(jobs=all_jobs, trains=trains, start_monday=start_monday, existing_plan=request.existing_plan, new_job_id=new_job.job_id)
-    result = solver_engine.solve()
+    result = IncrementalCPSATSolver(jobs=all_jobs, trains=trains, start_monday=start_monday, existing_plan=request.existing_plan, new_job_id=new_job.job_id).solve()
     if result.get("status") in ("OPTIMAL", "FEASIBLE"):
         result["compliance"] = RailwayComplianceValidator(jobs=all_jobs, trains=trains, scheduled_blocks=result.get("scheduled_blocks", [])).validate()
     else:
