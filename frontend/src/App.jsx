@@ -9,6 +9,7 @@ import MonthlyPlanPage from './pages/MonthlyPlanPage';
 import DepartmentPage from './pages/DepartmentPage';
 import SNTDashboardPage from './pages/SNTDashboardPage';
 import EngineeringDashboardPage from './pages/EngineeringDashboardPage';
+import TractionDashboardPage from './pages/TractionDashboardPage';
 import ImpactReportsPage from './pages/ImpactReportsPage';
 import IntegrationStatusPage from './pages/IntegrationStatusPage';
 import CorridorMapPage from './pages/CorridorMapPage';
@@ -50,7 +51,8 @@ function AppContent() {
         <Route path="/dept/engineering/*" element={<EngineeringDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/dept/snt" element={<SNTDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/dept/snt/*" element={<SNTDashboardPage currentRole={selectedRole}/>}/>
-        <Route path="/dept/traction" element={<DepartmentPage deptKey="Traction" currentRole={selectedRole}/>}/>
+        <Route path="/dept/traction" element={<TractionDashboardPage currentRole={selectedRole}/>}/>
+        <Route path="/dept/traction/*" element={<TractionDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/impact" element={<ImpactReportsPage currentRole={selectedRole}/>}/>
         <Route path="/integration" element={<IntegrationStatusPage currentRole={selectedRole}/>}/>
       </Routes>
