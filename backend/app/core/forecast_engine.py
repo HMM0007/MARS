@@ -13,11 +13,9 @@ changing the Prophet interface.
 
 from __future__ import annotations
 
-from calendar import monthrange
 from datetime import date
 from typing import Any, Dict, List, Sequence
 
-import numpy as np
 import pandas as pd
 
 from app.models.job import MaintenanceJob
@@ -79,11 +77,13 @@ class MonthlyForecastEngine:
     def _fit_model(cls, history: pd.DataFrame):
         Prophet = cls._get_prophet_class()
 
-        # Monthly workload is the target. Weekly/daily seasonality would add
-        # noise at this aggregation level, so only yearly seasonality is used.
+        # A single annual cycle is not enough evidence for yearly seasonality.
+        # Enable it only after two full years of monthly observations; otherwise
+        # Prophet uses its trend model without inventing an annual pattern.
+        yearly_seasonality = len(history) >= 24
         model = Prophet(
             growth="linear",
-            yearly_seasonality=True,
+            yearly_seasonality=yearly_seasonality,
             weekly_seasonality=False,
             daily_seasonality=False,
             seasonality_mode="additive",
@@ -137,6 +137,7 @@ class MonthlyForecastEngine:
             "history_months": history_months,
             "forecast_months": forecast_months,
             "training_observations": len(history),
+            "yearly_seasonality_used": len(history) >= 24,
             "target": "maintenance_jobs_created_per_month",
             "training_source": "synthetic operational job creation history",
             "recent_3_month_average": round(recent_average, 2),
