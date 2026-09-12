@@ -75,6 +75,7 @@ export const fetchApprovedWeeklyPlan = () => requestJson(`${BASE_URL}/api/v1/cor
 export const fetchPendingWeeklyRevision = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/pending-revision`);
 export const approveWeeklyPlan = (payload) => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 export const submitJobIntake = (payload) => requestJson(`${BASE_URL}/api/v1/core/jobs/intake`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+export const submitEmergencyJob = (payload) => requestJson(`${BASE_URL}/api/v1/core/jobs/emergency`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
 export const fetchTMSJobs = () => requestJson(`${BASE_URL}/api/v1/adapters/tms/jobs`);
 export const fetchSMMSJobs = () => requestJson(`${BASE_URL}/api/v1/adapters/smms/jobs`);
