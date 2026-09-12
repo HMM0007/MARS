@@ -1,61 +1,28 @@
-/**
- * MARS 2.0 — REBUILT UNIFIED GANTT TIMELINE COMPONENT
- * Multi-department Railway Block Planning Timeline Component
- *
- * Visualizing wide horizontal maintenance possession bars, passing trains,
- * and TSR speed recovery zones across Pune Division tracks.
- *
- * Professional Railway Control Room Aesthetic:
- * - White background, crisp #D6DEE6 borders, Railway Blue #1E3A5F accents
- * - Wide horizontal time bars spanning 2-6 hours (stackItems={false})
- * - Exact department colors: Engineering (#3B6EA5), S&T (#2F8F6B), Traction (#C9842A), Consolidated (#6B5B95)
- * - Trains as thin discrete red movements (#B42318)
- * - TSR recovery zones with diagonal orange hatching (#F08C00)
- */
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import Timeline, {
-  TimelineHeaders,
-  SidebarHeader,
-  DateHeader,
-  CustomMarker,
-} from 'react-calendar-timeline';
+import Timeline, { TimelineHeaders, SidebarHeader, DateHeader, CustomMarker } from 'react-calendar-timeline';
 import 'react-calendar-timeline/dist/style.css';
 import moment from 'moment';
-import {
-  Calendar,
-  Filter,
-  RefreshCw,
-  AlertTriangle,
-  X,
-  ShieldCheck,
-  Check,
-  Clock,
-  Train as TrainIcon,
-} from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Eye, EyeOff, RefreshCw, ShieldCheck, TrainFront } from 'lucide-react';
 import { fetchWeeklyPlan, fetchCOATimetable } from '../services/api';
 
-// ============================================================================
-// LOCKED COLOR PALETTE & STYLES (SECTION 4)
-// ============================================================================
 const COLORS = {
-  Engineering: '#3B6EA5', // Muted Blue
-  SNT: '#2F8F6B',         // Muted Green
-  Traction: '#C9842A',    // Muted Amber
-  Consolidated: '#6B5B95',// Soft Violet
-  ConsolidatedBorder: '#A98CD3',
-  Train: '#B42318',       // Soft Red
-  TSR: '#F08C00',         // Amber/Orange Hatch
+  Engineering: '#3B6EA5',
+  'S&T': '#2F8F6B',
+  Traction: '#C9842A',
+  Consolidated: '#6B5B95',
+  Train: '#B42318',
+  TSR: '#F08C00',
+  Ink: '#1F2933',
+  Slate: '#52606D',
+  Border: '#D6DEE6',
 };
 
-// Logical track grouping order for Pune Division (Section 5 Feature 4)
-const TRACK_PRIORITY_PREFIXES = [
-  'PUNE-LNL',
-  'PUNE-DD',
-  'LNL-KJT',
-  'PUNE-MRJ',
-  'CWD-YARD',
-];
+const TRACK_ORDER = ['PUNE-LNL', 'PUNE-DD', 'LNL-KJT', 'PUNE-MRJ', 'CWD-YARD'];
+const deptOf = (block) => (block?.is_consolidated || (block?.departments || []).length > 1)
+  ? 'Consolidated'
+  : ((block?.departments || [])[0] || 'Engineering');
+
+const fmt = (value, format = 'DD MMM HH:mm') => value ? moment(value).format(format) : '—';
 
 export default function UnifiedGantt({
   blocks: propBlocks,
@@ -67,38 +34,18 @@ export default function UnifiedGantt({
   currentRole,
   onOpenExplainability,
 }) {
-  // State for data
   const [internalPlan, setInternalPlan] = useState(null);
   const [internalTrains, setInternalTrains] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Zoom level state
-  const [zoomLevel, setZoomLevel] = useState('week'); // 'day', 'week', 'multi-week'
+  const [view, setView] = useState('week');
+  const [anchorDay, setAnchorDay] = useState(null);
   const [visibleTimeStart, setVisibleTimeStart] = useState(null);
   const [visibleTimeEnd, setVisibleTimeEnd] = useState(null);
-
-  // Filter state (Section 5 Feature 9)
-  const [filters, setFilters] = useState({
-    showEngineering: true,
-    showSNT: true,
-    showTraction: true,
-    showConsolidated: true,
-    showTrains: true,
-    showTSR: true,
-  });
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  // Selected Block ID
   const [activeSelectedId, setActiveSelectedId] = useState(selectedBlockId || null);
+  const [layers, setLayers] = useState({ work: true, trains: true, tsr: false });
+  const [showLegend, setShowLegend] = useState(true);
 
-  useEffect(() => {
-    if (selectedBlockId !== undefined) {
-      setActiveSelectedId(selectedBlockId);
-    }
-  }, [selectedBlockId]);
-
-  // Load backend data if not provided via props
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -108,9 +55,8 @@ export default function UnifiedGantt({
         fetchCOATimetable().catch(() => []),
       ]);
       setInternalPlan(planData);
-      setInternalTrains(trainsData || []);
+      setInternalTrains(Array.isArray(trainsData) ? trainsData : (trainsData?.timetable || []));
     } catch (err) {
-      console.error('UnifiedGantt API Load Error:', err);
       setError(err.message || 'Failed to load weekly plan');
     } finally {
       setLoading(false);
@@ -118,682 +64,247 @@ export default function UnifiedGantt({
   }, []);
 
   useEffect(() => {
-    if (!propBlocks || propBlocks.length === 0) {
-      loadData();
-    }
+    if (!propBlocks?.length) loadData();
   }, [propBlocks, loadData]);
 
-  // Resolve weeklyPlan & trains from props or internal state
-  const weeklyPlan = useMemo(() => {
-    if (propBlocks && propBlocks.length > 0) {
-      return {
-        scheduled_blocks: propBlocks,
-        weekly_metrics: {
-          total_blocks_created: propBlocks.length,
-          active_conflicts: 0,
-          consolidated_blocks_count: propBlocks.filter(
-            (b) => b.is_consolidated || (b.departments && b.departments.length > 1)
-          ).length,
-        },
-      };
+  useEffect(() => {
+    if (selectedBlockId !== undefined) setActiveSelectedId(selectedBlockId || null);
+  }, [selectedBlockId]);
+
+  const scheduledBlocks = useMemo(
+    () => propBlocks?.length ? propBlocks : (internalPlan?.blocks || internalPlan?.scheduled_blocks || []),
+    [propBlocks, internalPlan]
+  );
+  const trains = useMemo(() => propTrains?.length ? propTrains : internalTrains, [propTrains, internalTrains]);
+  const metrics = internalPlan?.weekly_metrics || internalPlan?.metrics || {};
+
+  const bounds = useMemo(() => {
+    const times = scheduledBlocks.flatMap((b) => [moment(b.start_time).valueOf(), moment(b.end_time).valueOf()]).filter(Number.isFinite);
+    if (!times.length) {
+      const start = moment().startOf('isoWeek');
+      return { start, end: start.clone().add(7, 'days') };
     }
-    return internalPlan;
-  }, [propBlocks, internalPlan]);
-
-  const trains = useMemo(() => {
-    if (propTrains && propTrains.length > 0) return propTrains;
-    return internalTrains || [];
-  }, [propTrains, internalTrains]);
-
-  const scheduledBlocks = weeklyPlan?.scheduled_blocks || [];
-  const metrics = weeklyPlan?.weekly_metrics || weeklyPlan?.metrics || {};
-
-  // --------------------------------------------------------------------------
-  // FEATURE 3: FIXED TIME WINDOW CALCULATION
-  // --------------------------------------------------------------------------
-  const { earliestTime, latestTime } = useMemo(() => {
-    const allTimes = scheduledBlocks.flatMap((b) => [
-      moment(b.start_time).valueOf(),
-      moment(b.end_time).valueOf(),
-    ]);
-
-    if (allTimes.length === 0) {
-      const now = moment().startOf('isoWeek');
-      return {
-        earliestTime: now,
-        latestTime: now.clone().add(7, 'days'),
-      };
-    }
-
-    const minTimestamp = Math.min(...allTimes);
-    const maxTimestamp = Math.max(...allTimes);
-
-    const earliest = moment(minTimestamp).startOf('day');
-    const maxBlockEnd = moment(maxTimestamp).endOf('day');
-    // Ensure at least a full 7-day view
-    const latest = moment.max(maxBlockEnd, earliest.clone().add(7, 'days'));
-
-    return { earliestTime: earliest, latestTime: latest };
+    const start = moment(Math.min(...times)).startOf('day');
+    return { start, end: start.clone().add(7, 'days') };
   }, [scheduledBlocks]);
 
-  // Initialize or update timeline bounds based on earliest & latest time
   useEffect(() => {
-    if (earliestTime && latestTime) {
-      setVisibleTimeStart(earliestTime.valueOf());
-      setVisibleTimeEnd(earliestTime.clone().add(7, 'days').valueOf());
+    setAnchorDay(bounds.start.clone());
+    setVisibleTimeStart(bounds.start.valueOf());
+    setVisibleTimeEnd(bounds.end.valueOf());
+  }, [bounds]);
+
+  const setPreset = useCallback((nextView, nextAnchor = anchorDay || bounds.start) => {
+    const base = moment(nextAnchor).startOf('day');
+    setView(nextView);
+    setAnchorDay(base);
+    if (nextView === 'week') {
+      setVisibleTimeStart(bounds.start.valueOf());
+      setVisibleTimeEnd(bounds.end.valueOf());
+    } else {
+      setVisibleTimeStart(base.valueOf());
+      setVisibleTimeEnd(base.clone().add(nextView === 'day' ? 24 : 48, 'hours').valueOf());
     }
-  }, [earliestTime, latestTime]);
+  }, [anchorDay, bounds]);
 
-  // Handle Zoom Toggle
-  const handleZoomToggle = (level) => {
-    setZoomLevel(level);
-    if (!earliestTime) return;
-
-    if (level === 'day') {
-      // 24-hour day view
-      setVisibleTimeStart(earliestTime.valueOf());
-      setVisibleTimeEnd(earliestTime.clone().add(24, 'hours').valueOf());
-    } else if (level === 'week') {
-      // 7-day complete week view (default)
-      setVisibleTimeStart(earliestTime.valueOf());
-      setVisibleTimeEnd(earliestTime.clone().add(7, 'days').valueOf());
-    } else if (level === 'multi-week') {
-      // 4-week multi-week view
-      setVisibleTimeStart(earliestTime.valueOf());
-      setVisibleTimeEnd(earliestTime.clone().add(28, 'days').valueOf());
+  const shift = (days) => {
+    const base = moment(anchorDay || bounds.start).add(days, 'days');
+    if (view === 'week') {
+      const maxStart = bounds.end.clone().subtract(7, 'days');
+      const clamped = base.isAfter(maxStart) ? maxStart : base.isBefore(bounds.start) ? bounds.start : base;
+      setAnchorDay(clamped);
+      setVisibleTimeStart(bounds.start.valueOf());
+      setVisibleTimeEnd(bounds.end.valueOf());
+    } else {
+      const hours = view === 'day' ? 24 : 48;
+      const maxStart = bounds.end.clone().subtract(hours, 'hours');
+      const clamped = base.isAfter(maxStart) ? maxStart : base.isBefore(bounds.start) ? bounds.start : base;
+      setAnchorDay(clamped);
+      setVisibleTimeStart(clamped.valueOf());
+      setVisibleTimeEnd(clamped.clone().add(hours, 'hours').valueOf());
     }
   };
 
-  const handleTimeChange = (newStart, newEnd) => {
-    setVisibleTimeStart(newStart);
-    setVisibleTimeEnd(newEnd);
-  };
+  const handleBlockClick = useCallback((block) => {
+    if (!block) return;
+    setActiveSelectedId(block.block_id);
+    onBlockClick?.(block);
+    onSelectBlock?.(block);
+    onOpenExplainability?.(block);
+    if (block.section_id) onSectionSelect?.(block.section_id);
+  }, [onBlockClick, onSelectBlock, onOpenExplainability, onSectionSelect]);
 
-  // --------------------------------------------------------------------------
-  // FEATURE 8: CLICK HANDLERS
-  // --------------------------------------------------------------------------
-  const handleBlockClick = useCallback(
-    (block) => {
-      if (!block) return;
-      setActiveSelectedId(block.block_id);
-      if (onBlockClick) onBlockClick(block);
-      if (onSelectBlock) onSelectBlock(block);
-      if (onOpenExplainability) onOpenExplainability(block);
-      if (onSectionSelect && block.section_id) {
-        onSectionSelect(block.section_id);
-      }
-    },
-    [onBlockClick, onSelectBlock, onOpenExplainability, onSectionSelect]
+  const selectedBlock = useMemo(
+    () => scheduledBlocks.find((b) => b.block_id === activeSelectedId) || null,
+    [scheduledBlocks, activeSelectedId]
   );
 
-  const handleItemSelect = useCallback(
-    (itemId) => {
-      if (typeof itemId === 'string' && itemId.startsWith('BLK-')) {
-        const block = scheduledBlocks.find((b) => b.block_id === itemId);
-        if (block) {
-          handleBlockClick(block);
-        }
-      }
-    },
-    [scheduledBlocks, handleBlockClick]
-  );
-
-  // --------------------------------------------------------------------------
-  // FEATURE 4: PROPER GROUPS (TRACK ROWS)
-  // --------------------------------------------------------------------------
-  const sortedGroups = useMemo(() => {
-    const rawTrackSet = new Set();
-    scheduledBlocks.forEach((b) => {
-      if (b.track_id) rawTrackSet.add(b.track_id);
-    });
-    trains.forEach((t) => {
-      if (t.track_id) rawTrackSet.add(t.track_id);
-    });
-
-    // Sort tracks in logical order (PUNE-LNL first, then PUNE-DD, LNL-KJT, PUNE-MRJ, CWD-YARD)
-    const tracksArray = Array.from(rawTrackSet);
-    tracksArray.sort((a, b) => {
-      const getPriority = (track) => {
-        for (let i = 0; i < TRACK_PRIORITY_PREFIXES.length; i++) {
-          if (track.startsWith(TRACK_PRIORITY_PREFIXES[i])) return i;
-        }
-        return 999;
-      };
-      const pA = getPriority(a);
-      const pB = getPriority(b);
-      if (pA !== pB) return pA - pB;
-      return a.localeCompare(b);
-    });
-
-    return tracksArray.map((trackId) => ({
-      id: trackId,
-      title: trackId,
-      height: 55,
-    }));
+  const groups = useMemo(() => {
+    const ids = new Set();
+    scheduledBlocks.forEach((b) => b.track_id && ids.add(b.track_id));
+    trains.forEach((t) => t.track_id && ids.add(t.track_id));
+    return Array.from(ids).sort((a, b) => {
+      const ai = TRACK_ORDER.findIndex((x) => a.startsWith(x));
+      const bi = TRACK_ORDER.findIndex((x) => b.startsWith(x));
+      return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi) || a.localeCompare(b);
+    }).map((id) => ({ id, title: id, height: 62 }));
   }, [scheduledBlocks, trains]);
 
-  // --------------------------------------------------------------------------
-  // FEATURE 5: PROPER ITEMS (BLOCKS + TRAINS + TSR)
-  // --------------------------------------------------------------------------
-  const allItems = useMemo(() => {
-    const timelineItems = [];
-
-    // 1. Maintenance Blocks
-    scheduledBlocks.forEach((block) => {
-      const primaryDept = (block.departments && block.departments[0]) || 'Engineering';
-      const isConsolidated = Boolean(
-        block.is_consolidated || (block.departments && block.departments.length > 1)
-      );
-
-      // Apply department filters
-      if (isConsolidated && !filters.showConsolidated) return;
-      if (!isConsolidated && primaryDept === 'Engineering' && !filters.showEngineering) return;
-      if (!isConsolidated && primaryDept === 'S&T' && !filters.showSNT) return;
-      if (!isConsolidated && primaryDept === 'Traction' && !filters.showTraction) return;
-
-      let bgColor = COLORS.Engineering;
-      let borderStyle = 'none';
-      let label = `🔧 ${block.job_ids?.[0] || block.block_id} | ${block.duration_hours || 2.5}h`;
-
-      if (isConsolidated) {
-        bgColor = COLORS.Consolidated;
-        borderStyle = `2px solid ${COLORS.ConsolidatedBorder}`;
-        label = `🔗 CONSOLIDATED | ${block.job_ids?.length || 1} jobs | ${block.duration_hours || 4}h`;
-      } else if (primaryDept === 'S&T') {
-        bgColor = COLORS.SNT;
-        label = `📡 ${block.job_ids?.[0] || block.block_id} | ${block.duration_hours || 2}h`;
-      } else if (primaryDept === 'Traction') {
-        bgColor = COLORS.Traction;
-        label = `⚡ ${block.job_ids?.[0] || block.block_id} | ${block.duration_hours || 2}h`;
-      }
-
-      const isSelected = activeSelectedId === block.block_id;
-
-      timelineItems.push({
+  const items = useMemo(() => {
+    const out = [];
+    if (layers.work) scheduledBlocks.forEach((block) => {
+      const department = deptOf(block);
+      const color = COLORS[department] || COLORS.Engineering;
+      const consolidated = department === 'Consolidated';
+      out.push({
         id: block.block_id,
         group: block.track_id,
-        title: label,
+        title: block.block_id,
         start_time: moment(block.start_time),
         end_time: moment(block.end_time),
-        canMove: false,
-        canResize: false,
+        kind: 'work',
+        department,
         itemProps: {
-          style: {
-            background: bgColor,
-            color: '#FFFFFF',
-            border: isSelected ? '2px solid #FFFFFF' : borderStyle,
-            borderRadius: isConsolidated ? '6px' : '4px',
-            fontSize: '11px',
-            fontWeight: '600',
-            padding: '4px 8px',
-            boxShadow: isSelected
-              ? '0 0 0 2px #1E3A5F, 0 3px 8px rgba(0, 0, 0, 0.25)'
-              : isConsolidated
-              ? '0 2px 8px rgba(107, 91, 149, 0.4)'
-              : 'none',
-          },
-          onClick: () => handleBlockClick(block),
+          className: 'mars-gantt-work-item',
+          style: { background: color, border: consolidated ? '2px solid #A98CD3' : `1px solid ${color}`, borderRadius: 5 },
         },
       });
-
-      // 2. TSR Recovery Zones (following blocks with tsr_recovery_profile)
-      if (filters.showTSR && block.tsr_recovery_profile) {
-        const stages = block.tsr_recovery_profile.recovery_stages || [];
-        let currentStart = moment(block.end_time);
-
-        stages.forEach((stage, idx) => {
-          const stageStart = currentStart.clone();
-          const stageEnd = stageStart.clone().add(stage.duration_hours, 'hours');
-          currentStart = stageEnd.clone();
-
-          timelineItems.push({
-            id: `tsr-${block.block_id}-${idx}`,
+      if (layers.tsr && block.tsr_recovery_profile) {
+        let start = moment(block.end_time);
+        (block.tsr_recovery_profile.recovery_stages || []).forEach((stage, index) => {
+          const end = start.clone().add(Number(stage.duration_hours || 0), 'hours');
+          out.push({
+            id: `tsr-${block.block_id}-${index}`,
             group: block.track_id,
-            title: `▒▒ TSR: ${stage.max_speed_kmh} km/h`,
-            start_time: stageStart,
-            end_time: stageEnd,
-            canMove: false,
-            canResize: false,
-            itemProps: {
-              style: {
-                background:
-                  'repeating-linear-gradient(45deg, #F08C00 0px, #F08C00 6px, transparent 6px, transparent 12px)',
-                color: '#1F2933',
-                fontSize: '10px',
-                fontWeight: '500',
-                opacity: 0.6,
-                borderRadius: '2px',
-                padding: '2px 4px',
-              },
-            },
+            title: `TSR ${stage.max_speed_kmh} km/h`,
+            start_time: start,
+            end_time: end,
+            kind: 'tsr',
+            itemProps: { className: 'mars-gantt-tsr-item' },
           });
+          start = end;
         });
       }
     });
+    if (layers.trains) trains.forEach((train, index) => out.push({
+      id: `train-${train.train_id || train.train_number || index}`,
+      group: train.track_id,
+      title: train.train_number || train.train_id || 'TRAIN',
+      start_time: moment(train.entry_time),
+      end_time: moment(train.exit_time),
+      kind: 'train',
+      itemProps: { className: 'mars-gantt-train-item' },
+    }));
+    return out;
+  }, [scheduledBlocks, trains, layers]);
 
-    // 3. Trains (thinner discrete red movements)
-    if (filters.showTrains && trains.length > 0) {
-      trains.forEach((train) => {
-        timelineItems.push({
-          id: `train-${train.train_id}`,
-          group: train.track_id,
-          title: `🚆 ${train.train_number}`,
-          start_time: moment(train.entry_time),
-          end_time: moment(train.exit_time),
-          canMove: false,
-          canResize: false,
-          itemProps: {
-            style: {
-              background: COLORS.Train,
-              color: '#FFFFFF',
-              borderRadius: '2px',
-              fontSize: '10px',
-              fontWeight: '600',
-              padding: '2px 6px',
-              opacity: 0.85,
-              height: '16px',
-              marginTop: '20px',
-            },
-          },
-        });
-      });
+  const itemRenderer = ({ item, itemContext, getItemProps }) => {
+    const width = itemContext?.width || 0;
+    const isSelected = item.kind === 'work' && activeSelectedId === item.id;
+    if (item.kind === 'train') {
+      return <div {...getItemProps({ style: { ...itemContext.style, background: 'transparent', border: 0, boxShadow: 'none' } })} title={`Train ${item.title}`}>
+        <div className="pointer-events-none absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded bg-[#B42318]" />
+        {width > 54 && <span className="absolute left-1 top-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-[#B42318] px-1 text-[8px] font-bold text-white">{item.title}</span>}
+      </div>;
     }
+    if (item.kind === 'tsr') {
+      return <div {...getItemProps({ style: { ...itemContext.style, background: 'repeating-linear-gradient(135deg, rgba(240,140,0,.82) 0 5px, rgba(240,140,0,.16) 5px 10px)', border: '1px dashed #F08C00', color: COLORS.Ink } })} title={item.title}>
+        {width > 48 && <span className="px-1 text-[8px] font-bold">{item.title}</span>}
+      </div>;
+    }
+    const dept = item.department || 'Engineering';
+    return <div {...getItemProps({ style: { ...itemContext.style, height: 30, top: 7, padding: 0, overflow: 'hidden', boxShadow: isSelected ? '0 0 0 2px #1E3A5F' : '0 1px 2px rgba(31,41,51,.12)' } })} onClick={() => handleBlockClick(scheduledBlocks.find((b) => b.block_id === item.id))} title={`${item.id} • ${dept}`}>
+      <div className="flex h-full min-w-0 items-center px-2 text-[9px] font-bold text-white">
+        {width > 82 ? <span className="truncate">{item.id}</span> : width > 30 ? <span className="truncate">{item.id?.replace(/^BLK-/, '')}</span> : null}
+      </div>
+    </div>;
+  };
 
-    return timelineItems;
-  }, [scheduledBlocks, trains, filters, activeSelectedId, handleBlockClick]);
+  if (loading && !scheduledBlocks.length) return <div className="flex min-h-[520px] items-center justify-center rounded-lg border border-[#D6DEE6] bg-white"><div className="text-center"><RefreshCw className="mx-auto h-6 w-6 animate-spin text-[#1E3A5F]"/><p className="mt-2 text-sm font-semibold text-[#1F2933]">Loading weekly schedule…</p><p className="mt-1 text-xs text-[#718294]">Loading approved blocks and train protection data</p></div></div>;
+  if (error && !scheduledBlocks.length) return <div className="rounded-lg border border-[#D6DEE6] bg-white p-10 text-center"><p className="text-sm font-bold text-[#C92A2A]">Unable to load weekly schedule</p><p className="mt-1 text-xs text-[#52606D]">{error}</p><button onClick={loadData} className="mt-3 rounded bg-[#1E3A5F] px-3 py-1.5 text-xs font-bold text-white">Retry</button></div>;
 
-  // Selected block for telemetry footer
-  const selectedBlockObj = useMemo(() => {
-    return scheduledBlocks.find((b) => b.block_id === activeSelectedId) || null;
-  }, [scheduledBlocks, activeSelectedId]);
+  const conflictCount = Number(metrics.active_conflicts ?? 0);
+  const consolidatedCount = Number(metrics.consolidated_blocks_count ?? scheduledBlocks.filter((b) => deptOf(b) === 'Consolidated').length);
 
-  // ==========================================================================
-  // RENDER: FEATURE 7 (LOADING & ERROR STATES)
-  // ==========================================================================
-  if (loading && scheduledBlocks.length === 0) {
-    return (
-      <div className="bg-white border border-[#D6DEE6] rounded-lg shadow-sm p-12 text-center select-none">
-        <div className="flex flex-col items-center justify-center space-y-3">
-          <RefreshCw className="w-6 h-6 animate-spin text-[#1E3A5F]" />
-          <p className="text-sm font-semibold text-[#1F2933]">
-            Loading weekly plan from Divisional Control Office...
-          </p>
-          <span className="text-xs text-[#52606D]">
-            Evaluating CP-SAT tactical block allocations & train timetable
-          </span>
+  return <section className="overflow-hidden rounded-lg border border-[#D6DEE6] bg-white shadow-sm">
+    <style>{`
+      .mars-gantt .rct-header-root { background:#F8FAFC !important; border-color:#D6DEE6 !important; }
+      .mars-gantt .rct-sidebar { background:#FAFBFC; border-color:#D6DEE6 !important; }
+      .mars-gantt .rct-sidebar-row { border-color:#E8EDF2 !important; }
+      .mars-gantt .rct-horizontal-lines .rct-hl-even, .mars-gantt .rct-horizontal-lines .rct-hl-odd { border-color:#E8EDF2 !important; }
+      .mars-gantt .rct-vertical-lines .rct-vl { border-color:#EDF1F5 !important; }
+      .mars-gantt .rct-scroll { scrollbar-color:#AAB7C4 #F4F6F8; }
+      .mars-gantt .rct-item { cursor:pointer; }
+      .mars-gantt .rct-dateHeader { border-color:#D6DEE6 !important; }
+    `}</style>
+    <div className="border-b border-[#D6DEE6] bg-white px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-md bg-[#1E3A5F]/10 p-2"><CalendarDays className="h-5 w-5 text-[#1E3A5F]"/></div>
+          <div><h2 className="text-sm font-black uppercase tracking-wide text-[#1E3A5F]">Weekly Possession Schedule</h2><p className="text-[10px] text-[#718294]">7-day tactical view • maintenance windows against protected train movements</p></div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => shift(-1)} className="rounded border border-[#D6DEE6] p-1.5 text-[#52606D] hover:bg-[#F4F6F8]" title="Previous period"><ChevronLeft className="h-4 w-4"/></button>
+          <button onClick={() => { setView('week'); setAnchorDay(bounds.start.clone()); setVisibleTimeStart(bounds.start.valueOf()); setVisibleTimeEnd(bounds.end.valueOf()); }} className="rounded border border-[#D6DEE6] px-2.5 py-1.5 text-[10px] font-bold text-[#1E3A5F] hover:bg-[#F4F6F8]">Full Week</button>
+          <button onClick={() => shift(1)} className="rounded border border-[#D6DEE6] p-1.5 text-[#52606D] hover:bg-[#F4F6F8]" title="Next period"><ChevronRight className="h-4 w-4"/></button>
+          <div className="ml-1 flex overflow-hidden rounded border border-[#D6DEE6]">
+            {['day','48h','week'].map((v) => <button key={v} onClick={() => setPreset(v, anchorDay || bounds.start)} className={`px-2.5 py-1.5 text-[9px] font-bold uppercase ${view === v ? 'bg-[#1E3A5F] text-white' : 'bg-white text-[#52606D] hover:bg-[#F4F6F8]'}`}>{v === '48h' ? '48 H' : v}</button>)}
+          </div>
+          <button onClick={loadData} disabled={loading} className="rounded border border-[#D6DEE6] p-1.5 text-[#1E3A5F] hover:bg-[#F4F6F8] disabled:opacity-50" title="Refresh"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}/></button>
         </div>
       </div>
-    );
-  }
-
-  if (error && scheduledBlocks.length === 0) {
-    return (
-      <div className="bg-white border border-[#D6DEE6] rounded-lg shadow-sm p-8 text-center select-none">
-        <div className="flex flex-col items-center justify-center space-y-2.5">
-          <AlertTriangle className="w-8 h-8 text-[#C92A2A]" />
-          <h3 className="text-sm font-bold text-[#1F2933]">Unable to Load Weekly Schedule</h3>
-          <p className="text-xs text-[#52606D] max-w-md">{error}</p>
-          <button
-            type="button"
-            onClick={loadData}
-            className="mt-2 px-3 py-1.5 bg-[#1E3A5F] text-white rounded text-xs font-semibold hover:bg-[#2F6F7E] transition-colors"
-          >
-            Retry Connection
-          </button>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#EDF1F5] pt-2.5">
+        <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-wider text-[#718294]">
+          <span>{fmt(visibleTimeStart, 'DD MMM YYYY')} — {fmt(visibleTimeEnd, 'DD MMM YYYY')}</span><span className="text-[#D6DEE6]">|</span><span>{scheduledBlocks.length} blocks</span><span className={conflictCount ? 'text-[#C92A2A]' : 'text-[#2F9E44]'}>{conflictCount ? `${conflictCount} conflicts` : 'No conflicts'}</span><span className="text-[#6B5B95]">{consolidatedCount} shared</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => setLayers((x) => ({ ...x, work: !x.work }))} className={`flex items-center gap-1 rounded border px-2 py-1 text-[9px] font-bold ${layers.work ? 'border-[#1E3A5F]/30 bg-[#1E3A5F]/10 text-[#1E3A5F]' : 'border-[#D6DEE6] text-[#718294]'}`}>{layers.work ? <Eye className="h-3 w-3"/> : <EyeOff className="h-3 w-3"/>} Work</button>
+          <button onClick={() => setLayers((x) => ({ ...x, trains: !x.trains }))} className={`flex items-center gap-1 rounded border px-2 py-1 text-[9px] font-bold ${layers.trains ? 'border-[#B42318]/30 bg-[#B42318]/5 text-[#B42318]' : 'border-[#D6DEE6] text-[#718294]'}`}><TrainFront className="h-3 w-3"/> Trains</button>
+          <button onClick={() => setLayers((x) => ({ ...x, tsr: !x.tsr }))} className={`flex items-center gap-1 rounded border px-2 py-1 text-[9px] font-bold ${layers.tsr ? 'border-[#F08C00]/40 bg-[#F08C00]/10 text-[#A76614]' : 'border-[#D6DEE6] text-[#718294]'}`}><ShieldCheck className="h-3 w-3"/> TSR</button>
+          <button onClick={() => setShowLegend((x) => !x)} className="flex items-center gap-1 rounded border border-[#D6DEE6] px-2 py-1 text-[9px] font-bold text-[#52606D]">{showLegend ? <EyeOff className="h-3 w-3"/> : <Eye className="h-3 w-3"/>} Legend</button>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="bg-white border border-[#D6DEE6] rounded-lg shadow-sm p-4 w-full select-none flex flex-col font-sans">
-      {/* ==================================================================== */}
-      {/* FEATURE 1: TOP HEADER STRIP                                          */}
-      {/* ==================================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#D6DEE6]">
-        <div>
-          <h2 className="text-base font-bold text-[#1E3A5F] flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#1E3A5F]" />
-            Weekly Block Timeline
-          </h2>
-          <p className="text-xs text-[#52606D] mt-0.5">
-            Pune Division (CR) | Week 1 (Mon-Sun) |{' '}
-            <span className="font-semibold text-[#1F2933]">
-              {metrics.total_blocks_created || scheduledBlocks.length} blocks
-            </span>{' '}
-            |{' '}
-            <span className="font-semibold text-[#2F9E44]">
-              {metrics.active_conflicts ?? 0} conflicts
-            </span>{' '}
-            |{' '}
-            <span className="font-semibold text-[#6B5B95]">
-              {metrics.consolidated_blocks_count || 0} consolidated
-            </span>
-          </p>
-        </div>
-
-        {/* Right Action Controls */}
-        <div className="flex items-center space-x-2">
-          {/* Zoom Toggle Buttons */}
-          <div className="flex border border-[#D6DEE6] rounded overflow-hidden text-xs font-semibold">
-            <button
-              type="button"
-              className={`px-3 py-1.5 transition-colors ${
-                zoomLevel === 'day'
-                  ? 'bg-[#1E3A5F] text-white'
-                  : 'bg-white text-[#52606D] hover:bg-[#F4F6F8]'
-              }`}
-              onClick={() => handleZoomToggle('day')}
-            >
-              Day
-            </button>
-            <button
-              type="button"
-              className={`px-3 py-1.5 border-l border-[#D6DEE6] transition-colors ${
-                zoomLevel === 'week'
-                  ? 'bg-[#1E3A5F] text-white'
-                  : 'bg-white text-[#52606D] hover:bg-[#F4F6F8]'
-              }`}
-              onClick={() => handleZoomToggle('week')}
-            >
-              Week
-            </button>
-            <button
-              type="button"
-              className={`px-3 py-1.5 border-l border-[#D6DEE6] transition-colors ${
-                zoomLevel === 'multi-week'
-                  ? 'bg-[#1E3A5F] text-white'
-                  : 'bg-white text-[#52606D] hover:bg-[#F4F6F8]'
-              }`}
-              onClick={() => handleZoomToggle('multi-week')}
-            >
-              Multi-Week
-            </button>
-          </div>
-
-          {/* Filter Popover Button */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`px-3 py-1.5 border rounded flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                isFilterOpen
-                  ? 'bg-[#1E3A5F] text-white border-[#1E3A5F]'
-                  : 'bg-white border-[#D6DEE6] text-[#1F2933] hover:bg-[#F4F6F8]'
-              }`}
-            >
-              <Filter className="w-3.5 h-3.5" />
-              <span>Filter</span>
-            </button>
-
-            {/* Filter Dropdown */}
-            {isFilterOpen && (
-              <div className="absolute right-0 top-10 w-56 bg-white border border-[#D6DEE6] rounded-md shadow-xl p-3 z-30 text-xs space-y-2">
-                <div className="flex items-center justify-between pb-1 border-b border-[#D6DEE6] font-bold text-[#1F2933]">
-                  <span>Filter Layers</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsFilterOpen(false)}
-                    className="text-[#52606D] hover:text-[#1F2933]"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filters.showEngineering}
-                      onChange={(e) =>
-                        setFilters({ ...filters, showEngineering: e.target.checked })
-                      }
-                      className="rounded text-[#1E3A5F]"
-                    />
-                    <span>Engineering (Civil)</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filters.showSNT}
-                      onChange={(e) => setFilters({ ...filters, showSNT: e.target.checked })}
-                      className="rounded text-[#1E3A5F]"
-                    />
-                    <span>S&T (Signals)</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filters.showTraction}
-                      onChange={(e) =>
-                        setFilters({ ...filters, showTraction: e.target.checked })
-                      }
-                      className="rounded text-[#1E3A5F]"
-                    />
-                    <span>Traction (OHE)</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filters.showConsolidated}
-                      onChange={(e) =>
-                        setFilters({ ...filters, showConsolidated: e.target.checked })
-                      }
-                      className="rounded text-[#1E3A5F]"
-                    />
-                    <span>Consolidated (Purple)</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer pt-1 border-t border-[#D6DEE6]">
-                    <input
-                      type="checkbox"
-                      checked={filters.showTrains}
-                      onChange={(e) =>
-                        setFilters({ ...filters, showTrains: e.target.checked })
-                      }
-                      className="rounded text-[#1E3A5F]"
-                    />
-                    <span>Passing Trains</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={filters.showTSR}
-                      onChange={(e) => setFilters({ ...filters, showTSR: e.target.checked })}
-                      className="rounded text-[#1E3A5F]"
-                    />
-                    <span>TSR Recovery Zones</span>
-                  </label>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Manual Refresh */}
-          <button
-            type="button"
-            onClick={loadData}
-            title="Reload Schedule Data"
-            disabled={loading}
-            className="p-1.5 bg-white border border-[#D6DEE6] rounded text-[#1E3A5F] hover:bg-[#F4F6F8] disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* ==================================================================== */}
-      {/* FEATURE 2: LEGEND ROW                                                */}
-      {/* ==================================================================== */}
-      <div className="flex flex-wrap items-center gap-4 py-2.5 text-xs text-[#52606D] border-b border-[#D6DEE6] mb-3">
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-xs bg-[#3B6EA5]" />
-          <span>🔧 Engineering</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-xs bg-[#2F8F6B]" />
-          <span>📡 S&T</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-xs bg-[#C9842A]" />
-          <span>⚡ Traction</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-xs bg-[#6B5B95] border border-[#A98CD3]" />
-          <span className="text-[#6B5B95] font-semibold">🔗 Consolidated</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-4 h-1.5 rounded-xs bg-[#B42318]" />
-          <span>🚆 Trains</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span
-            className="w-4 h-2.5 rounded-xs border border-dashed border-[#F08C00]"
-            style={{
-              background:
-                'repeating-linear-gradient(45deg, #F08C00 0px, #F08C00 4px, transparent 4px, transparent 8px)',
-            }}
-          />
-          <span>▒▒ TSR Recovery</span>
-        </div>
-      </div>
-
-      {/* ==================================================================== */}
-      {/* FEATURE 6: TIMELINE COMPONENT CONFIGURATION                          */}
-      {/* ==================================================================== */}
-      <div className="relative border border-[#D6DEE6] rounded-md overflow-hidden bg-white min-h-[480px] isolate z-0">
-        {scheduledBlocks.length === 0 ? (
-          <div className="p-12 text-center text-[#52606D] text-xs">
-            No scheduled blocks for this week. Run the CP-SAT solver to schedule jobs.
-          </div>
-        ) : (
-          <Timeline
-            groups={sortedGroups}
-            items={allItems}
-            defaultTimeStart={earliestTime}
-            defaultTimeEnd={latestTime}
-            visibleTimeStart={visibleTimeStart}
-            visibleTimeEnd={visibleTimeEnd}
-            onTimeChange={handleTimeChange}
-            canMove={false}
-            canResize={false}
-            canChangeGroup={false}
-            lineHeight={55}
-            itemHeightRatio={0.75}
-            sidebarWidth={200}
-            stackItems={false}
-            itemTouchSendsClick={true}
-            minZoom={60 * 60 * 1000} // 1 hour minimum zoom
-            maxZoom={30 * 24 * 60 * 60 * 1000} // 30 days maximum zoom
-            onItemSelect={(itemId) => handleItemSelect(itemId)}
-          >
-            <TimelineHeaders className="bg-slate-50">
-              <SidebarHeader>
-                {({ getRootProps }) => (
-                  <div
-                    {...getRootProps()}
-                    className="bg-slate-50 border-r border-slate-200 flex items-center justify-center font-semibold text-slate-700 text-sm"
-                  >
-                    Track ID
-                  </div>
-                )}
-              </SidebarHeader>
-              <DateHeader
-                unit="day"
-                labelFormat="ddd DD MMM"
-                style={{
-                  height: 40,
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  color: '#1F2933',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              />
-              <DateHeader
-                unit="hour"
-                labelFormat="HH:mm"
-                style={{
-                  height: 30,
-                  fontSize: '11px',
-                  color: '#52606D',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              />
-            </TimelineHeaders>
-
-            {/* Current Time Indicator ("Now") */}
-            <CustomMarker date={earliestTime.clone().add(8, 'hours').valueOf()}>
-              {({ styles }) => (
-                <div style={styles} className="mars-now-marker" title="Operational Time">
-                  <span className="mars-now-badge">Now</span>
-                </div>
-              )}
-            </CustomMarker>
-          </Timeline>
-        )}
-      </div>
-
-      {/* ==================================================================== */}
-      {/* SELECTION INSPECTION TELEMETRY STRIP                                 */}
-      {/* ==================================================================== */}
-      {selectedBlockObj && (
-        <div className="mt-3 bg-[#F8FAFC] border border-[#D6DEE6] rounded-md p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 animate-in fade-in duration-150">
-          <div className="flex items-start space-x-3">
-            <div className="p-2 rounded bg-white border border-[#D6DEE6] shadow-xs text-[#2F9E44]">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-mono font-bold text-sm text-[#1E3A5F]">
-                  {selectedBlockObj.block_id}
-                </span>
-                <span className="text-[10px] bg-[#1E3A5F]/10 text-[#1E3A5F] px-2 py-0.5 rounded font-mono font-bold">
-                  {selectedBlockObj.track_id}
-                </span>
-                {selectedBlockObj.is_consolidated && (
-                  <span className="text-[10px] bg-[#6B5B95]/15 text-[#6B5B95] border border-[#6B5B95]/30 px-2 py-0.5 rounded font-bold">
-                    Consolidated Possession
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-[#52606D] mt-1 font-mono">
-                <span>
-                  Window:{' '}
-                  <strong className="text-[#1F2933]">
-                    {moment(selectedBlockObj.start_time).format('ddd HH:mm')} →{' '}
-                    {moment(selectedBlockObj.end_time).format('HH:mm')}
-                  </strong>{' '}
-                  ({selectedBlockObj.duration_hours || 2.5}h)
-                </span>
-                <span>•</span>
-                <span>
-                  Departments:{' '}
-                  <strong className="text-[#1F2933]">
-                    {(selectedBlockObj.departments || ['Engineering']).join(', ')}
-                  </strong>
-                </span>
-                <span>•</span>
-                <span>
-                  Track Clearance:{' '}
-                  <strong className="text-[#2F9E44]">15+15m COA Guarded</strong>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={() => handleBlockClick(selectedBlockObj)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#1E3A5F] hover:bg-[#2F6F7E] text-white rounded text-xs font-bold shadow-xs transition-colors"
-            >
-              <span>Inspect Reason for Allocation</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
-  );
+
+    {showLegend && <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-[#D6DEE6] bg-[#FAFBFC] px-4 py-2 text-[9px] font-semibold text-[#52606D]">
+      {['Engineering','S&T','Traction','Consolidated'].map((d) => <span key={d} className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm" style={{ background: COLORS[d] }}/>{d}</span>)}
+      <span className="ml-2 flex items-center gap-1.5"><i className="h-[3px] w-4 rounded bg-[#B42318]"/> Protected train</span><span className="flex items-center gap-1.5"><i className="h-2 w-4 border border-dashed border-[#F08C00] bg-[#F08C00]/20"/> TSR</span>
+      <span className="ml-auto text-[#718294]">Click a possession to inspect its decision</span>
+    </div>}
+
+    <div className="mars-gantt h-[610px] overflow-hidden">
+      {scheduledBlocks.length === 0 ? <div className="flex h-full items-center justify-center text-xs text-[#52606D]">No scheduled blocks for this week.</div> : <Timeline
+        groups={groups}
+        items={items}
+        defaultTimeStart={bounds.start}
+        defaultTimeEnd={bounds.end}
+        visibleTimeStart={visibleTimeStart}
+        visibleTimeEnd={visibleTimeEnd}
+        onTimeChange={(start, end) => { setVisibleTimeStart(start); setVisibleTimeEnd(end); }}
+        canMove={false}
+        canResize={false}
+        canChangeGroup={false}
+        lineHeight={62}
+        itemHeightRatio={0.52}
+        sidebarWidth={190}
+        stackItems={false}
+        minZoom={60 * 60 * 1000}
+        maxZoom={30 * 24 * 60 * 60 * 1000}
+        itemRenderer={itemRenderer}
+        onItemSelect={(id) => { const b = scheduledBlocks.find((x) => x.block_id === id); if (b) handleBlockClick(b); }}
+      >
+        <TimelineHeaders>
+          <SidebarHeader>{({ getRootProps }) => <div {...getRootProps()} className="flex h-full items-center border-r border-[#D6DEE6] bg-[#F8FAFC] px-3 text-[9px] font-black uppercase tracking-wider text-[#52606D]">Track / Line</div>}</SidebarHeader>
+          <DateHeader unit="day" labelFormat="ddd DD MMM" style={{ height: 34, fontSize: 10, fontWeight: 800, color: COLORS.Ink, display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+          <DateHeader unit="hour" labelFormat="HH:mm" style={{ height: 25, fontSize: 8, color: COLORS.Slate, display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+        </TimelineHeaders>
+        {moment().isBetween(bounds.start, bounds.end, undefined, '[)') && <CustomMarker date={moment().valueOf()}>{({ styles }) => <div style={styles} className="z-20 border-l-2 border-[#C92A2A]"><span className="absolute -left-3 -top-5 rounded bg-[#C92A2A] px-1.5 py-0.5 text-[8px] font-black text-white">NOW</span></div>}</CustomMarker>}
+      </Timeline>}
+    </div>
+
+    <div className="flex items-center justify-between border-t border-[#D6DEE6] bg-[#FAFBFC] px-4 py-2 text-[9px] text-[#718294]">
+      <div><span className="font-bold text-[#52606D]">Planner view:</span> drag timeline horizontally to inspect a window • click a block for details</div>
+      {selectedBlock && <div className="flex items-center gap-2"><span className="font-mono font-bold text-[#1E3A5F]">{selectedBlock.block_id}</span><span>{selectedBlock.track_id}</span><span>{fmt(selectedBlock.start_time, 'DD MMM HH:mm')}–{fmt(selectedBlock.end_time, 'HH:mm')}</span></div>}
+    </div>
+  </section>;
 }
