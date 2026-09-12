@@ -56,53 +56,19 @@ const normalizeWeeklyPlan = (data) => {
 export const fetchAllScoredJobs = () => requestJson(`${BASE_URL}/api/v1/core/jobs/all-scored`);
 export const fetchMonthlyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/monthly`);
 
-const overlaps = (startA, endA, startB, endB) => startA < endB && startB < endA;
-
-const approvedPlanConflictsWithTimetable = (plan, trains) => {
-  const blocks = plan?.scheduled_blocks || plan?.blocks || [];
-  if (!Array.isArray(blocks) || !Array.isArray(trains)) return false;
-  const bufferMs = 15 * 60 * 1000;
-  return blocks.some((block) => {
-    if (!block?.track_id || !block?.start_time || !block?.end_time) return false;
-    const blockStart = new Date(block.start_time).getTime();
-    const blockEnd = new Date(block.end_time).getTime();
-    if (!Number.isFinite(blockStart) || !Number.isFinite(blockEnd)) return false;
-    return trains.some((train) => {
-      if (train?.track_id !== block.track_id || !train?.entry_time || !train?.exit_time) return false;
-      const protectedStart = new Date(train.entry_time).getTime() - bufferMs;
-      const protectedEnd = new Date(train.exit_time).getTime() + bufferMs;
-      return Number.isFinite(protectedStart) && Number.isFinite(protectedEnd)
-        && overlaps(blockStart, blockEnd, protectedStart, protectedEnd);
-    });
-  });
-};
-
 /**
- * Weekly view is baseline-aware. An approved baseline remains authoritative
- * unless the current COA timetable makes one of its maintenance possessions
- * unsafe. In that case the UI requests a fresh CP-SAT candidate; the approved
- * baseline is never overwritten automatically and still requires Planner approval
- * before becoming the new baseline.
+ * Weekly view is baseline-aware: once a Planner has approved a plan, normal UI
+ * reads return that protected baseline. New jobs are shown through the separate
+ * pending-revision workflow until the revision is explicitly approved.
  */
 export const fetchWeeklyPlan = async () => {
   try {
     const approved = await requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved`);
-    if (approved?.approved && approved.plan) {
-      try {
-        const timetable = await requestJson(`${BASE_URL}/api/v1/adapters/coa/timetable`);
-        if (!approvedPlanConflictsWithTimetable(approved.plan, timetable)) {
-          return normalizeWeeklyPlan({ ...approved.plan, baseline_approved: true, baseline_revision: approved.revision });
-        }
-        console.warn('Approved weekly baseline conflicts with the current COA timetable; loading a fresh candidate for Planner review.');
-      } catch (timetableError) {
-        console.warn('COA timetable validation unavailable; preserving the approved baseline.', timetableError);
-        return normalizeWeeklyPlan({ ...approved.plan, baseline_approved: true, baseline_revision: approved.revision });
-      }
-    }
+    if (approved?.approved && approved.plan) return normalizeWeeklyPlan({ ...approved.plan, baseline_approved: true, baseline_revision: approved.revision });
   } catch (err) {
     console.warn('Approved baseline lookup failed; falling back to weekly solver:', err);
   }
-  return normalizeWeeklyPlan(await requestJson(`${BASE_URL}/api/v1/core/plan/weekly?fresh=true`));
+  return normalizeWeeklyPlan(await requestJson(`${BASE_URL}/api/v1/core/plan/weekly`));
 };
 
 export const fetchApprovedWeeklyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved`);
