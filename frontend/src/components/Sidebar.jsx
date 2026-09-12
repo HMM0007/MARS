@@ -1,20 +1,33 @@
 import { NavLink } from 'react-router-dom';
-import { BarChart3, CalendarDays, ChevronDown, CircleHelp, Database, Home, Map, Search, Settings, ShieldCheck, TrainFront, Wrench } from 'lucide-react';
+import { BarChart3, CalendarDays, ChevronDown, Database, Home, Map, Settings, ShieldCheck, SlidersHorizontal, TrainFront, Wrench } from 'lucide-react';
 
 const plannerItems = [
   { to: '/', icon: Home, label: 'Home', end: true },
-  { to: '/weekly', icon: TrainFront, label: 'Dashboard' },
-  { to: '/monthly', icon: CalendarDays, label: 'Monthly Plan', caret: true },
-  { to: '/weekly', icon: CalendarDays, label: 'Weekly Plan', caret: true },
-  { to: '/dept/engineering', icon: Wrench, label: 'Jobs' },
-  { to: '/dept/engineering', icon: Database, label: 'Asset Management', caret: true },
-  { to: '/dept/snt', icon: Search, label: 'Inspection', caret: true },
-  { to: '/impact', icon: ShieldCheck, label: 'Compliance' },
-  { to: '/integration', icon: Database, label: 'BDMS Integration', caret: true },
-  { to: '/impact', icon: BarChart3, label: 'Reports & Analytics', caret: true },
-  { to: '/corridor', icon: Map, label: 'GIS Map' },
-  { to: '/integration', icon: Settings, label: 'Administration', caret: true },
-  { to: '/integration', icon: CircleHelp, label: 'Help & Support' },
+  { to: '/weekly', icon: SlidersHorizontal, label: 'Command Center' },
+  {
+    label: 'Planning',
+    icon: CalendarDays,
+    children: [
+      { to: '/monthly', label: 'Monthly Plan' },
+      { to: '/weekly', label: 'Weekly Plan' },
+    ],
+  },
+  {
+    label: 'Maintenance Jobs',
+    icon: Wrench,
+    children: [
+      { to: '/dept/engineering', label: 'All Jobs' },
+      { to: '/dept/engineering', label: 'By Department' },
+      { to: '/impact', label: 'Priority & Risk' },
+    ],
+  },
+  { to: '/corridor', icon: Map, label: 'Corridor Map' },
+  { to: '/weekly', icon: SlidersHorizontal, label: 'What-If Simulator' },
+  { to: '/impact', icon: ShieldCheck, label: 'Compliance & Safety' },
+  { to: '/integration', icon: Database, label: 'BDMS Integration' },
+  { to: '/impact', icon: BarChart3, label: 'Impact & Reports' },
+  { to: '/integration', icon: Database, label: 'System Status' },
+  { to: '/integration', icon: Settings, label: 'Settings' },
 ];
 
 const deptItems = {
@@ -47,6 +60,46 @@ const deptItems = {
   ],
 };
 
+function NavItem({ to, icon: Icon, label, end = false }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) => `group mb-0.5 flex h-[39px] items-center justify-between rounded-md px-2.5 text-[12px] font-medium transition-colors ${isActive ? 'bg-[#E7F0FC] text-[#145DA8] shadow-[inset_3px_0_0_#1769D4]' : 'text-[#40546A] hover:bg-[#F0F4F8] hover:text-[#1769D4]'}`}
+    >
+      {({ isActive }) => (
+        <span className="flex min-w-0 items-center gap-3">
+          <Icon className={`h-[17px] w-[17px] shrink-0 ${isActive ? 'text-[#1769D4]' : 'text-[#60748A]'}`} strokeWidth={isActive ? 2.15 : 1.85} />
+          <span className="truncate">{label}</span>
+        </span>
+      )}
+    </NavLink>
+  );
+}
+
+function GroupItem({ icon: Icon, label, children }) {
+  return (
+    <div className="mb-0.5">
+      <div className="flex h-[34px] items-center gap-3 px-2.5 text-[11px] font-bold uppercase tracking-[0.02em] text-[#52677C]">
+        <Icon className="h-[16px] w-[16px] shrink-0 text-[#60748A]" strokeWidth={1.9} />
+        <span>{label}</span>
+        <ChevronDown className="ml-auto h-3.5 w-3.5 text-[#91A0AE]" />
+      </div>
+      <div className="ml-[31px] border-l border-[#DCE4EB] pl-1.5">
+        {children.map((item) => (
+          <NavLink
+            key={`${item.to}-${item.label}`}
+            to={item.to}
+            className={({ isActive }) => `mb-0.5 flex h-[32px] items-center rounded-md px-2 text-[11px] font-medium transition-colors ${isActive ? 'bg-[#E7F0FC] text-[#145DA8]' : 'text-[#607184] hover:bg-[#F0F4F8] hover:text-[#1769D4]'}`}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Sidebar({ currentRole }) {
   const isPlanner = currentRole?.id === 'planner';
   const items = isPlanner ? plannerItems : (deptItems[currentRole?.id] || deptItems.engineering);
@@ -55,10 +108,12 @@ export default function Sidebar({ currentRole }) {
     <aside className="sticky top-[105px] flex h-[calc(100vh-105px)] w-[218px] shrink-0 flex-col border-r border-[#D8E0E8] bg-[#FAFBFC]">
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         <div className="mb-2 px-2 text-[8px] font-bold uppercase tracking-[0.16em] text-[#8A99A8]">Navigation</div>
-        {items.map(({ to, icon: Icon, label, end, caret }) => (
-          <NavLink key={`${to}-${label}`} to={to} end={end} className={({ isActive }) => `group mb-0.5 flex h-[39px] items-center justify-between rounded-md px-2.5 text-[12px] font-medium transition-colors ${isActive ? 'bg-[#E7F0FC] text-[#145DA8] shadow-[inset_3px_0_0_#1769D4]' : 'text-[#40546A] hover:bg-[#F0F4F8] hover:text-[#1769D4]'}`}>
-            {({ isActive }) => <><span className="flex min-w-0 items-center gap-3"><Icon className={`h-[17px] w-[17px] shrink-0 ${isActive ? 'text-[#1769D4]' : 'text-[#60748A]'}`} strokeWidth={isActive ? 2.15 : 1.85} /><span className="truncate">{label}</span></span>{caret && <ChevronDown className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-[#1769D4]' : 'text-[#91A0AE]'}`} />}</>}
-          </NavLink>
+        {items.map((item) => (
+          item.children ? (
+            <GroupItem key={item.label} {...item} />
+          ) : (
+            <NavItem key={`${item.to}-${item.label}`} {...item} />
+          )
         ))}
       </nav>
 
