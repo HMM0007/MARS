@@ -14,6 +14,11 @@ const DEPARTMENTS = [
   { id: 'CONSOLIDATED', label: 'Shared' },
 ];
 
+const isSharedBlock = (block) => {
+  const departments = Array.isArray(block?.departments) ? block.departments.filter(Boolean) : [];
+  return new Set(departments).size >= 2;
+};
+
 const getStatus = (plan) => String(plan?.solver_status || plan?.status || '—').toUpperCase();
 const getConflicts = (plan) => Number(plan?.metrics?.active_conflicts ?? plan?.compliance?.conflicts ?? 0);
 
@@ -64,10 +69,12 @@ export default function WeeklyPlanPage({ currentRole }) {
   const filteredBlocks = useMemo(() => blocks.filter((block) => {
     const departments = block?.departments || [];
     const departmentMatch = selectedDept === 'ALL'
-      || (selectedDept === 'CONSOLIDATED' ? Boolean(block?.is_consolidated || departments.length > 1) : departments.includes(selectedDept));
+      || (selectedDept === 'CONSOLIDATED' ? isSharedBlock(block) : departments.includes(selectedDept));
     const trackMatch = selectedTrack === 'ALL' || block?.track_id === selectedTrack;
     return departmentMatch && trackMatch;
   }), [blocks, selectedDept, selectedTrack]);
+
+  const sharedBlockCount = useMemo(() => blocks.filter(isSharedBlock).length, [blocks]);
 
   const openBlock = (block) => {
     setSelectedBlock(block);
@@ -105,13 +112,12 @@ export default function WeeklyPlanPage({ currentRole }) {
         </header>
 
         {error && <div className="rounded border border-[#C92A2A]/25 bg-[#C92A2A]/5 px-3 py-2 text-[10px] font-semibold text-[#C92A2A]"><AlertCircle className="mr-1.5 inline h-3.5 w-3.5" />{error}</div>}
-
         {pendingRevision && <section><PlannerRevisionReview currentRole={currentRole} /></section>}
 
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {[
             ['Scheduled blocks', blocks.length, 'text-[#1E3A5F]'],
-            ['Shared blocks', blocks.filter((b) => b?.is_consolidated || (b?.departments || []).length > 1).length, 'text-[#6B5B95]'],
+            ['Shared blocks', sharedBlockCount, 'text-[#6B5B95]'],
             ['Deferred', Number(metrics.total_jobs_deferred ?? weeklyPlan?.deferred_jobs?.length ?? 0), 'text-[#A76614]'],
             ['Risk coverage', metrics.risk_coverage_percentage != null ? `${metrics.risk_coverage_percentage}%` : '—', 'text-[#2F9E44]'],
           ].map(([label, value, cls]) => (
