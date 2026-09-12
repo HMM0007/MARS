@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { BarChart3, CalendarDays, ChevronDown, CircleHelp, Database, FileCheck2, Home, Map, Search, Settings, ShieldCheck, TrainFront, Wrench } from 'lucide-react';
+import { BarChart3, CalendarDays, ChevronDown, CircleHelp, Database, Home, Map, Search, Settings, ShieldCheck, TrainFront, Wrench } from 'lucide-react';
 
 const plannerItems = [
   { to: '/', icon: Home, label: 'Home', end: true },
@@ -52,23 +52,30 @@ export default function Sidebar({ currentRole }) {
   const items = isPlanner ? plannerItems : (deptItems[currentRole?.id] || deptItems.engineering);
 
   return (
-    <aside className="sticky top-[105px] flex h-[calc(100vh-105px)] w-[236px] shrink-0 flex-col border-r border-[#D5DDE7] bg-white">
-      <nav className="flex-1 overflow-y-auto px-2.5 py-3">
+    <aside className="sticky top-[105px] flex h-[calc(100vh-105px)] w-[218px] shrink-0 flex-col border-r border-[#D8E0E8] bg-[#FAFBFC]">
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        <div className="mb-2 px-2 text-[8px] font-bold uppercase tracking-[0.16em] text-[#8A99A8]">Navigation</div>
         {items.map(({ to, icon: Icon, label, end, caret }) => (
-          <NavLink key={`${to}-${label}`} to={to} end={end} className={({ isActive }) => `group mb-1 flex h-[42px] items-center justify-between rounded-md border-l-[3px] px-3 text-[13px] font-semibold transition-colors ${isActive ? 'border-[#0B5DBB] bg-[#1769D4] text-white shadow-[0_2px_6px_rgba(23,105,212,.18)]' : 'border-transparent text-[#31465E] hover:bg-[#F0F5FA] hover:text-[#1769D4]'}`}>
-            {({ isActive }) => <><span className="flex min-w-0 items-center gap-3"><Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-white' : 'text-[#4E6176]'}`} strokeWidth={2} /><span className="truncate">{label}</span></span>{caret && <ChevronDown className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-white' : 'text-[#718294]'}`} />}</>}
+          <NavLink key={`${to}-${label}`} to={to} end={end} className={({ isActive }) => `group mb-0.5 flex h-[39px] items-center justify-between rounded-md px-2.5 text-[12px] font-medium transition-colors ${isActive ? 'bg-[#E7F0FC] text-[#145DA8] shadow-[inset_3px_0_0_#1769D4]' : 'text-[#40546A] hover:bg-[#F0F4F8] hover:text-[#1769D4]'}`}>
+            {({ isActive }) => <><span className="flex min-w-0 items-center gap-3"><Icon className={`h-[17px] w-[17px] shrink-0 ${isActive ? 'text-[#1769D4]' : 'text-[#60748A]'}`} strokeWidth={isActive ? 2.15 : 1.85} /><span className="truncate">{label}</span></span>{caret && <ChevronDown className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-[#1769D4]' : 'text-[#91A0AE]'}`} />}</>}
           </NavLink>
         ))}
       </nav>
 
-      <div className="border-t border-[#D8E0E8] bg-[#F5F8FB] p-3">
-        <div className="rounded-md border border-[#D6DEE6] bg-white p-3">
-          <div className="flex items-center justify-between"><span className="text-[9px] font-black uppercase tracking-[0.15em] text-[#738496]">System Status</span><span className="h-2.5 w-2.5 rounded-full bg-[#19A974] shadow-[0_0_0_3px_#E2F5EC]" /></div>
-          <p className="mt-2 text-xs font-extrabold text-[#173E6C]">MARS 2.0 Online</p>
-          <div className="mt-2 grid grid-cols-2 gap-1 text-[9px] font-mono font-bold text-[#687B8F]"><span className="rounded bg-[#F1F5F8] px-1.5 py-1">CP-SAT READY</span><span className="rounded bg-[#F1F5F8] px-1.5 py-1 text-center">CRIS LINKED</span></div>
+      <div className="border-t border-[#D8E0E8] bg-white px-3 py-2.5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-[#8796A5]">System</p>
+            <p className="mt-0.5 text-[10px] font-bold text-[#173E6C]">MARS 2.0 Online</p>
+          </div>
+          <span className="h-2 w-2 rounded-full bg-[#19A974] shadow-[0_0_0_3px_#E6F7EF]" />
         </div>
-        <div className="mt-3 text-center text-[10px] italic text-[#6D7E90]">“Reliable Assets<br />for a Stronger India”</div>
-        <div className="mx-auto mt-2 h-1 w-24 bg-gradient-to-r from-[#F28C28] via-white to-[#16865F]" />
+        <div className="mt-2 flex items-center gap-1.5 text-[8px] font-mono font-bold text-[#718294]">
+          <span className="rounded bg-[#F1F5F8] px-1.5 py-1">CP-SAT READY</span>
+          <span className="rounded bg-[#F1F5F8] px-1.5 py-1">CRIS LINKED</span>
+        </div>
+        <div className="mt-2.5 border-t border-[#E8EDF2] pt-2 text-center text-[9px] italic text-[#6D7E90]">Reliable Assets for a Stronger India</div>
+        <div className="mx-auto mt-1.5 h-[3px] w-20 bg-gradient-to-r from-[#F28C28] via-white to-[#16865F]" />
       </div>
     </aside>
   );
