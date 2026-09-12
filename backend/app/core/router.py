@@ -60,6 +60,27 @@ class JobIntakeRequest(BaseModel):
     planning_week: int = Field(default=1, ge=1, le=4)
 
 
+class EmergencyJobIntakeRequest(BaseModel):
+    job_id: str = Field(min_length=1, max_length=80)
+    department: Literal["Engineering", "S&T", "Traction"]
+    asset_id: str = Field(min_length=1, max_length=120)
+    asset_type: Optional[str] = None
+    section_id: str = Field(min_length=1, max_length=80)
+    track_id: str = Field(min_length=1, max_length=80)
+    location_km: float = Field(ge=0)
+    defect_type: str = Field(min_length=1, max_length=160)
+    emergency_reason: str = Field(min_length=3, max_length=240)
+    estimated_duration_hours: float = Field(gt=0, le=24)
+    due_date: date
+    preferred_window: Literal["NIGHT", "DAY", "ANY"] = "ANY"
+    machine_required: Optional[str] = None
+    dependency_job_id: Optional[str] = None
+    safety_conflict_tag: Optional[str] = "NORMAL"
+    power_block_required: bool = False
+    train_operation_impact: bool = False
+    planning_week: int = Field(default=1, ge=1, le=4)
+
+
 def _load_unified_jobs() -> List[MaintenanceJob]:
     source_jobs = TMSAdapter.fetch_engineering_jobs() + SMMSAdapter.fetch_snt_jobs() + TDMSAdapter.fetch_traction_jobs()
     runtime_jobs = [MaintenanceJob(**item) for item in list_intake_jobs()]
@@ -94,8 +115,7 @@ def get_intake_jobs():
     return [MaintenanceJob(**item) for item in list_intake_jobs()]
 
 
-@router.post("/jobs/intake", response_model=Dict[str, Any])
-def submit_job_intake(request: JobIntakeRequest):
+def _submit_intake_job(request: JobIntakeRequest, *, emergency: bool = False, emergency_reason: Optional[str] = None, train_operation_impact: bool = False):
     existing_ids = {job.job_id for job in _load_unified_jobs()}
     if request.job_id in existing_ids:
         raise HTTPException(status_code=409, detail={"error": "DUPLICATE_JOB_ID", "message": "Job ID already exists.", "job_id": request.job_id})
@@ -115,14 +135,14 @@ def submit_job_intake(request: JobIntakeRequest):
         track_id=request.track_id,
         location_km=request.location_km,
         defect_type=request.defect_type,
-        criticality_level=request.criticality_level,
+        criticality_level="CRITICAL" if emergency else request.criticality_level,
         estimated_duration_hours=request.estimated_duration_hours,
         due_date=request.due_date,
         preferred_window=request.preferred_window,
         machine_required=machine_value,
         power_block_required=request.power_block_required or request.safety_conflict_tag == "OHE_ISOLATION",
         dependency_job_id=request.dependency_job_id,
-        work_type=request.work_type or "DEPARTMENT_MAINTENANCE",
+        work_type="EMERGENCY_MAINTENANCE" if emergency else (request.work_type or "DEPARTMENT_MAINTENANCE"),
         safety_conflict_tag=request.safety_conflict_tag,
         created_date=date.today(),
         status="PENDING",
@@ -132,7 +152,14 @@ def submit_job_intake(request: JobIntakeRequest):
 
     if not approved:
         add_intake_job(scored_job.model_dump(mode="json"))
-        return {"status": "INTAKE_ONLY", "message": "Job accepted into the Unified Job Pool. No approved weekly baseline exists yet, so no incremental repair was required.", "job": scored_job}
+        return {
+            "status": "EMERGENCY_INTAKE_ONLY" if emergency else "INTAKE_ONLY",
+            "message": "Emergency job accepted into the Unified Job Pool. No approved weekly baseline exists yet, so no incremental repair was required." if emergency else "Job accepted into the Unified Job Pool. No approved weekly baseline exists yet, so no incremental repair was required.",
+            "job": scored_job,
+            "emergency": emergency,
+            "emergency_reason": emergency_reason,
+            "train_operation_impact": train_operation_impact,
+        }
 
     baseline_week = int(approved.get("planning_week", request.planning_week))
     try:
@@ -149,14 +176,47 @@ def submit_job_intake(request: JobIntakeRequest):
         pending = None
 
     return {
-        "status": "REPAIR_PROPOSED",
-        "message": "Job accepted and an incremental revision proposal was generated from the approved weekly baseline.",
+        "status": "EMERGENCY_REPAIR_PROPOSED" if emergency else "REPAIR_PROPOSED",
+        "message": "Emergency job accepted and an incremental revision proposal was generated from the approved weekly baseline." if emergency else "Job accepted and an incremental revision proposal was generated from the approved weekly baseline.",
         "job": scored_job,
         "baseline_revision": approved.get("revision"),
         "proposal": repair,
         "pending_revision": pending,
         "requires_planner_approval": pending is not None,
+        "emergency": emergency,
+        "emergency_reason": emergency_reason,
+        "train_operation_impact": train_operation_impact,
     }
+
+
+@router.post("/jobs/intake", response_model=Dict[str, Any])
+def submit_job_intake(request: JobIntakeRequest):
+    return _submit_intake_job(request)
+
+
+@router.post("/jobs/emergency", response_model=Dict[str, Any])
+def submit_emergency_job(request: EmergencyJobIntakeRequest):
+    intake = JobIntakeRequest(
+        job_id=request.job_id,
+        department=request.department,
+        asset_id=request.asset_id,
+        asset_type=request.asset_type,
+        section_id=request.section_id,
+        track_id=request.track_id,
+        location_km=request.location_km,
+        defect_type=request.defect_type,
+        criticality_level="CRITICAL",
+        due_date=request.due_date,
+        preferred_window=request.preferred_window,
+        machine_required=request.machine_required,
+        dependency_job_id=request.dependency_job_id,
+        safety_conflict_tag=request.safety_conflict_tag,
+        power_block_required=request.power_block_required,
+        work_type="EMERGENCY_MAINTENANCE",
+        planning_week=request.planning_week,
+        estimated_duration_hours=request.estimated_duration_hours,
+    )
+    return _submit_intake_job(request=intake, emergency=True, emergency_reason=request.emergency_reason, train_operation_impact=request.train_operation_impact)
 
 
 @router.get("/plan/weekly/approved", response_model=Dict[str, Any])
@@ -233,7 +293,7 @@ def get_weekly_tactical_plan(
     weekly_jobs = [job for job in scored_jobs if job.job_id in monthly_job_ids]
     weekly_job_ids = {job.job_id for job in weekly_jobs}
     if weekly_job_ids != monthly_job_ids:
-        raise HTTPException(status_code=500, detail={"error": "MONTHLY_WEEK_HANDOFF_MISMATCH", "message": "Weekly CP-SAT candidate set does not exactly match the selected monthly week.", "planning_week": week, "monthly_candidate_count": len(monthly_job_ids), "weekly_candidate_count": len(weekly_jobs), "missing_from_weekly": sorted(monthly_job_ids - weekly_job_ids), "unexpected_in_weekly": sorted(weekly_job_ids - monthly_job_ids)})
+        raise HTTPException(status_code=500, detail={"error": "MONTHLY_WEEK_HANDOFF_MISMATCH", "message": "Weekly CP-SAT candidate set does not exactly match the selected monthly week.", "planning_week": week, "monthly_candidate_count": len(monthly_job_ids), "weekly_candidate_count": len(weekly_job_ids), "missing_from_weekly": sorted(monthly_job_ids - weekly_job_ids), "unexpected_in_weekly": sorted(weekly_job_ids - monthly_job_ids)})
     trains = COAAdapter.fetch_passenger_timetable()
     start_monday = _current_week_monday() + timedelta(weeks=week - 1)
     result = HardenedWeeklyCPSATSolver(weekly_jobs, trains, start_monday).solve()
