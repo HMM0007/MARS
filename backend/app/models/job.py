@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
-from datetime import date, datetime
+from datetime import date
 
 CriticalityLevel = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 Department = Literal["Engineering", "S&T", "Traction"]
@@ -27,6 +27,11 @@ class MaintenanceJob(BaseModel):
     safety_conflict_tag: Optional[str] = "NORMAL"
     created_date: date
     status: JobStatus = "PENDING"
+
+    # Emergency audit metadata. Optional for normal jobs and persisted for
+    # department-reported emergencies so the operational context survives restart.
+    emergency_reason: Optional[str] = None
+    train_operation_impact: bool = False
 
     # AI computed fields (filled later)
     base_priority_score: Optional[int] = None
