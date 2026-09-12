@@ -203,7 +203,26 @@ def get_monthly_strategic_plan():
 
 
 @router.get("/plan/weekly", response_model=Dict[str, Any])
-def get_weekly_tactical_plan(week: int = Query(1, ge=1, le=4, description="Monthly planning week (1-4)")):
+def get_weekly_tactical_plan(
+    week: int = Query(1, ge=1, le=4, description="Monthly planning week (1-4)"),
+    fresh: bool = Query(False, description="Bypass an approved baseline and generate a fresh candidate plan."),
+):
+    approved = get_approved_plan()
+    if not fresh and approved and int(approved.get("planning_week", 0)) == week:
+        approved_plan = approved.get("plan")
+        if isinstance(approved_plan, dict):
+            return {
+                **approved_plan,
+                "planning_week": week,
+                "baseline_governance": {
+                    "mode": "APPROVED_BASELINE",
+                    "revision": approved.get("revision"),
+                    "approved_at": approved.get("approved_at"),
+                    "approved_by": approved.get("approved_by"),
+                    "requires_explicit_fresh_request": True,
+                },
+            }
+
     scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
     monthly_plan = MonthlyAllocator.generate_monthly_plan(scored_jobs)
     monthly_job_ids = _monthly_week_job_ids(monthly_plan, week)
@@ -232,6 +251,11 @@ def get_weekly_tactical_plan(week: int = Query(1, ge=1, le=4, description="Month
     result["weekly_candidate_ids"] = sorted(weekly_job_ids)
     result["monthly_candidate_ids"] = sorted(monthly_job_ids)
     result["weekly_candidate_lookup_complete"] = True
+    result["baseline_governance"] = {
+        "mode": "FRESH_CANDIDATE",
+        "requires_planner_approval": True,
+        "reason": "No matching approved baseline was used, or an explicit fresh request was made.",
+    }
     return result
 
 
