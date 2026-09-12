@@ -52,13 +52,13 @@ FEATURE_NAMES = [
 ]
 
 MODEL_VERSION = "xgboost-priority-v1-synthetic-calibration"
-TRAINING_ROWS = 1080
 
 
 class PriorityEngine:
     """Score maintenance jobs with a deterministic, real XGBoost model."""
 
     _model: XGBRegressor | None = None
+    _training_rows: int = 0
 
     @staticmethod
     def calculate_days_overdue(due_date: date) -> int:
@@ -85,12 +85,7 @@ class PriorityEngine:
         monsoon_factor: float,
         department: str,
     ) -> float:
-        """Create deterministic prototype labels from the locked risk policy.
-
-        These labels are calibration targets, not claimed historical railway
-        outcomes. They preserve the existing operational semantics while the
-        actual XGBoost model learns their nonlinear interactions.
-        """
+        """Create deterministic prototype labels from the locked risk policy."""
         escalated = cls.calculate_exponential_risk(
             base_score, deferral_count, department
         )
@@ -135,9 +130,10 @@ class PriorityEngine:
                                     )
                                 )
 
-        X = np.asarray(rows, dtype=np.float32)
-        y = np.asarray(targets, dtype=np.float32)
-        return X, y
+        return (
+            np.asarray(rows, dtype=np.float32),
+            np.asarray(targets, dtype=np.float32),
+        )
 
     @classmethod
     def _get_model(cls) -> XGBRegressor:
@@ -160,6 +156,7 @@ class PriorityEngine:
             )
             model.fit(X, y, verbose=False)
             cls._model = model
+            cls._training_rows = int(X.shape[0])
         return cls._model
 
     @classmethod
@@ -194,7 +191,7 @@ class PriorityEngine:
         return {
             "algorithm": "XGBoost Regressor",
             "model_version": MODEL_VERSION,
-            "training_rows": int(model.n_features_in_ * 0 + TRAINING_ROWS),
+            "training_rows": cls._training_rows,
             "features": FEATURE_NAMES,
             "target": "priority_score_0_100",
             "training_source": "deterministic synthetic operational calibration",
@@ -203,9 +200,9 @@ class PriorityEngine:
     @classmethod
     def score_job(cls, job: MaintenanceJob) -> MaintenanceJob:
         """Calculate the AI priority score for one maintenance job."""
-        base_score = BASE_CRITICALITY_MAP.get(job.criticality_level, 50.0)
-        job.base_priority_score = int(base_score)
-
+        job.base_priority_score = int(
+            BASE_CRITICALITY_MAP.get(job.criticality_level, 50.0)
+        )
         model = cls._get_model()
         prediction = float(model.predict(cls._feature_vector(job))[0])
         job.ai_priority_score = round(float(np.clip(prediction, 0.0, 100.0)), 2)
@@ -216,6 +213,7 @@ class PriorityEngine:
         """Score and return the unified job pool in descending priority order."""
         if not jobs:
             return []
+
         model = cls._get_model()
         features = np.vstack([cls._feature_vector(job) for job in jobs])
         predictions = model.predict(features)
