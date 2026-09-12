@@ -124,6 +124,7 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return undefined;
     let map;
+    let initTimeout;
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
@@ -152,15 +153,24 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
       mapRef.current = map;
       map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
 
-      map.once('load', () => {
-        map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
-        renderStations();
-        renderJobs();
-        map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
-        setLoaded(true);
+      // The map shell is usable as soon as MapLibre has been constructed. Do not make the
+      // entire dashboard wait for the raster tiles, GeoJSON worker, or optional markers.
+      setLoaded(true);
+      initTimeout = window.setTimeout(() => setLoaded(true), 5000);
 
-        // The repository GeoJSON is the authoritative corridor geometry. It is loaded after
-        // the map becomes visible so a slow asset request can never hide the control-centre.
+      map.once('load', () => {
+        try {
+          map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
+          renderStations();
+          renderJobs();
+          map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
+        } catch (error) {
+          console.error('Railway map layer setup failed:', error);
+          setMapError(error?.message || 'Railway map layers could not be rendered.');
+        } finally {
+          setLoaded(true);
+        }
+
         fetch('/geojson/pune_lonavala_railways.geojson', { cache: 'no-store' })
           .then((response) => { if (!response.ok) throw new Error(`Railway geometry HTTP ${response.status}`); return response.json(); })
           .then((data) => {
@@ -182,7 +192,7 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
 
     const resize = () => map?.resize();
     window.addEventListener('resize', resize);
-    return () => { clearMarkers(stationMarkersRef); clearMarkers(jobMarkersRef); map?.remove(); mapRef.current = null; window.removeEventListener('resize', resize); };
+    return () => { if (initTimeout) window.clearTimeout(initTimeout); clearMarkers(stationMarkersRef); clearMarkers(jobMarkersRef); map?.remove(); mapRef.current = null; window.removeEventListener('resize', resize); };
   }, []);
 
   useEffect(() => {
@@ -205,7 +215,7 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
     <div className="absolute right-4 bottom-4 z-40 rounded-md border border-[#C9D4DE] bg-white/96 px-3 py-2 shadow-lg text-[9px] font-semibold text-[#52606D]"><div className="flex items-center gap-2"><TrainFront className="h-3.5 w-3.5 text-[#B42318]" />Train paths: protected operational constraints</div><div className="mt-1 flex items-center gap-2"><MapPinned className="h-3.5 w-3.5 text-[#173E6C]" />Stations: fixed corridor reference points</div></div>
     {!loaded && <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#E9EEF2]/35"><div className="rounded-md border border-[#C9D4DE] bg-white px-5 py-3 text-[10px] font-extrabold text-[#52606D] shadow-xl">Initializing railway control-centre…</div></div>}
     {mapError && <div className="absolute left-4 bottom-24 z-50 max-w-[480px] rounded-md border border-[#F1B6B6] bg-white px-3 py-2 text-[9px] font-semibold text-[#B42318] shadow-lg">{mapError}</div>}
-    {inspection && <aside className="absolute bottom-24 right-4 z-[60] w-[350px] rounded-lg border border-[#C9D4DE] bg-white p-3 shadow-2xl"><div className="flex items-start justify-between gap-3"><div><div className="text-[8px] font-extrabold uppercase tracking-[0.16em] text-[#8796A5]">{inspection.type === 'STATION' ? 'RAILWAY STATION' : 'MAINTENANCE ACTIVITY'}</div><div className="mt-0.5 text-sm font-extrabold text-[#173E6C]">{inspection.type === 'STATION' ? `${inspection.data.code} · ${inspection.data.name}` : inspection.data.block_id || inspection.data.job_id}</div></div><button onClick={() => setInspection(null)} className="rounded p-1 text-[#718294] hover:bg-[#F4F6F8]"><X className="h-4 w-4" /></button></div>{inspection.type === 'STATION' ? <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.km).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Type</div><div className="font-bold">{inspection.data.category}</div></div></div> : <div className="mt-3 space-y-2 text-[10px]"><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Department</div><div className="font-bold">{inspection.data.department || 'Maintenance'}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Status</div><div className="font-bold">{inspection.data.status}</div></div></div><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.location_km || 0).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Track</div><div className="font-mono font-bold">{inspection.data.track_id || 'PUNE-LNL-UP'}</div></div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Asset / Defect</div><div className="font-bold">{inspection.data.asset_id || '—'} · {inspection.data.defect_type || 'Maintenance'}</div></div><button onClick={() => onOpenExplainability?.(inspection.data)} className="w-full rounded bg-[#173E6C] px-3 py-2 text-[10px] font-extrabold text-white">Open Block Details</button></div>}</aside>}
+    {inspection && <aside className="absolute bottom-24 right-4 z-[60] w-[350px] rounded-lg border border-[#C9D4DE] bg-white p-3 shadow-2xl"><div className="flex items-start justify-between gap-3"><div><div className="text-[8px] font-extrabold uppercase tracking-[0.16em] text-[#8796A5]">{inspection.type === 'STATION' ? 'RAILWAY STATION' : 'MAINTENANCE ACTIVITY'}</div><div className="mt-0.5 text-sm font-extrabold text-[#173E6C]">{inspection.type === 'STATION' ? `${inspection.data.code} · ${inspection.data.name}` : inspection.data.block_id || inspection.data.job_id}</div></div><button onClick={() => setInspection(null)} className="rounded p-1 text-[#718294] hover:bg-[#F4F6F8]"><X className="h-4 w-4" /></button></div>{inspection.type === 'STATION' ? <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.km).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Type</div><div className="font-bold">{inspection.data.category}</div></div></div> : <div className="mt-3 space-y-2 text-[10px]"><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Department</div><div className="font-bold">{inspection.data.department || 'Maintenance'}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Status</div><div className="font-bold">{inspection.data.status}</div></div></div><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#F8796A5]">Chainage</div><div className="font-mono font-bold">Km {Number(inspection.data.location_km || 0).toFixed(2)}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Track</div><div className="font-mono font-bold">{inspection.data.track_id || 'PUNE-LNL-UP'}</div></div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Asset / Defect</div><div className="font-bold">{inspection.data.asset_id || '—'} · {inspection.data.defect_type || 'Maintenance'}</div></div><button onClick={() => onOpenExplainability?.(inspection.data)} className="w-full rounded bg-[#173E6C] px-3 py-2 text-[10px] font-extrabold text-white">Open Block Details</button></div>}</aside>}
   </div>;
   return isFullScreenMode && typeof document !== 'undefined' ? createPortal(shell, document.body) : shell;
 }
