@@ -13,6 +13,11 @@ const COLORS = {
 
 const TRACK_ORDER = ['PUNE-LNL', 'PUNE-DD', 'LNL-KJT', 'PUNE-MRJ', 'CWD-YARD'];
 const DAY_WIDTHS = { compact: 220, standard: 300, detail: 420 };
+const TRAIN_MIN_WIDTH = 76;
+const TRAIN_LANE_HEIGHT = 17;
+const TRAIN_LANE_TOP = 4;
+const JOB_LANE_GAP = 6;
+const JOB_HEIGHT = 31;
 
 const trackLabel = (trackId = '') => {
   const parts = trackId.split('-');
@@ -55,6 +60,31 @@ const addDays = (date, days) => {
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const formatDay = (date) => date.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
 const formatTime = (date) => date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+// Assign protected train movements to separate vertical lanes when their
+// time intervals overlap. The visual minimum width is also considered so
+// labels do not collide when two short movements are close together.
+const layoutTrainMovements = (trainList, horizonStart, horizonEnd, timelineWidth) => {
+  const valid = trainList
+    .map((train) => ({
+      train,
+      start: parseDate(train.entry_time),
+      end: parseDate(train.exit_time),
+    }))
+    .filter(({ start, end }) => start && end && end > horizonStart && start < horizonEnd)
+    .sort((a, b) => a.start - b.start || a.end - b.end);
+
+  const totalMs = horizonEnd.getTime() - horizonStart.getTime();
+  const minVisualMs = (TRAIN_MIN_WIDTH / timelineWidth) * totalMs;
+  const laneEnds = [];
+
+  return valid.map(({ train, start, end }) => {
+    let lane = laneEnds.findIndex((laneEnd) => laneEnd <= start.getTime());
+    if (lane === -1) lane = laneEnds.length;
+    laneEnds[lane] = Math.max(end.getTime(), start.getTime() + minVisualMs);
+    return { train, start, end, lane };
+  });
+};
 
 export default function UnifiedGantt({
   blocks: propBlocks,
@@ -155,6 +185,28 @@ export default function UnifiedGantt({
   }), [blocks, selectedDept, selectedTrack, horizon]);
 
   const filteredTracks = useMemo(() => tracks.filter((track) => filteredBlocks.some((b) => b.track_id === track) || (showTrains && trains.some((t) => t.track_id === track && parseDate(t.entry_time) < horizon.end && parseDate(t.exit_time) > horizon.start))), [tracks, filteredBlocks, trains, showTrains, horizon]);
+
+  const trainLayoutsByTrack = useMemo(() => {
+    const result = {};
+    filteredTracks.forEach((track) => {
+      const trackTrains = showTrains ? trains.filter((t) => t.track_id === track) : [];
+      result[track] = layoutTrainMovements(trackTrains, horizon.start, horizon.end, timelineWidth);
+    });
+    return result;
+  }, [filteredTracks, trains, showTrains, horizon, timelineWidth]);
+
+  const rowHeightByTrack = useMemo(() => {
+    const result = {};
+    filteredTracks.forEach((track) => {
+      const trainLanes = trainLayoutsByTrack[track]?.length
+        ? Math.max(...trainLayoutsByTrack[track].map((item) => item.lane + 1))
+        : 0;
+      const trainHeight = trainLanes ? TRAIN_LANE_TOP + trainLanes * TRAIN_LANE_HEIGHT : 0;
+      result[track] = Math.max(64, trainHeight + JOB_LANE_GAP + JOB_HEIGHT + 4);
+    });
+    return result;
+  }, [filteredTracks, trainLayoutsByTrack]);
+
   const rangeText = `${formatDay(horizon.start)} — ${formatDay(addDays(horizon.end, -1))}`;
 
   const position = useCallback((value) => {
@@ -213,13 +265,13 @@ export default function UnifiedGantt({
           <div className="min-w-0"><div className="flex items-center gap-2"><div className="flex h-8 w-8 items-center justify-center rounded bg-[#EAF0F6]"><Calendar className="h-4 w-4 text-[#1E3A5F]" /></div><div><h2 className="text-sm font-extrabold uppercase tracking-wide text-[#1E3A5F]">Weekly Possession Schedule</h2><p className="text-[11px] text-[#52606D]">7-day tactical view · maintenance windows against protected train movements</p></div></div></div>
           <div className="flex items-center gap-1.5"><button title="Previous window" onClick={() => navigateWindow(-1)} className="rounded border border-[#D6DEE6] bg-white p-2 text-[#52606D] hover:bg-[#F4F6F8]"><ChevronLeft className="h-4 w-4" /></button><button onClick={resetWeek} className="rounded border border-[#D6DEE6] bg-white px-3 py-2 text-[11px] font-bold text-[#1E3A5F] hover:bg-[#F4F6F8]">Full Week</button><button title="Next window" onClick={() => navigateWindow(1)} className="rounded border border-[#D6DEE6] bg-white p-2 text-[#52606D] hover:bg-[#F4F6F8]"><ChevronRight className="h-4 w-4" /></button><div className="ml-1 flex overflow-hidden rounded border border-[#D6DEE6]">{['day', '48h', 'week'].map((mode) => <button key={mode} onClick={() => { setView(mode); setDayOffset(0); }} className={`px-2.5 py-2 text-[10px] font-extrabold uppercase ${view === mode ? 'bg-[#1E3A5F] text-white' : 'bg-white text-[#52606D] hover:bg-[#F4F6F8]'}`}>{mode === '48h' ? '48 H' : mode}</button>)}</div><button title="Refresh plan" onClick={loadData} disabled={loading} className="ml-1 rounded border border-[#D6DEE6] bg-white p-2 text-[#1E3A5F] hover:bg-[#F4F6F8] disabled:opacity-50"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /></button></div>
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#EEF2F6] pt-2.5"><div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-[#52606D]"><span>{rangeText}</span><span className="text-[#D6DEE6]">|</span><span>{filteredBlocks.length} possessions</span><span className="text-[#D6DEE6]">|</span><span>{trains.length} train movements protected</span></div><div className="flex items-center gap-1.5">{['ALL', 'Engineering', 'S&T', 'Traction', 'Shared'].map((dept) => <button key={dept} onClick={() => setSelectedDept(dept)} className={`rounded border px-2.5 py-1.5 text-[10px] font-bold ${selectedDept === dept ? 'border-[#1E3A5F] bg-[#1E3A5F] text-white' : 'border-[#D6DEE6] bg-white text-[#52606D] hover:bg-[#F4F6F8]'}`}>{dept === 'ALL' ? 'All work' : dept}</button>)}<select value={selectedTrack} onChange={(e) => setSelectedTrack(e.target.value)} className="ml-1 rounded border border-[#D6DEE6] bg-white px-2 py-1.5 text-[10px] font-semibold text-[#52606D]"><option value="ALL">All tracks</option>{tracks.map((track) => <option key={track} value={track}>{trackLabel(track)}</option>)}</select><div className="relative ml-1"><button onClick={() => setShowLayers((v) => !v)} className={`flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-[10px] font-bold ${showLayers ? 'border-[#1E3A5F] bg-[#1E3A5F] text-white' : 'border-[#D6DEE6] bg-white text-[#52606D]'}`}><Filter className="h-3 w-3" /> Layers</button>{showLayers && <div className="absolute right-0 top-9 z-30 w-48 rounded-md border border-[#D6DEE6] bg-white p-2.5 shadow-lg"><p className="mb-2 border-b border-[#EEF2F6] pb-2 text-[10px] font-extrabold uppercase tracking-wide text-[#52606D]">Display layers</p><label className="flex cursor-pointer items-center justify-between py-1.5 text-xs text-[#1F2933]"><span className="flex items-center gap-2"><Train className="h-3.5 w-3.5 text-[#B42318]" /> Protected trains</span><input type="checkbox" checked={showTrains} onChange={(e) => setShowTrains(e.target.checked)} /></label><label className="flex cursor-pointer items-center justify-between border-t border-[#EEF2F6] py-1.5 text-xs text-[#1F2933]"><span className="flex items-center gap-2"><span className="h-2.5 w-3.5 border border-dashed border-[#F08C00]" /> TSR zones</span><input type="checkbox" checked={showTSR} onChange={(e) => setShowTSR(e.target.checked)} /></label></div>}</div></div></div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#EEF2F6] pt-2.5"><div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-[#52606D]"><span>{rangeText}</span><span className="text-[#D6DEE6]">|</span><span>{filteredBlocks.length} possessions</span><span className="text-[#D6DEE6]">|</span><span>{trains.length} train movements protected</span></div><div className="flex items-center gap-1.5">{['ALL', 'Engineering', 'S&T', 'Traction', 'Shared'].map((dept) => <button key={dept} onClick={() => setSelectedDept(dept)} className={`rounded border px-2.5 py-1.5 text-[10px] font-bold ${selectedDept === dept ? 'border-[#1E3A5F] bg-[#1E3A5F] text-white' : 'border-[#D6DEE6] bg-white text-[#52606D] hover:bg-[#F4F6F8]'}`}>{dept === 'ALL' ? 'All work' : dept}</button>)}<select value={selectedTrack} onChange={(e) => setSelectedTrack(e.target.value)} className="ml-1 rounded border border-[#D6DEE6] bg-white px-2 py-1.5 text-[10px] font-semibold text-[#52606D]"><option value="ALL">All tracks</option>{tracks.map((track) => <option key={track} value={track}>{trackLabel(track)}</option>)}</select><div className="relative ml-1"><button onClick={() => setShowLayers((v) => !v)} className={`flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-[10px] font-bold ${showLayers ? 'border-[#1E3A5F] bg-[#1E3A5F] text-white' : 'border-[#D6DEE6] bg-white text-[#52606D]'}`}><Filter className="h-3 w-3" /> Layers</button>{showLayers && <div className="absolute right-0 top-9 z-30 w-48 rounded-md border border-[#D6DEE6] bg-white p-2.5 shadow-lg"><p className="mb-2 border-b border-[#EEF2F6] pb-2 text-[10px] font-extrabold uppercase tracking-wide text-[#52606D]">Display layers</p><label className="flex cursor-pointer items-center justify-between py-1.5 text-xs text-[#1F2933]"><span className="flex items-center gap-2"><Train className="h-3.5 w-3.5 text-[#B42318]" /> Protected trains</span><input type="checkbox" checked={showTrains} onChange={(e) => setShowTrains(e.target.checked)} /></label><label className="flex items-center justify-between border-t border-[#EEF2F6] py-1.5 text-xs text-[#1F2933]"><span className="flex items-center gap-2"><span className="h-2.5 w-3.5 border border-dashed border-[#F08C00]" /> TSR zones</span><input type="checkbox" checked={showTSR} onChange={(e) => setShowTSR(e.target.checked)} /></label></div>}</div></div></div>
       </div>
 
       <div className="flex items-center justify-between border-b border-[#D6DEE6] bg-[#F8FAFC] px-4 py-2"><div className="flex items-center gap-4 text-[10px] text-[#52606D]"><span><b className="text-[#1F2933]">Read:</b> left = track · right = time</span><span><b className="text-[#1F2933]">Click:</b> possession for decision details</span>{nowPosition !== null && <span className="font-bold text-[#C92A2A]">● NOW {formatTime(now)}</span>}</div><div className="flex items-center gap-1 rounded border border-[#D6DEE6] bg-white p-0.5"><button title="More detail" onClick={() => setDensity((d) => d === 'compact' ? 'standard' : 'detail')} className="p-1 text-[#52606D] hover:bg-[#F4F6F8]"><ZoomIn className="h-3.5 w-3.5" /></button><span className="px-1 text-[9px] font-bold uppercase text-[#52606D]">Density</span><button title="More compact" onClick={() => setDensity((d) => d === 'detail' ? 'standard' : 'compact')} className="p-1 text-[#52606D] hover:bg-[#F4F6F8]"><ZoomOut className="h-3.5 w-3.5" /></button></div></div>
 
       <div className="flex min-h-[610px] max-h-[720px] overflow-hidden">
-        <div className="w-[220px] shrink-0 border-r border-[#CBD5E1] bg-white"><div className="flex h-[64px] items-end border-b border-[#CBD5E1] bg-[#F8FAFC] px-4 pb-2 text-[10px] font-extrabold uppercase tracking-wider text-[#52606D]">Track / line</div><div>{filteredTracks.map((track) => <div key={track} className="flex h-[64px] items-center border-b border-[#E2E8F0] px-4"><div className="min-w-0"><div className="truncate text-[11px] font-extrabold text-[#1F2933]">{trackLabel(track)}</div><div className="mt-0.5 truncate font-mono text-[9px] text-[#7B8794]">{track}</div></div></div>)}{filteredTracks.length === 0 && <div className="p-5 text-xs text-[#52606D]">No track matches this view.</div>}</div></div>
+        <div className="w-[220px] shrink-0 border-r border-[#CBD5E1] bg-white"><div className="flex h-[64px] items-end border-b border-[#CBD5E1] bg-[#F8FAFC] px-4 pb-2 text-[10px] font-extrabold uppercase tracking-wider text-[#52606D]">Track / line</div><div>{filteredTracks.map((track) => <div key={track} style={{ height: rowHeightByTrack[track] || 64 }} className="flex items-center border-b border-[#E2E8F0] px-4"><div className="min-w-0"><div className="truncate text-[11px] font-extrabold text-[#1F2933]">{trackLabel(track)}</div><div className="mt-0.5 truncate font-mono text-[9px] text-[#7B8794]">{track}</div></div></div>)}{filteredTracks.length === 0 && <div className="p-5 text-xs text-[#52606D]">No track matches this view.</div>}</div></div>
 
         <div ref={timelineRef} className="relative flex-1 overflow-auto bg-white"><div style={{ width: timelineWidth, minWidth: '100%' }}>
           <div className="sticky top-0 z-20 h-[64px] border-b border-[#CBD5E1] bg-white"><div className="absolute inset-0 flex">{days.map((day) => <div key={day.toISOString()} style={{ width: dayWidth }} className="shrink-0 border-r border-[#CBD5E1] bg-[#F8FAFC]"><div className="flex h-[34px] items-center border-b border-[#E2E8F0] px-3"><span className="text-[11px] font-extrabold uppercase text-[#1F2933]">{formatDay(day)}</span></div><div className="grid h-[30px] grid-cols-6 text-[8px] font-semibold text-[#7B8794]">{[0,4,8,12,16,20].map((h) => <span key={h} className="flex items-center border-r border-[#EEF2F6] pl-1.5">{String(h).padStart(2, '0')}:00</span>)}</div></div>)}</div></div>
@@ -228,16 +280,20 @@ export default function UnifiedGantt({
 
             {filteredTracks.map((track) => {
               const trackBlocks = filteredBlocks.filter((b) => b.track_id === track);
-              const trackTrains = showTrains ? trains.filter((t) => t.track_id === track && parseDate(t.entry_time) < horizon.end && parseDate(t.exit_time) > horizon.start) : [];
-              return <div key={track} className="relative h-[64px] border-b border-[#E2E8F0]">
-                {/* Protected train movement is a visible band, with the train number
-                    permanently rendered inside the element rather than on hover. */}
-                {trackTrains.map((train) => {
-                  const left = position(train.entry_time);
-                  const width = widthBetween(train.entry_time, train.exit_time);
+              const laidOutTrains = trainLayoutsByTrack[track] || [];
+              const trainLaneCount = laidOutTrains.length ? Math.max(...laidOutTrains.map((item) => item.lane + 1)) : 0;
+              const jobTop = trainLaneCount ? TRAIN_LANE_TOP + trainLaneCount * TRAIN_LANE_HEIGHT + JOB_LANE_GAP : 23;
+              const rowHeight = rowHeightByTrack[track] || 64;
+              return <div key={track} style={{ height: rowHeight }} className="relative border-b border-[#E2E8F0]">
+                {/* Protected train movements get separate vertical lanes. Overlapping
+                    trains no longer render behind one another, and the train number
+                    stays visible in a dedicated movement band. */}
+                {laidOutTrains.map(({ train, start, end, lane }) => {
+                  const left = position(start);
+                  const width = widthBetween(start, end);
                   if (left === null || width <= 0) return null;
-                  const trainName = train.train_number || train.train_id || 'TRAIN';
-                  return <div key={`train-${train.train_id || train.train_number}-${track}-${train.entry_time}`} title={`Protected train movement: ${trainName}`} className="absolute top-[7px] h-[13px] overflow-hidden rounded-sm border border-[#8F1D2C] bg-[#FBEAEC] text-[#8F1D2C] shadow-sm" style={{ left: clamp(left, 0, timelineWidth), width: Math.max(28, width), minWidth: 28 }}><div className="flex h-full items-center gap-1 px-1 text-[7px] font-black leading-none whitespace-nowrap"><Train className="h-2.5 w-2.5 shrink-0" /><span className="truncate">{trainName}</span><span aria-hidden="true" className="ml-auto shrink-0">›</span></div></div>;
+                  const trainName = train.train_number || train.train_name || train.train_id || 'TRAIN';
+                  return <div key={`train-${train.train_id || train.train_number || trainName}-${track}-${train.entry_time}`} title={`Protected train movement: ${trainName}`} className="absolute overflow-hidden rounded-sm border border-[#8F1D2C] bg-[#FBEAEC] text-[#8F1D2C] shadow-sm" style={{ left: clamp(left, 0, timelineWidth), top: TRAIN_LANE_TOP + lane * TRAIN_LANE_HEIGHT, width: Math.max(TRAIN_MIN_WIDTH, width), minWidth: TRAIN_MIN_WIDTH, height: 14 }}><div className="flex h-full min-w-0 items-center gap-1 px-1 text-[8px] font-black leading-none whitespace-nowrap"><Train className="h-2.5 w-2.5 shrink-0" /><span className="min-w-0 flex-1 truncate">{trainName}</span><span aria-hidden="true" className="shrink-0">›</span></div></div>;
                 })}
 
                 {trackBlocks.map((block) => {
@@ -256,7 +312,7 @@ export default function UnifiedGantt({
                   const label = jobIds.length > 1 ? `${jobIds.length} jobs` : (jobIds[0] || block.block_id);
                   const deptLabel = shared ? getDepartments(block).join(' + ') : (getDepartments(block)[0] || 'Engineering');
                   const showLabel = width >= 85;
-                  return <button key={block.block_id} type="button" onClick={() => handleBlock(block)} title={`${block.block_id} · ${label} · ${deptLabel} · ${formatTime(start)}–${formatTime(end)}`} className={`group absolute top-[23px] h-[31px] overflow-hidden rounded border text-left transition-shadow ${selected ? 'z-10 ring-2 ring-[#1E3A5F] ring-offset-1' : 'hover:z-10 hover:ring-1 hover:ring-[#1E3A5F]'}`} style={{ left, width: Math.max(18, width), background: shared ? '#EEE8F7' : `${color}14`, borderColor: shared ? COLORS.Consolidated : `${color}55` }}><span className="absolute inset-y-0 left-0 w-1" style={{ background: color }} />{critical && <span className="absolute left-2 top-1.5 h-2 w-2 rounded-full bg-[#C92A2A]" title="Critical priority" />}{showLabel && <span className="absolute inset-y-0 left-4 right-1 flex items-center gap-1 truncate pr-1 text-[9px] font-extrabold text-[#1F2933]"><span className="truncate">{label}</span>{shared && <span className="shrink-0 rounded bg-[#6B5B95] px-1 text-[7px] font-bold text-white">{deptLabel}</span>}</span>}{showLabel && width >= 150 && <span className="absolute bottom-0.5 right-1 text-[7px] font-mono font-bold text-[#52606D]">{formatTime(start)}–{formatTime(end)}</span>}</button>;
+                  return <button key={block.block_id} type="button" onClick={() => handleBlock(block)} title={`${block.block_id} · ${label} · ${deptLabel} · ${formatTime(start)}–${formatTime(end)}`} className={`group absolute h-[31px] overflow-hidden rounded border text-left transition-shadow ${selected ? 'z-10 ring-2 ring-[#1E3A5F] ring-offset-1' : 'hover:z-10 hover:ring-1 hover:ring-[#1E3A5F]'}`} style={{ left, top: jobTop, width: Math.max(18, width), background: shared ? '#EEE8F7' : `${color}14`, borderColor: shared ? COLORS.Consolidated : `${color}55` }}><span className="absolute inset-y-0 left-0 w-1" style={{ background: color }} />{critical && <span className="absolute left-2 top-1.5 h-2 w-2 rounded-full bg-[#C92A2A]" title="Critical priority" />}{showLabel && <span className="absolute inset-y-0 left-4 right-1 flex items-center gap-1 truncate pr-1 text-[9px] font-extrabold text-[#1F2933]"><span className="truncate">{label}</span>{shared && <span className="shrink-0 rounded bg-[#6B5B95] px-1 text-[7px] font-bold text-white">{deptLabel}</span>}</span>}{showLabel && width >= 150 && <span className="absolute bottom-0.5 right-1 text-[7px] font-mono font-bold text-[#52606D]">{formatTime(start)}–{formatTime(end)}</span>}</button>;
                 })}
 
                 {showTSR && trackBlocks.map((block) => {
