@@ -14,7 +14,15 @@ from app.core.forecast_engine import MonthlyForecastEngine
 from app.core.hardened_weekly_solver import HardenedWeeklyCPSATSolver
 from app.core.incremental_cpsat import IncrementalCPSATSolver
 from app.core.compliance_validator import RailwayComplianceValidator
-from app.core.plan_state_store import add_intake_job, get_approved_plan, list_intake_jobs, approve_plan
+from app.core.plan_state_store import (
+    add_intake_job,
+    approve_plan,
+    clear_pending_revision,
+    get_approved_plan,
+    get_pending_revision,
+    list_intake_jobs,
+    save_pending_revision,
+)
 
 router = APIRouter(prefix="/api/v1/core", tags=["MARS Core AI Engine"])
 
@@ -53,7 +61,6 @@ class JobIntakeRequest(BaseModel):
 
 
 def _load_unified_jobs() -> List[MaintenanceJob]:
-    """Ingest the CRIS feeds and durable runtime intake overlay as one pool."""
     source_jobs = TMSAdapter.fetch_engineering_jobs() + SMMSAdapter.fetch_snt_jobs() + TDMSAdapter.fetch_traction_jobs()
     runtime_jobs = [MaintenanceJob(**item) for item in list_intake_jobs()]
     by_id = {job.job_id: job for job in source_jobs}
@@ -89,7 +96,6 @@ def get_intake_jobs():
 
 @router.post("/jobs/intake", response_model=Dict[str, Any])
 def submit_job_intake(request: JobIntakeRequest):
-    """Persist a department job and propose a controlled weekly revision when a baseline exists."""
     existing_ids = {job.job_id for job in _load_unified_jobs()}
     if request.job_id in existing_ids:
         raise HTTPException(status_code=409, detail={"error": "DUPLICATE_JOB_ID", "message": "Job ID already exists.", "job_id": request.job_id})
@@ -137,7 +143,20 @@ def submit_job_intake(request: JobIntakeRequest):
         raise HTTPException(status_code=500, detail={"error": "INCREMENTAL_REPAIR_FAILED", "message": "The job was not committed because the incremental repair could not be evaluated.", "job_id": job.job_id, "reason": str(exc)}) from exc
 
     add_intake_job(scored_job.model_dump(mode="json"))
-    return {"status": "REPAIR_PROPOSED", "message": "Job accepted and an incremental revision proposal was generated from the approved weekly baseline.", "job": scored_job, "baseline_revision": approved.get("revision"), "proposal": repair, "requires_planner_approval": True}
+    if repair.get("status") in ("FEASIBLE", "OPTIMAL"):
+        pending = save_pending_revision(repair, baseline_week, approved.get("revision"), job.job_id)
+    else:
+        pending = None
+
+    return {
+        "status": "REPAIR_PROPOSED",
+        "message": "Job accepted and an incremental revision proposal was generated from the approved weekly baseline.",
+        "job": scored_job,
+        "baseline_revision": approved.get("revision"),
+        "proposal": repair,
+        "pending_revision": pending,
+        "requires_planner_approval": pending is not None,
+    }
 
 
 @router.get("/plan/weekly/approved", response_model=Dict[str, Any])
@@ -148,6 +167,14 @@ def get_approved_weekly_plan():
     return {"approved": True, **record}
 
 
+@router.get("/plan/weekly/pending-revision", response_model=Dict[str, Any])
+def get_pending_weekly_revision():
+    record = get_pending_revision()
+    if not record:
+        return {"pending": False, "revision": None}
+    return {"pending": True, "revision": record}
+
+
 @router.post("/plan/weekly/approve", response_model=Dict[str, Any])
 def approve_weekly_plan(request: WeeklyPlanApprovalRequest):
     status = request.plan.get("status") or request.plan.get("solver_status")
@@ -156,16 +183,17 @@ def approve_weekly_plan(request: WeeklyPlanApprovalRequest):
     blocks = request.plan.get("scheduled_blocks", request.plan.get("blocks", []))
     if not isinstance(blocks, list):
         raise HTTPException(status_code=422, detail={"error": "INVALID_PLAN_BLOCKS", "message": "Approved plan must contain a block list."})
-    return {"approved": True, **approve_plan(request.plan, request.week, request.approved_by)}
+    result = approve_plan(request.plan, request.week, request.approved_by)
+    clear_pending_revision()
+    return {"approved": True, **result}
 
 
 @router.get("/forecast/monthly", response_model=Dict[str, Any])
 def get_monthly_demand_forecast(
     months: int = Query(1, ge=1, le=12, description="Number of future calendar months to forecast"),
-    history: int = Query(18, ge=6, le=60, description="Historical monthly observations used for Prophet"),
+    history: int = Query(18, ge=6, le=60, description="Historical monthly observations used by Prophet"),
 ):
-    jobs = _load_unified_jobs()
-    return MonthlyForecastEngine.forecast(jobs, forecast_months=months, history_months=history)
+    return MonthlyForecastEngine.forecast(_load_unified_jobs(), forecast_months=months, history_months=history)
 
 
 @router.get("/plan/monthly", response_model=Dict[str, Any])
