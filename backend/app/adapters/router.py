@@ -44,7 +44,36 @@ def get_coa_freight_forecast():
 
 @router.post("/bdms/push-sanctions")
 def push_to_bdms(payload: Dict[str, Any]):
-    """Push human-approved block plan to CRIS BDMS workflow"""
-    if not payload:
+    """Push a planner-approved, compliance-validated plan through the BDMS adapter."""
+    if not isinstance(payload, dict) or not payload:
         raise HTTPException(status_code=400, detail="Payload cannot be empty")
-    return BDMSAdapter.push_approved_schedule(payload)
+
+    try:
+        return BDMSAdapter.push_approved_schedule(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get("/bdms/status/{transaction_id}")
+def get_bdms_status(transaction_id: str):
+    """Return the recorded outbound BDMS transaction status."""
+    transaction = BDMSAdapter.get_transaction(transaction_id)
+    if transaction is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "BDMS_TRANSACTION_NOT_FOUND",
+                "transaction_id": transaction_id,
+            },
+        )
+
+    return {
+        "transaction_id": transaction["transaction_id"],
+        "status": transaction["status"],
+        "bdms_reference": transaction.get("bdms_reference"),
+        "approval_id": transaction.get("approval_id"),
+        "plan_version": transaction.get("plan_version"),
+        "planning_week": transaction.get("planning_week"),
+        "created_at": transaction.get("created_at"),
+        "idempotency_key": transaction.get("idempotency_key"),
+    }
