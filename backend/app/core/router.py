@@ -9,6 +9,7 @@ from app.adapters.tdms_adapter import TDMSAdapter
 from app.adapters.coa_adapter import COAAdapter
 from app.core.priority_engine import PriorityEngine
 from app.core.monthly_allocator import MonthlyAllocator
+from app.core.forecast_engine import MonthlyForecastEngine
 from app.core.hardened_weekly_solver import HardenedWeeklyCPSATSolver
 from app.core.compliance_validator import RailwayComplianceValidator
 
@@ -47,6 +48,24 @@ def _monthly_week_job_ids(monthly_plan: Dict[str, Any], week: int) -> set[str]:
 def get_all_scored_jobs():
     """Ingest and score the complete unified Engineering/S&T/Traction job pool."""
     return PriorityEngine.process_job_batch(_load_unified_jobs())
+
+
+@router.get("/forecast/monthly", response_model=Dict[str, Any])
+def get_monthly_demand_forecast(
+    months: int = Query(1, ge=1, le=12, description="Number of future calendar months to forecast"),
+    history: int = Query(18, ge=6, le=60, description="Historical monthly observations used for Prophet"),
+):
+    """Forecast future monthly maintenance workload with Prophet.
+
+    This is a strategic demand signal only. It does not modify job priority,
+    train schedules, block feasibility, or the weekly CP-SAT plan.
+    """
+    jobs = _load_unified_jobs()
+    return MonthlyForecastEngine.forecast(
+        jobs,
+        forecast_months=months,
+        history_months=history,
+    )
 
 
 @router.get("/plan/monthly", response_model=Dict[str, Any])
