@@ -10,6 +10,7 @@ const MAP_BOUNDS = [[73.36, 18.48], [73.93, 18.82]];
 const MIN_KM = 191;
 const MAX_KM = 254.84;
 const COLORS = { Engineering: '#1769AA', 'S&T': '#12805C', Traction: '#C46A12', Shared: '#66539A', Deferred: '#6B7280', Pending: '#E45718' };
+const RAILWAY_GEOJSON_URL = `${import.meta.env.BASE_URL || '/'}geojson/pune_lonavala_railways.geojson`;
 
 const jobKey = (id) => String(id ?? '').trim();
 const clampKm = (km) => Math.max(MIN_KM, Math.min(MAX_KM, Number(km)));
@@ -62,7 +63,6 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
   const mapRef = useRef(null);
   const stationMarkersRef = useRef([]);
   const jobMarkersRef = useRef([]);
-  // The map itself must never be blocked by external raster-tile timing.
   const [loaded, setLoaded] = useState(true);
   const [mapError, setMapError] = useState(null);
   const [dept, setDept] = useState('ALL');
@@ -134,18 +134,16 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
           version: 8,
           sources: {
             osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' },
-            // No fabricated fallback line: the highlighted corridor comes only from the real PUNE-LNL geometry.
-            railway: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
+            railway: { type: 'geojson', data: RAILWAY_GEOJSON_URL },
             maintenance: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
           },
           layers: [
             { id: 'osm-base', type: 'raster', source: 'osm' },
-            // Broad corridor casing keeps the real alignment visible at control-centre zoom levels.
-            { id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 11, 8, 14, 11, 18, 14], 'line-opacity': 0.96, 'line-blur': 0.25 } },
-            { id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
-            { id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
-            { id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#8FC4E8', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
-            { id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#8AD8DC', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
+            { id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'section_id'], 'PUNE-LNL'], paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 11, 8, 14, 11, 18, 14], 'line-opacity': 0.96, 'line-blur': 0.25 } },
+            { id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
+            { id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
+            { id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#8FC4E8', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
+            { id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#8AD8DC', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
             { id: 'block-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 11, 'line-opacity': 0.96 } },
             { id: 'block-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 6, 'line-opacity': 0.98 } },
             { id: 'job-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 7, 'line-opacity': 0.96 } },
@@ -157,42 +155,25 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
       mapRef.current = map;
       map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
 
-      // style.load is independent of external OSM raster-tile completion. This prevents the map UI
-      // from getting stuck behind a loading overlay while still using the real railway geometry.
-      const initializeRailwayLayers = () => {
+      // DOM markers and viewport are independent of external raster tiles and style-load timing.
+      renderStations();
+      renderJobs();
+      map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
+
+      const syncMaintenance = () => {
         if (disposed) return;
         try {
           map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
-          renderStations();
           renderJobs();
-          map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
         } catch (error) {
           console.error('Railway corridor layer rendering failed:', error);
           setMapError(error?.message || 'Railway corridor layers could not be rendered.');
         }
-
-        fetch('/geojson/pune_lonavala_railways.geojson', { cache: 'no-store' })
-          .then((response) => { if (!response.ok) throw new Error(`Railway geometry HTTP ${response.status}`); return response.json(); })
-          .then((data) => {
-            if (disposed) return;
-            const candidates = (data?.features || []).filter((f) => f?.geometry?.type === 'LineString' && Array.isArray(f.geometry.coordinates) && f.geometry.coordinates.length > 1 && f.properties?.section_id === 'PUNE-LNL');
-            const directions = new Set(candidates.map((f) => String(f.properties?.direction || '').toUpperCase()));
-            if (!directions.has('UP') || !directions.has('DN')) throw new Error('PUNE-LNL UP/DN route geometry not found');
-            const route = candidates
-              .filter((f) => ['UP', 'DN'].includes(String(f.properties?.direction || '').toUpperCase()))
-              .map((f) => ({ ...f, properties: { ...(f.properties || {}), direction: String(f.properties.direction).toUpperCase() } }));
-            if (route.length < 2) throw new Error('PUNE-LNL double-line geometry is incomplete');
-            map.getSource('railway')?.setData({ type: 'FeatureCollection', features: route });
-          })
-          .catch((error) => {
-            console.error('Authoritative PUNE-LNL railway geometry could not be loaded:', error);
-            setMapError('Authoritative Pune–Lonavala railway geometry could not be loaded. The map remains available without a fabricated route.');
-          });
       };
 
-      if (map.isStyleLoaded()) initializeRailwayLayers();
-      else map.once('style.load', initializeRailwayLayers);
-    
+      if (map.isStyleLoaded()) syncMaintenance();
+      else map.once('style.load', syncMaintenance);
+
       map.on('error', (event) => { if (event?.error?.message) console.warn('MapLibre:', event.error.message); });
     } catch (error) {
       console.error('Corridor map initialization failed:', error);
@@ -206,9 +187,10 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
   }, []);
 
   useEffect(() => {
-    const map = mapRef.current; if (!map || !map.isStyleLoaded()) return;
+    const map = mapRef.current; if (!map) return;
     try {
-      map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
+      const source = map.getSource('maintenance');
+      if (source) source.setData({ type: 'FeatureCollection', features });
       renderJobs();
     } catch (error) {
       console.warn('Maintenance layer update failed:', error);
