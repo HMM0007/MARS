@@ -1,7 +1,6 @@
 /**
  * MARS 2.0 API Service Client
  * Multi-department AI-based Railway Scheduling System 2.0
- * Connects to FastAPI backend at http://127.0.0.1:8000
  */
 
 const getBaseUrl = () => {
@@ -11,16 +10,12 @@ const getBaseUrl = () => {
   }
   return 'http://127.0.0.1:8000';
 };
-
 const BASE_URL = getBaseUrl();
 
 const requestJson = async (url, options = {}) => {
   try {
     let response = await fetch(url, options).catch(async (err) => {
-      if (url.startsWith('http://')) {
-        const path = url.replace(/^http:\/\/[^/]+/, '');
-        return await fetch(path, options);
-      }
+      if (url.startsWith('http://')) return fetch(url.replace(/^http:\/\/[^/]+/, ''), options);
       throw err;
     });
     if (!response.ok) {
@@ -60,7 +55,22 @@ const normalizeWeeklyPlan = (data) => {
 
 export const fetchAllScoredJobs = () => requestJson(`${BASE_URL}/api/v1/core/jobs/all-scored`);
 export const fetchMonthlyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/monthly`);
-export const fetchWeeklyPlan = async () => normalizeWeeklyPlan(await requestJson(`${BASE_URL}/api/v1/core/plan/weekly`));
+
+/**
+ * Weekly view is baseline-aware: once a Planner has approved a plan, normal UI
+ * reads return that protected baseline. New jobs are shown through the separate
+ * pending-revision workflow until the revision is explicitly approved.
+ */
+export const fetchWeeklyPlan = async () => {
+  try {
+    const approved = await requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved`);
+    if (approved?.approved && approved.plan) return normalizeWeeklyPlan({ ...approved.plan, baseline_approved: true, baseline_revision: approved.revision });
+  } catch (err) {
+    console.warn('Approved baseline lookup failed; falling back to weekly solver:', err);
+  }
+  return normalizeWeeklyPlan(await requestJson(`${BASE_URL}/api/v1/core/plan/weekly`));
+};
+
 export const fetchApprovedWeeklyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved`);
 export const fetchPendingWeeklyRevision = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/pending-revision`);
 export const approveWeeklyPlan = (payload) => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
