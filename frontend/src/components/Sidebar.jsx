@@ -5,7 +5,7 @@ import { BarChart3, CalendarDays, ChevronDown, ChevronRight, Database, Gauge, Ho
 const plannerItems = [
   { to: '/', icon: Home, label: 'Home', end: true }, { to: '/command-center', icon: Gauge, label: 'Command Center' },
   { key: 'planning', icon: CalendarDays, label: 'Planning', children: [{ to: '/monthly', label: 'Monthly Plan' }, { to: '/weekly', label: 'Weekly Plan' }] },
-  { key: 'jobs', icon: Wrench, label: 'Maintenance Jobs', children: [{ to: '/jobs', label: 'All Jobs' }, { to: '/jobs/department', label: 'By Department' }, { to: '/jobs/priority-risk', label: 'Priority & Risk' }, { to: '/jobs/add', label: 'Add Maintenance Job' }] },
+  { key: 'jobs', icon: Wrench, label: 'Maintenance Jobs', children: [{ to: '/jobs', label: 'All Jobs' }, { key: 'by-department', to: '/jobs/department/engineering', label: 'By Department', children: [{ to: '/jobs/department/engineering', label: 'Engineering' }, { to: '/jobs/department/snt', label: 'S&T' }, { to: '/jobs/department/traction', label: 'Traction' }] }, { to: '/jobs/priority-risk', label: 'Priority & Risk' }, { to: '/jobs/add', label: 'Add Maintenance Job' }] },
   { to: '/corridor', icon: Map, label: 'Corridor Map' }, { to: '/what-if', icon: SlidersHorizontal, label: 'What-If Simulator' }, { to: '/compliance', icon: ShieldCheck, label: 'Compliance & Safety' }, { to: '/integration', icon: Database, label: 'BDMS Integration' }, { to: '/impact', icon: BarChart3, label: 'Impact & Reports' }, { to: '/system-status', icon: Zap, label: 'System Status' }, { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
