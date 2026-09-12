@@ -37,6 +37,9 @@ function AppContent() {
     <Route path="/weekly" element={<WeeklyPlanPage currentRole={selectedRole}/>}/>
     <Route path="/monthly" element={<MonthlyPlanPage currentRole={selectedRole}/>}/>
     <Route path="/jobs" element={<JobsPage currentRole={selectedRole}/>}/>
+    <Route path="/jobs/department/engineering" element={<DepartmentWorkCentrePage department="Engineering" currentRole={selectedRole}/>}/>
+    <Route path="/jobs/department/snt" element={<DepartmentWorkCentrePage department="S&T" currentRole={selectedRole}/>}/>
+    <Route path="/jobs/department/traction" element={<DepartmentWorkCentrePage department="Traction" currentRole={selectedRole}/>}/>
     <Route path="/jobs/department" element={<DepartmentWorkCentrePage department="Engineering" currentRole={selectedRole}/>}/>
     <Route path="/dept/engineering" element={<EngineeringDashboardPage currentRole={selectedRole}/>}/><Route path="/dept/engineering/*" element={<EngineeringDashboardPage currentRole={selectedRole}/>}/>
     <Route path="/dept/snt" element={<SNTDashboardPage currentRole={selectedRole}/>}/><Route path="/dept/snt/*" element={<SNTDashboardPage currentRole={selectedRole}/>}/>
