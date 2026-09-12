@@ -5,6 +5,7 @@ import OperationalStrip from './components/OperationalStrip';
 import Sidebar from './components/Sidebar';
 import OperationalWorkflowBridge from './components/OperationalWorkflowBridge';
 import MARSHomePage from './pages/MARSHomePage';
+import PlannerCommandCenterPage from './pages/PlannerCommandCenterPage';
 import WeeklyPlanPage from './pages/WeeklyPlanPage';
 import MonthlyPlanPage from './pages/MonthlyPlanPage';
 import DepartmentPage from './pages/DepartmentPage';
@@ -48,8 +49,6 @@ function AppContent() {
     if (!role) return;
     setSelectedRole(role);
     localStorage.setItem('mars_user', JSON.stringify(role));
-
-    // Role switching is also a navigation event: always land on that role's Home tab.
     const homePath = roleHomePaths[role.id] || '/';
     navigate(homePath, { replace: true });
   };
@@ -63,6 +62,7 @@ function AppContent() {
     <div className="flex min-h-[calc(100vh-118px)]"><Sidebar currentRole={selectedRole}/><div className="min-w-0 flex-1 overflow-y-auto">
       <Routes>
         <Route path="/" element={<MARSHomePage currentRole={selectedRole}/>}/>
+        <Route path="/command-center" element={<PlannerCommandCenterPage currentRole={selectedRole}/>}/>
         <Route path="/corridor" element={<CorridorMapPage currentRole={selectedRole}/>}/>
         <Route path="/weekly" element={<WeeklyPlanPage currentRole={selectedRole}/>}/>
         <Route path="/monthly" element={<MonthlyPlanPage currentRole={selectedRole}/>}/>
