@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import OperationalStrip from './components/OperationalStrip';
 import Sidebar from './components/Sidebar';
@@ -17,8 +17,16 @@ import CorridorMapPage from './pages/CorridorMapPage';
 import LoginPage from './pages/LoginPage';
 import { fetchMonthlyPlan, fetchWeeklyPlan } from './services/api';
 
+const roleHomePaths = {
+  planner: '/',
+  engineering: '/dept/engineering',
+  snt: '/dept/snt',
+  traction: '/dept/traction',
+};
+
 function AppContent() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isLoginPage = location.pathname === '/login';
   const [selectedDivision, setSelectedDivision] = useState({ id: 'pune-cr', name: 'Pune Division (CR)', code: 'PUNE-CR' });
   const [selectedRole, setSelectedRole] = useState(() => {
@@ -36,7 +44,16 @@ function AppContent() {
     ]).then(([weekly, monthly]) => { setWeeklyPlan(weekly); setMonthlyPlan(monthly); });
   }, []);
 
-  const handleRoleChange = (role) => { setSelectedRole(role); localStorage.setItem('mars_user', JSON.stringify(role)); };
+  const handleRoleChange = (role) => {
+    if (!role) return;
+    setSelectedRole(role);
+    localStorage.setItem('mars_user', JSON.stringify(role));
+
+    // Role switching is also a navigation event: always land on that role's Home tab.
+    const homePath = roleHomePaths[role.id] || '/';
+    navigate(homePath, { replace: true });
+  };
+
   if (isLoginPage) return <LoginPage onLoginSuccess={handleRoleChange} />;
 
   return <div className="min-h-screen bg-[#EEF2F6] font-sans text-[#17345C]">
