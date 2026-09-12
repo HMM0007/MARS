@@ -41,6 +41,7 @@ export default function PlannerRevisionReview() {
       const hasPending = Boolean(record) && (p?.pending !== false);
       setPending(hasPending ? { ...p, revision: record } : null);
       setApproved(a?.approved ? a : (a?.plan ? { ...a, approved: true } : null));
+      if (!record) setExpanded(false);
     } catch (err) {
       console.warn('Revision review lookup failed:', err);
       setPending(null);
@@ -49,7 +50,16 @@ export default function PlannerRevisionReview() {
     }
   };
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    refresh();
+    const handleWorkflowUpdate = () => refresh();
+    window.addEventListener('mars:emergency-intake-complete', handleWorkflowUpdate);
+    window.addEventListener('mars:job-intake-complete', handleWorkflowUpdate);
+    return () => {
+      window.removeEventListener('mars:emergency-intake-complete', handleWorkflowUpdate);
+      window.removeEventListener('mars:job-intake-complete', handleWorkflowUpdate);
+    };
+  }, []);
 
   const record = pending?.revision;
   const plan = record?.plan;
