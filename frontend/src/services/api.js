@@ -72,7 +72,14 @@ export const fetchWeeklyPlan = async () => {
 };
 
 export const fetchApprovedWeeklyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved`);
-export const fetchPendingWeeklyRevision = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/pending-revision`);
+
+// Normalize the backend's empty state ({ pending: false, revision: null })
+// so callers can safely use a simple truthy check for an actual pending revision.
+export const fetchPendingWeeklyRevision = async () => {
+  const data = await requestJson(`${BASE_URL}/api/v1/core/plan/weekly/pending-revision`);
+  return data?.pending ? data : null;
+};
+
 export const approveWeeklyPlan = (payload) => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 export const submitJobIntake = (payload) => requestJson(`${BASE_URL}/api/v1/core/jobs/intake`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 export const submitEmergencyJob = (payload) => requestJson(`${BASE_URL}/api/v1/core/jobs/emergency`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
