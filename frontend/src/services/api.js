@@ -61,30 +61,17 @@ const normalizeWeeklyPlan = (data) => {
 export const fetchAllScoredJobs = () => requestJson(`${BASE_URL}/api/v1/core/jobs/all-scored`);
 export const fetchMonthlyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/monthly`);
 export const fetchWeeklyPlan = async () => normalizeWeeklyPlan(await requestJson(`${BASE_URL}/api/v1/core/plan/weekly`));
-
 export const fetchApprovedWeeklyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved`);
-export const approveWeeklyPlan = (payload) => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approve`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload),
-});
-export const submitJobIntake = (payload) => requestJson(`${BASE_URL}/api/v1/core/jobs/intake`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload),
-});
+export const fetchPendingWeeklyRevision = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/pending-revision`);
+export const approveWeeklyPlan = (payload) => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+export const submitJobIntake = (payload) => requestJson(`${BASE_URL}/api/v1/core/jobs/intake`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
 export const fetchTMSJobs = () => requestJson(`${BASE_URL}/api/v1/adapters/tms/jobs`);
 export const fetchSMMSJobs = () => requestJson(`${BASE_URL}/api/v1/adapters/smms/jobs`);
 export const fetchTDMSJobs = () => requestJson(`${BASE_URL}/api/v1/adapters/tdms/jobs`);
 export const fetchCOATimetable = () => requestJson(`${BASE_URL}/api/v1/adapters/coa/timetable`);
 export const fetchFreightForecast = () => requestJson(`${BASE_URL}/api/v1/adapters/coa/freight-forecast`);
-export const pushToBDMS = (schedulePayload) => requestJson(`${BASE_URL}/api/v1/adapters/bdms/push-sanctions`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(schedulePayload),
-});
-
+export const pushToBDMS = (schedulePayload) => requestJson(`${BASE_URL}/api/v1/adapters/bdms/push-sanctions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(schedulePayload) });
 export const fetchHealth = () => requestJson(`${BASE_URL}/health`);
 export const fetchDatasetStatus = () => requestJson(`${BASE_URL}/api/v1/dataset/status`);
 export const apiRequest = (endpoint, options = {}) => requestJson(`${BASE_URL}${endpoint}`, options);
