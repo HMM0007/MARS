@@ -41,6 +41,7 @@ const normalizeWeeklyPlan = (data) => {
       ...metrics,
       total_jobs_evaluated: Number(metrics.total_jobs_evaluated ?? 0),
       total_jobs_scheduled: Number(metrics.total_jobs_scheduled ?? metrics.scheduled_jobs_count ?? 0),
+      total_jobs_deferred: Number(metrics.total_jobs_deferred ?? metrics.deferred_jobs_count ?? 0),
       total_blocks: Number(metrics.total_blocks ?? metrics.total_blocks_created ?? 0),
       consolidated_blocks: Number(metrics.consolidated_blocks ?? metrics.consolidated_blocks_count ?? 0),
       active_conflicts: Number(metrics.active_conflicts ?? 0),
