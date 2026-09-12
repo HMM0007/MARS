@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
@@ -15,12 +15,7 @@ router = APIRouter(prefix="/api/v1/core", tags=["MARS Emergency Operations"])
 
 @router.post("/jobs/emergency", response_model=Dict[str, Any])
 def submit_emergency_job_hardened(request: core_router.EmergencyJobIntakeRequest):
-    """Durable emergency intake with explicit repair outcome and metadata.
-
-    This route is registered before the legacy emergency route. It keeps the
-    approved baseline protected, runs the existing incremental CP-SAT engine,
-    and persists emergency metadata with the job so it survives restart.
-    """
+    """Durable emergency intake with explicit repair outcome and metadata."""
     existing_ids = {job.job_id for job in core_router._load_unified_jobs()}
     if request.job_id in existing_ids:
         raise HTTPException(
@@ -56,7 +51,7 @@ def submit_emergency_job_hardened(request: core_router.EmergencyJobIntakeRequest
         dependency_job_id=request.dependency_job_id,
         work_type="EMERGENCY_MAINTENANCE",
         safety_conflict_tag=request.safety_conflict_tag,
-        created_date=__import__("datetime").date.today(),
+        created_date=date.today(),
         status="PENDING",
         emergency_reason=request.emergency_reason,
         train_operation_impact=request.train_operation_impact,
@@ -106,16 +101,17 @@ def submit_emergency_job_hardened(request: core_router.EmergencyJobIntakeRequest
     repair_status = repair.get("status") or repair.get("solver_status") or "UNKNOWN"
     usable = repair_status in ("FEASIBLE", "OPTIMAL")
 
+    # Intake is persisted even when the current repair is not usable. The
+    # approved baseline is never replaced automatically.
     add_intake_job(scored_job.model_dump(mode="json"))
 
     pending = None
     compliance = {"overall_status": "NOT_EVALUATED", "compliance_score": 0.0}
     if usable:
-        scheduled_blocks = repair.get("scheduled_blocks", [])
         compliance = core_router.RailwayComplianceValidator(
             jobs=all_jobs,
             trains=trains,
-            scheduled_blocks=scheduled_blocks,
+            scheduled_blocks=repair.get("scheduled_blocks", []),
         ).validate()
         pending = save_pending_revision(
             repair,
