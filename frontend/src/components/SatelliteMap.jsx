@@ -62,7 +62,8 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
   const mapRef = useRef(null);
   const stationMarkersRef = useRef([]);
   const jobMarkersRef = useRef([]);
-  const [loaded, setLoaded] = useState(false);
+  // The map itself must never be blocked by external raster-tile timing.
+  const [loaded, setLoaded] = useState(true);
   const [mapError, setMapError] = useState(null);
   const [dept, setDept] = useState('ALL');
   const [status, setStatus] = useState('ALL');
@@ -133,17 +134,18 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
           version: 8,
           sources: {
             osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' },
-            // Intentionally starts empty: we never display a fake straight corridor while the real geometry loads.
+            // No fabricated fallback line: the highlighted corridor comes only from the real PUNE-LNL geometry.
             railway: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
             maintenance: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
           },
           layers: [
             { id: 'osm-base', type: 'raster', source: 'osm' },
-            { id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 7, 11, 9, 14, 12, 18, 15], 'line-opacity': 0.96, 'line-blur': 0.25 } },
-            { id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 3.2, 11, 3.8, 14, 5, 18, 7], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
-            { id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 3.2, 11, 3.8, 14, 5, 18, 7], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
-            { id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#8FC4E8', 'line-width': 1.1, 'line-opacity': 0.95, 'line-cap': 'round' } },
-            { id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#8AD8DC', 'line-width': 1.1, 'line-opacity': 0.95, 'line-cap': 'round' } },
+            // Broad corridor casing keeps the real alignment visible at control-centre zoom levels.
+            { id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 11, 8, 14, 11, 18, 14], 'line-opacity': 0.96, 'line-blur': 0.25 } },
+            { id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
+            { id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
+            { id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#8FC4E8', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
+            { id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#8AD8DC', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
             { id: 'block-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 11, 'line-opacity': 0.96 } },
             { id: 'block-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 6, 'line-opacity': 0.98 } },
             { id: 'job-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 7, 'line-opacity': 0.96 } },
@@ -155,7 +157,9 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
       mapRef.current = map;
       map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
 
-      map.once('load', () => {
+      // style.load is independent of external OSM raster-tile completion. This prevents the map UI
+      // from getting stuck behind a loading overlay while still using the real railway geometry.
+      const initializeRailwayLayers = () => {
         if (disposed) return;
         try {
           map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
@@ -165,9 +169,6 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
         } catch (error) {
           console.error('Railway corridor layer rendering failed:', error);
           setMapError(error?.message || 'Railway corridor layers could not be rendered.');
-        } finally {
-          // Base map is usable independently of OSM tile/GeoJSON timing.
-          setLoaded(true);
         }
 
         fetch('/geojson/pune_lonavala_railways.geojson', { cache: 'no-store' })
@@ -187,7 +188,11 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
             console.error('Authoritative PUNE-LNL railway geometry could not be loaded:', error);
             setMapError('Authoritative Pune–Lonavala railway geometry could not be loaded. The map remains available without a fabricated route.');
           });
-      });
+      };
+
+      if (map.isStyleLoaded()) initializeRailwayLayers();
+      else map.once('style.load', initializeRailwayLayers);
+    
       map.on('error', (event) => { if (event?.error?.message) console.warn('MapLibre:', event.error.message); });
     } catch (error) {
       console.error('Corridor map initialization failed:', error);
