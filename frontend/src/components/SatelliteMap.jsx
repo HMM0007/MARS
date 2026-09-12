@@ -8,16 +8,13 @@ import { PUNE_LNL_STATIONS, getCoordinatesForKm } from '../utils/corridorGeo';
 const CORRIDOR_BOUNDS = [[73.397, 18.515], [73.887, 18.775]];
 const MAP_BOUNDS = [[73.36, 18.48], [73.93, 18.82]];
 const COLORS = { Engineering: '#3B6EA5', 'S&T': '#2F8F6B', Traction: '#C9842A', Shared: '#6B5B95', Deferred: '#7B8794', Pending: '#D97706' };
-
 const departmentsOf = (item) => [...new Set((item?.departments || item?.jobs_detail?.map((j) => j.department) || (item?.department ? [item.department] : [])).filter(Boolean))];
 const colorOf = (departments) => departments.length > 1 ? COLORS.Shared : (COLORS[departments[0]] || COLORS.Engineering);
 
-function fallbackRailwayGeoJSON() {
-  return { type: 'FeatureCollection', features: [
-    { type: 'Feature', properties: { track_id: 'PUNE-LNL-UP' }, geometry: { type: 'LineString', coordinates: PUNE_LNL_STATIONS.map((s) => [s.lng, s.lat]) } },
-    { type: 'Feature', properties: { track_id: 'PUNE-LNL-DN' }, geometry: { type: 'LineString', coordinates: PUNE_LNL_STATIONS.map((s) => [s.lng + 0.00018, s.lat + 0.00012]) } },
-  ] };
-}
+function fallbackRailwayGeoJSON() { return { type: 'FeatureCollection', features: [
+  { type: 'Feature', properties: { track_id: 'PUNE-LNL-UP' }, geometry: { type: 'LineString', coordinates: PUNE_LNL_STATIONS.map((s) => [s.lng, s.lat]) } },
+  { type: 'Feature', properties: { track_id: 'PUNE-LNL-DN' }, geometry: { type: 'LineString', coordinates: PUNE_LNL_STATIONS.map((s) => [s.lng + 0.00018, s.lat + 0.00012]) } },
+] }; }
 
 function possessionFeature(block) {
   const details = block.jobs_detail || [];
@@ -30,116 +27,64 @@ function possessionFeature(block) {
   const trackId = block.track_id || details[0]?.track_id || 'PUNE-LNL-UP';
   return { type: 'Feature', properties: { entity_type: 'BLOCK', block_id: block.block_id, color: status === 'DEFERRED' ? COLORS.Deferred : colorOf(departments), status, department: departments.join(' + '), job_count: details.length }, geometry: { type: 'LineString', coordinates: [getCoordinatesForKm(anchor - spread, trackId), getCoordinatesForKm(anchor + spread, trackId)] } };
 }
-
 function jobFeature(job) {
-  const km = Number(job.location_km);
-  if (!Number.isFinite(km)) return null;
-  const departments = departmentsOf(job);
-  const status = job.status === 'DEFERRED' ? 'DEFERRED' : 'PENDING';
-  const half = Math.max(0.10, Math.min(0.30, Number(job.duration_hours || job.duration || 1) * 0.08));
-  const trackId = job.track_id || 'PUNE-LNL-UP';
+  const km = Number(job.location_km); if (!Number.isFinite(km)) return null;
+  const departments = departmentsOf(job); const status = job.status === 'DEFERRED' ? 'DEFERRED' : 'PENDING';
+  const half = Math.max(0.10, Math.min(0.30, Number(job.duration_hours || job.duration || 1) * 0.08)); const trackId = job.track_id || 'PUNE-LNL-UP';
   return { type: 'Feature', properties: { entity_type: 'JOB', job_id: job.job_id, color: status === 'DEFERRED' ? COLORS.Deferred : COLORS.Pending, status, department: departments.join(' + '), location_km: km, defect_type: job.defect_type || job.maintenance_type || 'Maintenance' }, geometry: { type: 'LineString', coordinates: [getCoordinatesForKm(km - half, trackId), getCoordinatesForKm(km + half, trackId)] } };
 }
 
 export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainability, isFullScreenMode = false, onToggleFullScreen }) {
-  const containerRef = useRef(null);
-  const mapRef = useRef(null);
-  const overlayRef = useRef(null);
-  const railwayRef = useRef(fallbackRailwayGeoJSON().features);
-  const stationLabelRefs = useRef([]);
-  const activityLabelRefs = useRef([]);
-  const [loaded, setLoaded] = useState(false);
-  const [mapError, setMapError] = useState(null);
-  const [dept, setDept] = useState('ALL');
-  const [status, setStatus] = useState('ALL');
-  const [query, setQuery] = useState('');
-  const [inspection, setInspection] = useState(null);
-
+  const containerRef = useRef(null), mapRef = useRef(null), overlayRef = useRef(null);
+  const railwayRef = useRef(fallbackRailwayGeoJSON().features), stationLabelRefs = useRef([]), activityLabelRefs = useRef([]);
+  const [loaded, setLoaded] = useState(false), [mapError, setMapError] = useState(null), [dept, setDept] = useState('ALL'), [status, setStatus] = useState('ALL'), [query, setQuery] = useState(''), [inspection, setInspection] = useState(null);
   const scheduledJobIds = useMemo(() => new Set(blocks.flatMap((b) => b.job_ids || [])), [blocks]);
   const activityFeatures = useMemo(() => {
     const blockFeatures = blocks.filter((block) => {
-      const departments = departmentsOf(block);
-      if (dept !== 'ALL' && dept !== 'Shared' && !departments.includes(dept)) return false;
-      if (dept === 'Shared' && departments.length < 2) return false;
-      const blockStatus = block.status === 'DEFERRED' ? 'DEFERRED' : 'SCHEDULED';
-      if (status !== 'ALL' && status !== blockStatus) return false;
-      const text = `${block.block_id || ''} ${(block.job_ids || []).join(' ')} ${(block.jobs_detail || []).map((j) => `${j.asset_id || ''} ${j.defect_type || ''} ${j.location_km || ''}`).join(' ')}`.toLowerCase();
-      return !query || text.includes(query.toLowerCase());
+      const departments = departmentsOf(block); if (dept !== 'ALL' && dept !== 'Shared' && !departments.includes(dept)) return false; if (dept === 'Shared' && departments.length < 2) return false;
+      const blockStatus = block.status === 'DEFERRED' ? 'DEFERRED' : 'SCHEDULED'; if (status !== 'ALL' && status !== blockStatus) return false;
+      const text = `${block.block_id || ''} ${(block.job_ids || []).join(' ')} ${(block.jobs_detail || []).map((j) => `${j.asset_id || ''} ${j.defect_type || ''} ${j.location_km || ''}`).join(' ')}`.toLowerCase(); return !query || text.includes(query.toLowerCase());
     }).map(possessionFeature);
     const jobFeatures = jobs.filter((job) => !scheduledJobIds.has(job.job_id)).map((job) => {
-      const departments = departmentsOf(job);
-      if (dept !== 'ALL' && dept !== 'Shared' && !departments.includes(dept)) return null;
-      if (dept === 'Shared' && departments.length < 2) return null;
-      const jobStatus = job.status === 'DEFERRED' ? 'DEFERRED' : 'PENDING';
-      if (status !== 'ALL' && status !== jobStatus) return null;
-      const text = `${job.job_id || ''} ${job.asset_id || ''} ${job.asset_type || ''} ${job.section_id || ''} ${job.track_id || ''} ${job.defect_type || ''} ${job.location_km || ''}`.toLowerCase();
-      if (query && !text.includes(query.toLowerCase())) return null;
+      const departments = departmentsOf(job); if (dept !== 'ALL' && dept !== 'Shared' && !departments.includes(dept)) return null; if (dept === 'Shared' && departments.length < 2) return null;
+      const jobStatus = job.status === 'DEFERRED' ? 'DEFERRED' : 'PENDING'; if (status !== 'ALL' && status !== jobStatus) return null;
+      const text = `${job.job_id || ''} ${job.asset_id || ''} ${job.asset_type || ''} ${job.section_id || ''} ${job.track_id || ''} ${job.defect_type || ''} ${job.location_km || ''}`.toLowerCase(); if (query && !text.includes(query.toLowerCase())) return null;
       return jobFeature(job);
-    }).filter(Boolean);
-    return [...blockFeatures, ...jobFeatures];
+    }).filter(Boolean); return [...blockFeatures, ...jobFeatures];
   }, [blocks, jobs, scheduledJobIds, dept, status, query]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return undefined;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: { version: 8, sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, minzoom: 0, maxzoom: 19, attribution: '© OpenStreetMap contributors' } }, layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }] },
-      center: [73.64, 18.65], zoom: 10.45, minZoom: 10.25, maxZoom: 18, maxBounds: MAP_BOUNDS, maxBoundsViscosity: 1, renderWorldCopies: false, attributionControl: true,
-    });
-    mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
+    const map = new maplibregl.Map({ container: containerRef.current, style: { version: 8, sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, minzoom: 0, maxzoom: 19, attribution: '© OpenStreetMap contributors' } }, layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }] }, center: [73.64, 18.65], zoom: 10.45, minZoom: 10.25, maxZoom: 18, maxBounds: MAP_BOUNDS, maxBoundsViscosity: 1, renderWorldCopies: false, attributionControl: true });
+    mapRef.current = map; map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
 
     const renderOperationalOverlay = () => {
-      const svg = overlayRef.current;
-      if (!svg || !map.isStyleLoaded()) return;
-      const width = map.getCanvasContainer().clientWidth;
-      const height = map.getCanvasContainer().clientHeight;
+      const svg = overlayRef.current; if (!svg || !map.isStyleLoaded()) return;
+      const width = map.getCanvasContainer().clientWidth, height = map.getCanvasContainer().clientHeight;
       svg.setAttribute('width', String(width)); svg.setAttribute('height', String(height)); svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
       while (svg.firstChild) svg.removeChild(svg.firstChild);
       const ns = 'http://www.w3.org/2000/svg';
       const addPolyline = (coordinates, stroke, strokeWidth, opacity, dash = '') => {
         const points = coordinates.map(([lng, lat]) => { const p = map.project([lng, lat]); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(' ');
-        const el = document.createElementNS(ns, 'polyline');
-        el.setAttribute('points', points); el.setAttribute('fill', 'none'); el.setAttribute('stroke', stroke); el.setAttribute('stroke-width', String(strokeWidth)); el.setAttribute('stroke-linecap', 'round'); el.setAttribute('stroke-linejoin', 'round'); el.setAttribute('opacity', String(opacity)); if (dash) el.setAttribute('stroke-dasharray', dash); svg.appendChild(el);
+        const el = document.createElementNS(ns, 'polyline'); el.setAttribute('points', points); el.setAttribute('fill', 'none'); el.setAttribute('stroke', stroke); el.setAttribute('stroke-width', String(strokeWidth)); el.setAttribute('stroke-linecap', 'round'); el.setAttribute('stroke-linejoin', 'round'); el.setAttribute('opacity', String(opacity)); if (dash) el.setAttribute('stroke-dasharray', dash); svg.appendChild(el);
       };
       railwayRef.current.forEach((feature) => addPolyline(feature.geometry.coordinates, feature.properties?.track_id === 'PUNE-LNL-DN' ? '#2F6F7E' : '#173E6C', 4, 1));
-      activityFeatures.forEach((feature) => {
-        const p = feature.geometry.coordinates;
-        const c = feature.properties.color;
-        const dash = feature.properties.status === 'PENDING' ? '5 5' : feature.properties.status === 'DEFERRED' ? '3 5' : '';
-        addPolyline(p, '#FFFFFF', feature.properties.status === 'SCHEDULED' ? 11 : 8, 0.92);
-        addPolyline(p, c, feature.properties.status === 'SCHEDULED' ? 7 : 5, 1, dash);
-      });
-      PUNE_LNL_STATIONS.forEach((station) => {
-        const p = map.project([station.lng, station.lat]);
-        const halo = document.createElementNS(ns, 'circle'); halo.setAttribute('cx', p.x); halo.setAttribute('cy', p.y); halo.setAttribute('r', '7'); halo.setAttribute('fill', '#FFFFFF'); halo.setAttribute('stroke', '#173E6C'); halo.setAttribute('stroke-width', '2'); svg.appendChild(halo);
-        const core = document.createElementNS(ns, 'circle'); core.setAttribute('cx', p.x); core.setAttribute('cy', p.y); core.setAttribute('r', '3'); core.setAttribute('fill', '#173E6C'); svg.appendChild(core);
-      });
+      activityFeatures.forEach((feature) => { const p = feature.geometry.coordinates, c = feature.properties.color; const dash = feature.properties.status === 'PENDING' ? '5 5' : feature.properties.status === 'DEFERRED' ? '3 5' : ''; addPolyline(p, '#FFFFFF', feature.properties.status === 'SCHEDULED' ? 11 : 8, 0.92); addPolyline(p, c, feature.properties.status === 'SCHEDULED' ? 7 : 5, 1, dash); });
+      PUNE_LNL_STATIONS.forEach((station) => { const p = map.project([station.lng, station.lat]); const halo = document.createElementNS(ns, 'circle'); halo.setAttribute('cx', p.x); halo.setAttribute('cy', p.y); halo.setAttribute('r', '7'); halo.setAttribute('fill', '#FFFFFF'); halo.setAttribute('stroke', '#173E6C'); halo.setAttribute('stroke-width', '2'); svg.appendChild(halo); const core = document.createElementNS(ns, 'circle'); core.setAttribute('cx', p.x); core.setAttribute('cy', p.y); core.setAttribute('r', '3'); core.setAttribute('fill', '#173E6C'); svg.appendChild(core); });
     };
-
     const updateStationLabels = () => stationLabelRefs.current.forEach(({ el, station }) => { const p = map.project([station.lng, station.lat]); el.style.transform = `translate(${p.x}px,${p.y + 9}px) translate(-50%,0)`; });
-    const updateActivityLabels = () => { activityLabelRefs.current.forEach(({ el }) => el.remove()); activityLabelRefs.current = []; if (map.getZoom() < 11.7) return; activityFeatures.forEach((feature) => { const coords = feature.geometry.coordinates; const p = map.project(coords[Math.floor(coords.length / 2)]); const el = document.createElement('button'); el.type = 'button'; el.textContent = feature.properties.entity_type === 'BLOCK' ? feature.properties.block_id : feature.properties.job_id; el.style.cssText = `position:absolute;left:0;top:0;z-index:8;pointer-events:auto;transform:translate(${p.x}px,${p.y - 16}px) translate(-50%,-50%);background:#fff;border:1px solid ${feature.properties.color};border-radius:3px;padding:2px 4px;font:700 8px/11px Arial;color:#1F2933;box-shadow:0 1px 3px rgba(0,0,0,.18);white-space:nowrap;`; el.addEventListener('click', () => setInspection({ type: 'ACTIVITY', data: feature.properties })); map.getCanvasContainer().appendChild(el); activityLabelRefs.current.push({ el }); }); };
+    const updateActivityLabels = () => { activityLabelRefs.current.forEach(({ el }) => el.remove()); activityLabelRefs.current = []; if (map.getZoom() < 11.7) return; activityFeatures.forEach((feature) => { const coords = feature.geometry.coordinates, p = map.project(coords[Math.floor(coords.length / 2)]); const el = document.createElement('button'); el.type = 'button'; el.textContent = feature.properties.entity_type === 'BLOCK' ? feature.properties.block_id : feature.properties.job_id; el.style.cssText = `position:absolute;left:0;top:0;z-index:8;pointer-events:auto;transform:translate(${p.x}px,${p.y - 16}px) translate(-50%,-50%);background:#fff;border:1px solid ${feature.properties.color};border-radius:3px;padding:2px 4px;font:700 8px/11px Arial;color:#1F2933;box-shadow:0 1px 3px rgba(0,0,0,.18);white-space:nowrap;`; el.addEventListener('click', () => setInspection({ type: 'ACTIVITY', data: feature.properties })); map.getCanvasContainer().appendChild(el); activityLabelRefs.current.push({ el }); }); };
 
     map.once('load', async () => {
       try {
-        const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        overlay.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;z-index:4;pointer-events:none;overflow:visible;';
-        map.getCanvasContainer().appendChild(overlay); overlayRef.current = overlay;
-
-        try {
-          const response = await fetch('/geojson/pune_lonavala_railways.geojson', { cache: 'no-store' });
-          if (response.ok) { const railway = await response.json(); if (railway?.features?.length) railwayRef.current = railway.features.filter((f) => f.geometry?.type === 'LineString'); }
-        } catch (error) { console.warn('Detailed railway geometry unavailable; fixed corridor alignment retained.', error); }
-
-        stationLabelRefs.current = PUNE_LNL_STATIONS.map((station) => {
-          const el = document.createElement('button'); el.type = 'button'; el.textContent = station.code; el.title = `${station.name} • ${station.km.toFixed(2)} km`; el.style.cssText = 'position:absolute;left:0;top:0;z-index:6;pointer-events:auto;background:rgba(255,255,255,.96);border:1px solid #B8C6D3;border-radius:3px;padding:2px 4px;font:700 9px/12px Arial,sans-serif;color:#173E6C;box-shadow:0 1px 2px rgba(0,0,0,.14);cursor:pointer;white-space:nowrap;'; el.addEventListener('click', () => setInspection({ type: 'STATION', data: station })); map.getCanvasContainer().appendChild(el); return { el, station };
-        });
-        const refresh = () => { map.resize(); renderOperationalOverlay(); updateStationLabels(); updateActivityLabels(); };
-        map.on('move', refresh); map.on('resize', refresh); map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 80, right: 90, bottom: 80, left: 90 }, duration: 0 });
-        requestAnimationFrame(refresh); setLoaded(true); setMapError(null);
+        const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); overlay.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;z-index:4;pointer-events:none;overflow:visible;'; map.getCanvasContainer().appendChild(overlay); overlayRef.current = overlay;
+        try { const response = await fetch('/geojson/pune_lonavala_railways.geojson', { cache: 'no-store' }); if (response.ok) { const railway = await response.json(); if (railway?.features?.length) railwayRef.current = railway.features.filter((f) => f.geometry?.type === 'LineString'); } } catch (error) { console.warn('Detailed railway geometry unavailable; fixed corridor alignment retained.', error); }
+        stationLabelRefs.current = PUNE_LNL_STATIONS.map((station) => { const el = document.createElement('button'); el.type = 'button'; el.textContent = station.code; el.title = `${station.name} • ${station.km.toFixed(2)} km`; el.style.cssText = 'position:absolute;left:0;top:0;z-index:6;pointer-events:auto;background:rgba(255,255,255,.96);border:1px solid #B8C6D3;border-radius:3px;padding:2px 4px;font:700 9px/12px Arial,sans-serif;color:#173E6C;box-shadow:0 1px 2px rgba(0,0,0,.14);cursor:pointer;white-space:nowrap;'; el.addEventListener('click', () => setInspection({ type: 'STATION', data: station })); map.getCanvasContainer().appendChild(el); return { el, station }; });
+        const refreshOverlay = () => { renderOperationalOverlay(); updateStationLabels(); updateActivityLabels(); };
+        const handleMove = () => refreshOverlay(); const handleResize = () => refreshOverlay();
+        map.on('move', handleMove); map.on('resize', handleResize); map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 80, right: 90, bottom: 80, left: 90 }, duration: 0 }); requestAnimationFrame(refreshOverlay); setLoaded(true); setMapError(null);
       } catch (error) { console.error('Corridor overlay initialization failed:', error); setMapError(error?.message || 'Railway overlay could not be initialized.'); setLoaded(true); }
     });
-
     const resize = () => map.resize(); window.addEventListener('resize', resize);
     return () => { stationLabelRefs.current.forEach(({ el }) => el.remove()); activityLabelRefs.current.forEach(({ el }) => el.remove()); overlayRef.current?.remove(); stationLabelRefs.current = []; activityLabelRefs.current = []; overlayRef.current = null; window.removeEventListener('resize', resize); map.remove(); mapRef.current = null; };
   }, []);
