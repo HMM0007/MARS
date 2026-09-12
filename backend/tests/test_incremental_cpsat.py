@@ -43,7 +43,12 @@ def make_job(
 
 def test_incremental_freezes_unaffected_approved_job():
     affected = make_job("JOB-A", track="TRACK_1_UP", asset="ASSET-1")
-    unaffected = make_job("JOB-B", track="TRACK_2_DN", asset="ASSET-2")
+    unaffected = make_job(
+        "JOB-B",
+        section="CWD-YARD",
+        track="TRACK_YARD",
+        asset="ASSET-2",
+    )
     new_job = make_job("JOB-NEW", track="TRACK_1_UP", asset="ASSET-3", priority=95.0)
 
     existing_plan = {
@@ -58,8 +63,8 @@ def test_incremental_freezes_unaffected_approved_job():
             },
             {
                 "block_id": "BLK-W1-002",
-                "section_id": "PUNE-LNL",
-                "track_id": "TRACK_2_DN",
+                "section_id": "CWD-YARD",
+                "track_id": "TRACK_YARD",
                 "start_time": "2026-09-07T04:00:00",
                 "end_time": "2026-09-07T05:00:00",
                 "job_ids": ["JOB-B"],
