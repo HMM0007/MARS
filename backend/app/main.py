@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.adapters.router import router as adapters_router
+from app.core.emergency_router import router as emergency_router
 from app.core.router import router as core_router
 from app.api.dataset import router as dataset_router
 
@@ -19,8 +20,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register Routers
+# Register Routers. The hardened emergency router is registered before the
+# legacy core emergency route so emergency submissions use the durable,
+# explicit repair-outcome contract. All other core routes remain unchanged.
 app.include_router(adapters_router)
+app.include_router(emergency_router)
 app.include_router(core_router)
 app.include_router(dataset_router)
 
