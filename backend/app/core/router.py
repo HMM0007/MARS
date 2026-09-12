@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query, HTTPException
+from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
@@ -11,9 +12,18 @@ from app.core.priority_engine import PriorityEngine
 from app.core.monthly_allocator import MonthlyAllocator
 from app.core.forecast_engine import MonthlyForecastEngine
 from app.core.hardened_weekly_solver import HardenedWeeklyCPSATSolver
+from app.core.incremental_cpsat import IncrementalCPSATSolver
 from app.core.compliance_validator import RailwayComplianceValidator
 
 router = APIRouter(prefix="/api/v1/core", tags=["MARS Core AI Engine"])
+
+
+class IncrementalPlanRequest(BaseModel):
+    """Request payload for emergency/changed-job weekly plan repair."""
+
+    week: int = Field(default=1, ge=1, le=4)
+    new_job: MaintenanceJob
+    existing_plan: Dict[str, Any]
 
 
 def _load_unified_jobs() -> List[MaintenanceJob]:
@@ -153,4 +163,83 @@ def get_weekly_tactical_plan(
     result["monthly_candidate_ids"] = sorted(monthly_job_ids)
     result["weekly_candidate_lookup_complete"] = True
 
+    return result
+
+
+@router.post("/plan/incremental", response_model=Dict[str, Any])
+def get_incremental_weekly_plan(request: IncrementalPlanRequest):
+    """Repair an existing weekly plan around a new or changed maintenance job.
+
+    The existing approved blocks outside the affected physical/dependency
+    neighbourhood are hard-frozen. The hardened CP-SAT model then re-optimizes
+    only the mutable neighbourhood while respecting the same railway hard
+    constraints used by the normal weekly planner.
+    """
+    scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
+    existing_ids = {job.job_id for job in scored_jobs}
+
+    if request.new_job.job_id in existing_ids:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "DUPLICATE_JOB_ID",
+                "message": "The incremental job ID already exists in the unified job pool.",
+                "job_id": request.new_job.job_id,
+            },
+        )
+
+    new_job = PriorityEngine.score_job(request.new_job)
+    all_jobs = scored_jobs + [new_job]
+
+    existing_plan_ids = {
+        job_id
+        for block in request.existing_plan.get("scheduled_blocks", [])
+        if isinstance(block, dict)
+        for job_id in block.get("job_ids", [])
+    }
+    unknown_plan_ids = sorted(existing_plan_ids - existing_ids)
+    if unknown_plan_ids:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "EXISTING_PLAN_JOB_INTEGRITY_FAILURE",
+                "message": "The supplied plan contains job IDs that are not in the current unified pool.",
+                "unknown_job_ids": unknown_plan_ids,
+            },
+        )
+
+    trains = COAAdapter.fetch_passenger_timetable()
+    start_monday = _current_week_monday() + timedelta(weeks=request.week - 1)
+
+    solver_engine = IncrementalCPSATSolver(
+        jobs=all_jobs,
+        trains=trains,
+        start_monday=start_monday,
+        existing_plan=request.existing_plan,
+        new_job_id=new_job.job_id,
+    )
+    result = solver_engine.solve()
+
+    if result.get("status") in ("OPTIMAL", "FEASIBLE"):
+        result["compliance"] = RailwayComplianceValidator(
+            jobs=all_jobs,
+            trains=trains,
+            scheduled_blocks=result.get("scheduled_blocks", []),
+        ).validate()
+    else:
+        result["compliance"] = {
+            "overall_status": "NOT_EVALUATED",
+            "compliance_score": 0.0,
+            "hard_rules_passed": 0,
+            "hard_rules_total": 8,
+            "advisory_count": 0,
+            "rules": [],
+            "details": "No compliance score is produced because incremental CP-SAT did not return a usable repaired plan.",
+        }
+
+    for index, block in enumerate(result.get("scheduled_blocks", []), start=1):
+        block["block_id"] = f"BLK-W{request.week}-{index:03d}"
+
+    result["planning_week"] = request.week
+    result["incremental"]["new_job_priority_score"] = new_job.ai_priority_score
     return result
