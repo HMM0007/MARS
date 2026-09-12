@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, CalendarDays, CheckCircle2, Filter, HelpCircle, RefreshCw, ShieldCheck } from 'lucide-react';
+import { AlertCircle, CalendarDays, CheckCircle2, Filter, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { fetchWeeklyPlan, fetchCOATimetable, fetchPendingWeeklyRevision } from '../services/api';
+import { fetchAllScoredJobs, fetchWeeklyPlan, fetchCOATimetable, fetchPendingWeeklyRevision } from '../services/api';
 import UnifiedGantt from '../components/UnifiedGantt';
 import ExplainabilityModal from '../components/ExplainabilityModal';
 import PlannerRevisionReview from '../components/PlannerRevisionReview';
@@ -20,6 +20,7 @@ const getConflicts = (plan) => Number(plan?.metrics?.active_conflicts ?? plan?.c
 export default function WeeklyPlanPage({ currentRole }) {
   const [weeklyPlan, setWeeklyPlan] = useState(null);
   const [trains, setTrains] = useState([]);
+  const [jobCatalog, setJobCatalog] = useState([]);
   const [pendingRevision, setPendingRevision] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,13 +33,15 @@ export default function WeeklyPlanPage({ currentRole }) {
     try {
       setLoading(true);
       setError(null);
-      const [weekly, timetable, revision] = await Promise.all([
+      const [weekly, timetable, revision, scoredJobs] = await Promise.all([
         fetchWeeklyPlan(),
         fetchCOATimetable().catch(() => []),
         fetchPendingWeeklyRevision().catch(() => null),
+        fetchAllScoredJobs().catch(() => []),
       ]);
       setWeeklyPlan(weekly);
       setTrains(Array.isArray(timetable) ? timetable : (timetable?.timetable || []));
+      setJobCatalog(Array.isArray(scoredJobs) ? scoredJobs : (scoredJobs?.jobs || []));
       setPendingRevision(revision || null);
       const first = weekly?.blocks?.[0] || weekly?.scheduled_blocks?.[0];
       if (first) setSelectedBlock(first);
@@ -78,7 +81,6 @@ export default function WeeklyPlanPage({ currentRole }) {
   return (
     <main className="min-h-full bg-[#F4F6F8] p-3.5 font-sans text-[#1F2933]">
       <div className="mx-auto max-w-[1800px] space-y-3">
-        {/* Planner identity */}
         <header className="rounded-md border border-[#D6DEE6] bg-white shadow-sm">
           <div className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -104,14 +106,8 @@ export default function WeeklyPlanPage({ currentRole }) {
 
         {error && <div className="rounded border border-[#C92A2A]/25 bg-[#C92A2A]/5 px-3 py-2 text-[10px] font-semibold text-[#C92A2A]"><AlertCircle className="mr-1.5 inline h-3.5 w-3.5" />{error}</div>}
 
-        {/* Only show revision review when there is an actual decision to make. */}
-        {pendingRevision && (
-          <section>
-            <PlannerRevisionReview currentRole={currentRole} />
-          </section>
-        )}
+        {pendingRevision && <section><PlannerRevisionReview currentRole={currentRole} /></section>}
 
-        {/* Compact plan summary — deliberately not a KPI wall. */}
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {[
             ['Scheduled blocks', blocks.length, 'text-[#1E3A5F]'],
@@ -126,7 +122,6 @@ export default function WeeklyPlanPage({ currentRole }) {
           ))}
         </section>
 
-        {/* Main planning workspace */}
         <section className="overflow-hidden rounded-md border border-[#D6DEE6] bg-white shadow-sm">
           <div className="border-b border-[#D6DEE6] px-3.5 py-2.5">
             <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:justify-between">
@@ -168,7 +163,6 @@ export default function WeeklyPlanPage({ currentRole }) {
           </div>
         </section>
 
-        {/* Small legend / navigation footer instead of another data-heavy register. */}
         <section className="flex flex-col gap-2 rounded-md border border-[#D6DEE6] bg-white px-3.5 py-2.5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-semibold text-[#52606D]">
             <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-[#3B6EA5]" /> Engineering</span>
@@ -184,7 +178,7 @@ export default function WeeklyPlanPage({ currentRole }) {
         </section>
       </div>
 
-      <ExplainabilityModal block={selectedBlock} isOpen={isExplainOpen} onClose={() => setIsExplainOpen(false)} />
+      <ExplainabilityModal block={selectedBlock} jobCatalog={jobCatalog} isOpen={isExplainOpen} onClose={() => setIsExplainOpen(false)} />
     </main>
   );
 }
