@@ -11,7 +11,7 @@ const MIN_KM = 191;
 const MAX_KM = 254.84;
 const COLORS = { Engineering: '#1769AA', 'S&T': '#12805C', Traction: '#C46A12', Shared: '#66539A', Deferred: '#6B7280', Pending: '#E45718' };
 const RAILWAY_GEOJSON_URL = `${import.meta.env.BASE_URL || '/'}geojson/pune_lonavala_railways.geojson`;
-const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
+const BASEMAP_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
 
 const jobKey = (id) => String(id ?? '').trim();
 const clampKm = (km) => Math.max(MIN_KM, Math.min(MAX_KM, Number(km)));
@@ -84,9 +84,7 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
     };
     return [...blocks.map((b) => makeBlockFeature(b, jobsById)).filter(Boolean), ...jobs.map((j) => makeJobFeature(j, scheduledIds)).filter(Boolean)].filter((f) => matches(f.properties));
   }, [blocks, jobs, jobsById, scheduledIds, dept, status, query]);
-
   const counts = useMemo(() => ({ jobs: jobs.length, blocks: blocks.length, scheduled: jobs.filter((j) => scheduledIds.has(jobKey(j?.job_id))).length, pending: jobs.filter((j) => !scheduledIds.has(jobKey(j?.job_id)) && j?.status !== 'DEFERRED' && j?.status !== 'COMPLETED').length, deferred: jobs.filter((j) => j?.status === 'DEFERRED').length, critical: jobs.filter((j) => (j?.criticality_level || j?.criticality) === 'CRITICAL').length }), [jobs, blocks, scheduledIds]);
-
   const clearMarkers = (ref) => { ref.current.forEach((m) => m.remove()); ref.current = []; };
 
   const renderStations = () => {
@@ -98,23 +96,17 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
       el.title = `${station.name} • ${station.code} • Km ${Number(station.km).toFixed(2)}`;
       el.setAttribute('aria-label', `${station.name}, ${station.code}, Km ${Number(station.km).toFixed(2)}`);
       el.style.cssText = 'display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.97);border:1px solid #6B7F91;border-radius:5px;padding:3px 6px 3px 4px;color:#123E73;font:800 10px/12px Arial,sans-serif;box-shadow:0 2px 7px rgba(0,0,0,.32);white-space:nowrap;cursor:pointer;pointer-events:auto;z-index:25;';
-      const dot = document.createElement('span');
-      dot.textContent = '●';
-      dot.style.cssText = 'display:inline-block;color:#B42318;font-size:10px;line-height:10px;';
-      const label = document.createElement('span');
-      label.textContent = `${station.code} · ${station.name}`;
-      el.append(dot, label);
+      const dot = document.createElement('span'); dot.textContent = '●'; dot.style.cssText = 'display:inline-block;color:#B42318;font-size:10px;line-height:10px;';
+      const label = document.createElement('span'); label.textContent = `${station.code} · ${station.name}`; el.append(dot, label);
       el.onclick = () => setInspection({ type: 'STATION', data: station });
-      const xOffset = index % 2 === 0 ? -10 : 10;
-      return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [xOffset, -2] }).setLngLat([station.lng, station.lat]).addTo(map);
+      return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [index % 2 === 0 ? -10 : 10, -2] }).setLngLat([station.lng, station.lat]).addTo(map);
     });
   };
 
   const renderJobs = () => {
     const map = mapRef.current; if (!map) return;
     clearMarkers(jobMarkersRef);
-    const visibleJobs = features.filter((f) => f.properties.entity_type === 'JOB');
-    visibleJobs.forEach((feature, index) => {
+    features.filter((f) => f.properties.entity_type === 'JOB').forEach((feature, index) => {
       const p = feature.properties; const point = safeCoord(p.location_km, p.track_id); const critical = p.criticality === 'CRITICAL';
       const el = document.createElement('button'); el.type = 'button'; el.textContent = p.job_id; el.title = `${p.job_id} • ${p.department || 'Maintenance'} • Km ${Number(p.location_km).toFixed(2)} • ${p.defect_type}`;
       const bg = p.status === 'PENDING' ? '#fff4e8' : p.status === 'DEFERRED' ? '#f3f4f6' : '#eef7ff'; const fg = p.status === 'PENDING' ? '#9a3412' : p.status === 'DEFERRED' ? '#4b5563' : '#12528a';
@@ -126,86 +118,49 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return undefined;
-    let map;
-    let disposed = false;
+    let map; let disposed = false;
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: BASEMAP_STYLE_URL,
-        center: [73.64, 18.65],
-        zoom: 10.45,
-        minZoom: 10.25,
-        maxZoom: 18,
-        maxBounds: MAP_BOUNDS,
-        maxBoundsViscosity: 1,
-        renderWorldCopies: false,
-        attributionControl: true,
+        style: { version: 8, sources: { basemap: { type: 'raster', tiles: [BASEMAP_TILES], tileSize: 256, attribution: '© Esri, HERE, Garmin, OpenStreetMap contributors' } }, layers: [{ id: 'basemap', type: 'raster', source: 'basemap', minzoom: 0, maxzoom: 19, paint: { 'raster-opacity': 1 } }] },
+        center: [73.64, 18.65], zoom: 10.45, minZoom: 10.25, maxZoom: 18, maxBounds: MAP_BOUNDS, maxBoundsViscosity: 1, renderWorldCopies: false, attributionControl: true,
       });
       mapRef.current = map;
       map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
-
-      // DOM markers are independent of basemap/vector-tile loading.
       renderStations();
       renderJobs();
 
-      const syncMaintenance = () => {
+      const syncLayers = () => {
         if (disposed) return;
         try {
-          if (!map.getSource('railway')) {
-            map.addSource('railway', { type: 'geojson', data: RAILWAY_GEOJSON_URL });
-          }
-          if (!map.getSource('maintenance')) {
-            map.addSource('maintenance', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-          }
-
-          if (!map.getLayer('rail-route-halo')) map.addLayer({ id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'section_id'], 'PUNE-LNL'], paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 11, 8, 14, 11, 18, 14], 'line-opacity': 0.96, 'line-blur': 0.25 } });
-          if (!map.getLayer('rail-route-up')) map.addLayer({ id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } });
-          if (!map.getLayer('rail-route-dn')) map.addLayer({ id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } });
-          if (!map.getLayer('rail-route-inner-up')) map.addLayer({ id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#8FC4E8', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } });
-          if (!map.getLayer('rail-route-inner-dn')) map.addLayer({ id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#8AD8DC', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } });
-          if (!map.getLayer('block-casing')) map.addLayer({ id: 'block-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 11, 'line-opacity': 0.96 } });
-          if (!map.getLayer('block-line')) map.addLayer({ id: 'block-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 6, 'line-opacity': 0.98 } });
-          if (!map.getLayer('job-casing')) map.addLayer({ id: 'job-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 7, 'line-opacity': 0.96 } });
-          if (!map.getLayer('job-line')) map.addLayer({ id: 'job-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': ['get', 'color'], 'line-width': 3.5, 'line-opacity': 1 } });
-
+          if (!map.getSource('railway')) map.addSource('railway', { type: 'geojson', data: RAILWAY_GEOJSON_URL });
+          if (!map.getSource('maintenance')) map.addSource('maintenance', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+          const addLine = (id, source, filter, width, color, minzoom = 8.5, opacity = 1) => { if (!map.getLayer(id)) map.addLayer({ id, type: 'line', source, minzoom, filter, paint: { 'line-color': color, 'line-width': width, 'line-opacity': opacity, 'line-cap': 'round', 'line-join': 'round' } }); };
+          addLine('rail-route-halo', 'railway', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['interpolate', ['linear'], ['zoom'], 8.5, 6, 11, 8, 14, 11, 18, 14], '#FFFFFF', 0.96);
+          addLine('rail-route-up', 'railway', ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], '#0B4F8A', 0.98);
+          addLine('rail-route-dn', 'railway', ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], '#00838F', 0.98);
+          addLine('rail-route-inner-up', 'railway', ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], 1, '#8FC4E8', 13, 0.95);
+          addLine('rail-route-inner-dn', 'railway', ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], 1, '#8AD8DC', 13, 0.95);
+          addLine('block-casing', 'maintenance', ['==', ['get', 'entity_type'], 'BLOCK'], 11, '#FFFFFF', 9, 0.96);
+          addLine('block-line', 'maintenance', ['==', ['get', 'entity_type'], 'BLOCK'], 6, ['get', 'color'], 9, 0.98);
+          addLine('job-casing', 'maintenance', ['==', ['get', 'entity_type'], 'JOB'], 7, '#FFFFFF', 9, 0.96);
+          addLine('job-line', 'maintenance', ['==', ['get', 'entity_type'], 'JOB'], 3.5, ['get', 'color'], 9, 1);
           map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
           renderJobs();
           map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
-        } catch (error) {
-          console.error('Railway corridor layer rendering failed:', error);
-          setMapError(error?.message || 'Railway corridor layers could not be rendered.');
-        }
+        } catch (error) { console.error('Railway corridor layer rendering failed:', error); setMapError(error?.message || 'Railway corridor layers could not be rendered.'); }
       };
-
-      if (map.isStyleLoaded()) syncMaintenance();
-      else map.once('style.load', syncMaintenance);
-
+      if (map.isStyleLoaded()) syncLayers(); else map.once('style.load', syncLayers);
       map.on('error', (event) => { if (event?.error?.message) console.warn('MapLibre:', event.error.message); });
-    } catch (error) {
-      console.error('Corridor map initialization failed:', error);
-      setMapError(error?.message || 'Railway map could not be initialized.');
-      setLoaded(true);
-    }
-
-    const resize = () => map?.resize();
-    window.addEventListener('resize', resize);
+    } catch (error) { console.error('Corridor map initialization failed:', error); setMapError(error?.message || 'Railway map could not be initialized.'); setLoaded(true); }
+    const resize = () => map?.resize(); window.addEventListener('resize', resize);
     return () => { disposed = true; clearMarkers(stationMarkersRef); clearMarkers(jobMarkersRef); map?.remove(); mapRef.current = null; window.removeEventListener('resize', resize); };
   }, []);
 
-  useEffect(() => {
-    const map = mapRef.current; if (!map) return;
-    try {
-      const source = map.getSource('maintenance');
-      if (source) source.setData({ type: 'FeatureCollection', features });
-      renderJobs();
-    } catch (error) {
-      console.warn('Maintenance layer update failed:', error);
-    }
-  }, [features]);
-
+  useEffect(() => { const map = mapRef.current; if (!map) return; try { map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features }); renderJobs(); } catch (error) { console.warn('Maintenance layer update failed:', error); } }, [features]);
   useEffect(() => { const map = mapRef.current; if (!map) return; requestAnimationFrame(() => map.resize()); }, [isFullScreenMode]);
-
   const resetView = () => mapRef.current?.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 400 });
+
   const shell = <div className={`relative overflow-hidden border border-[#B9C6D1] bg-[#DDE5E9] shadow-sm ${isFullScreenMode ? 'fixed inset-0 z-[2147483000] h-screen w-screen rounded-none' : 'h-[calc(100vh-245px)] min-h-[620px] rounded-lg'}`}>
     <div ref={containerRef} className="absolute inset-0 h-full w-full" />
     <div className="pointer-events-none absolute left-4 top-4 z-40 rounded-md border border-[#C9D4DE] bg-white/96 px-3 py-2 shadow-lg"><div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#68798A]"><ShieldCheck className="h-3 w-3 text-[#12805C]" /> CENTRAL RAILWAY • PUNE DIVISION</div><div className="mt-0.5 text-sm font-extrabold text-[#123E73]">PUNE–LONAVALA OPERATIONAL CORRIDOR</div><div className="mt-0.5 text-[9px] font-mono text-[#52606D]">Km 191.00 → 254.84 • DOUBLE LINE • 25 kV AC</div></div>
