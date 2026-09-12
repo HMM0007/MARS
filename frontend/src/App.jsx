@@ -8,6 +8,7 @@ import WeeklyPlanPage from './pages/WeeklyPlanPage';
 import MonthlyPlanPage from './pages/MonthlyPlanPage';
 import DepartmentPage from './pages/DepartmentPage';
 import SNTDashboardPage from './pages/SNTDashboardPage';
+import EngineeringDashboardPage from './pages/EngineeringDashboardPage';
 import ImpactReportsPage from './pages/ImpactReportsPage';
 import IntegrationStatusPage from './pages/IntegrationStatusPage';
 import CorridorMapPage from './pages/CorridorMapPage';
@@ -45,7 +46,8 @@ function AppContent() {
         <Route path="/corridor" element={<CorridorMapPage currentRole={selectedRole}/>}/>
         <Route path="/weekly" element={<WeeklyPlanPage currentRole={selectedRole}/>}/>
         <Route path="/monthly" element={<MonthlyPlanPage currentRole={selectedRole}/>}/>
-        <Route path="/dept/engineering" element={<DepartmentPage deptKey="Engineering" currentRole={selectedRole}/>}/>
+        <Route path="/dept/engineering" element={<EngineeringDashboardPage currentRole={selectedRole}/>}/>
+        <Route path="/dept/engineering/*" element={<EngineeringDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/dept/snt" element={<SNTDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/dept/snt/*" element={<SNTDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/dept/traction" element={<DepartmentPage deptKey="Traction" currentRole={selectedRole}/>}/>
@@ -57,4 +59,4 @@ function AppContent() {
   </div>;
 }
 
-export default function App() { return <Router><AppContent/></Router>; }
+export default function App() { return <Router><AppContent /></Router>; }
