@@ -8,6 +8,7 @@ import MARSHomePage from './pages/MARSHomePage';
 import PlannerCommandCenterPage from './pages/PlannerCommandCenterPage';
 import WeeklyPlanPage from './pages/WeeklyPlanPage';
 import MonthlyPlanPage from './pages/MonthlyPlanPage';
+import JobsPage from './pages/JobsPage';
 import DepartmentPage from './pages/DepartmentPage';
 import SNTDashboardPage from './pages/SNTDashboardPage';
 import EngineeringDashboardPage from './pages/EngineeringDashboardPage';
@@ -66,6 +67,7 @@ function AppContent() {
         <Route path="/corridor" element={<CorridorMapPage currentRole={selectedRole}/>}/>
         <Route path="/weekly" element={<WeeklyPlanPage currentRole={selectedRole}/>}/>
         <Route path="/monthly" element={<MonthlyPlanPage currentRole={selectedRole}/>}/>
+        <Route path="/jobs" element={<JobsPage currentRole={selectedRole}/>}/>
         <Route path="/dept/engineering" element={<EngineeringDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/dept/engineering/*" element={<EngineeringDashboardPage currentRole={selectedRole}/>}/>
         <Route path="/dept/snt" element={<SNTDashboardPage currentRole={selectedRole}/>}/>
