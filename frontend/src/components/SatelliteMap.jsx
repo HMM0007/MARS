@@ -11,6 +11,7 @@ const MIN_KM = 191;
 const MAX_KM = 254.84;
 const COLORS = { Engineering: '#1769AA', 'S&T': '#12805C', Traction: '#C46A12', Shared: '#66539A', Deferred: '#6B7280', Pending: '#E45718' };
 const RAILWAY_GEOJSON_URL = `${import.meta.env.BASE_URL || '/'}geojson/pune_lonavala_railways.geojson`;
+const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
 const jobKey = (id) => String(id ?? '').trim();
 const clampKm = (km) => Math.max(MIN_KM, Math.min(MAX_KM, Number(km)));
@@ -130,41 +131,46 @@ export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainabil
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: {
-          version: 8,
-          sources: {
-            osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' },
-            railway: { type: 'geojson', data: RAILWAY_GEOJSON_URL },
-            maintenance: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
-          },
-          layers: [
-            { id: 'osm-base', type: 'raster', source: 'osm' },
-            { id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'section_id'], 'PUNE-LNL'], paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 11, 8, 14, 11, 18, 14], 'line-opacity': 0.96, 'line-blur': 0.25 } },
-            { id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
-            { id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } },
-            { id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#8FC4E8', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
-            { id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#8AD8DC', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } },
-            { id: 'block-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 11, 'line-opacity': 0.96 } },
-            { id: 'block-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 6, 'line-opacity': 0.98 } },
-            { id: 'job-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 7, 'line-opacity': 0.96 } },
-            { id: 'job-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': ['get', 'color'], 'line-width': 3.5, 'line-opacity': 1 } },
-          ],
-        },
-        center: [73.64, 18.65], zoom: 10.45, minZoom: 10.25, maxZoom: 18, maxBounds: MAP_BOUNDS, maxBoundsViscosity: 1, renderWorldCopies: false, attributionControl: true,
+        style: BASEMAP_STYLE_URL,
+        center: [73.64, 18.65],
+        zoom: 10.45,
+        minZoom: 10.25,
+        maxZoom: 18,
+        maxBounds: MAP_BOUNDS,
+        maxBoundsViscosity: 1,
+        renderWorldCopies: false,
+        attributionControl: true,
       });
       mapRef.current = map;
       map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
 
-      // DOM markers and viewport are independent of external raster tiles and style-load timing.
+      // DOM markers are independent of basemap/vector-tile loading.
       renderStations();
       renderJobs();
-      map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
 
       const syncMaintenance = () => {
         if (disposed) return;
         try {
+          if (!map.getSource('railway')) {
+            map.addSource('railway', { type: 'geojson', data: RAILWAY_GEOJSON_URL });
+          }
+          if (!map.getSource('maintenance')) {
+            map.addSource('maintenance', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+          }
+
+          if (!map.getLayer('rail-route-halo')) map.addLayer({ id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'section_id'], 'PUNE-LNL'], paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 6, 11, 8, 14, 11, 18, 14], 'line-opacity': 0.96, 'line-blur': 0.25 } });
+          if (!map.getLayer('rail-route-up')) map.addLayer({ id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } });
+          if (!map.getLayer('rail-route-dn')) map.addLayer({ id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.7, 11, 3.2, 14, 4.4, 18, 6.2], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } });
+          if (!map.getLayer('rail-route-inner-up')) map.addLayer({ id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'UP']], paint: { 'line-color': '#8FC4E8', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } });
+          if (!map.getLayer('rail-route-inner-dn')) map.addLayer({ id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['all', ['==', ['get', 'section_id'], 'PUNE-LNL'], ['==', ['get', 'direction'], 'DN']], paint: { 'line-color': '#8AD8DC', 'line-width': 1, 'line-opacity': 0.95, 'line-cap': 'round' } });
+          if (!map.getLayer('block-casing')) map.addLayer({ id: 'block-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 11, 'line-opacity': 0.96 } });
+          if (!map.getLayer('block-line')) map.addLayer({ id: 'block-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 6, 'line-opacity': 0.98 } });
+          if (!map.getLayer('job-casing')) map.addLayer({ id: 'job-casing', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 7, 'line-opacity': 0.96 } });
+          if (!map.getLayer('job-line')) map.addLayer({ id: 'job-line', type: 'line', source: 'maintenance', minzoom: 9, filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': ['get', 'color'], 'line-width': 3.5, 'line-opacity': 1 } });
+
           map.getSource('maintenance')?.setData({ type: 'FeatureCollection', features });
           renderJobs();
+          map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 96, right: 100, bottom: 96, left: 100 }, duration: 0 });
         } catch (error) {
           console.error('Railway corridor layer rendering failed:', error);
           setMapError(error?.message || 'Railway corridor layers could not be rendered.');
