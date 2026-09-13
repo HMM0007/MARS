@@ -40,8 +40,8 @@ def run_what_if(request: WhatIfScenarioRequest):
     approved = get_approved_plan()
     if not approved:
         raise HTTPException(status_code=409, detail={"error": "NO_APPROVED_BASELINE", "message": "What-If analysis requires an approved weekly baseline. Generate and approve a weekly plan first."})
-    if request.scenario_type == "TRACK_OUTAGE" and not request.track_id:
-        raise HTTPException(status_code=422, detail={"error": "TRACK_REQUIRED", "message": "A track must be selected for a Track Outage scenario."})
+    if request.scenario_type in {"TRACK_OUTAGE", "EMERGENCY_BLOCK"} and not request.track_id:
+        raise HTTPException(status_code=422, detail={"error": "TRACK_REQUIRED", "message": "A track must be selected for this scenario type."})
     try:
         return simulate_scenario(request.model_dump(), approved)
     except HTTPException:
