@@ -14,13 +14,7 @@ router = APIRouter(prefix="/api/v1/what-if", tags=["MARS What-If Scenario Analys
 
 class WhatIfScenarioRequest(BaseModel):
     week: int = Field(default=1, ge=1, le=4)
-    scenario_type: Literal[
-        "TRACK_OUTAGE",
-        "SECTION_OUTAGE",
-        "EMERGENCY_BLOCK",
-        "FREIGHT_SURGE",
-        "MONSOON_SLOWDOWN",
-    ]
+    scenario_type: Literal["TRACK_OUTAGE", "SECTION_OUTAGE", "EMERGENCY_BLOCK", "FREIGHT_SURGE", "MONSOON_SLOWDOWN"]
     section_id: str = Field(min_length=1, max_length=80)
     track_id: Optional[str] = Field(default=None, min_length=1, max_length=80)
     start_time: datetime
@@ -32,81 +26,33 @@ class WhatIfScenarioRequest(BaseModel):
 def get_what_if_options():
     approved = get_approved_plan()
     if not approved:
-        return {
-            "scenario_types": sorted(SUPPORTED_SCENARIOS),
-            "sections": [],
-            "baseline_available": False,
-            "freight_surge_levels": [20, 40],
-            "monsoon_slowdown_levels": [10, 20, 30],
-        }
-
+        return {"scenario_types": sorted(SUPPORTED_SCENARIOS), "sections": [], "baseline_available": False}
     baseline_plan = approved.get("plan") or {}
-    candidate_ids = {str(value) for value in baseline_plan.get("weekly_candidate_ids", [])}
+    candidate_ids = {str(v) for v in baseline_plan.get("weekly_candidate_ids", [])}
     if not candidate_ids:
         for block in baseline_plan.get("scheduled_blocks", []):
             if isinstance(block, dict):
-                candidate_ids.update(str(value) for value in block.get("job_ids", []))
-        candidate_ids.update(
-            str(value.get("job_id"))
-            for value in baseline_plan.get("deferred_jobs", [])
-            if isinstance(value, dict) and value.get("job_id")
-        )
-
+                candidate_ids.update(str(v) for v in block.get("job_ids", []))
+        candidate_ids.update(str(v.get("job_id")) for v in baseline_plan.get("deferred_jobs", []) if isinstance(v, dict) and v.get("job_id"))
     jobs = [job for job in PriorityEngine.process_job_batch(_load_unified_jobs()) if job.job_id in candidate_ids]
     sections: Dict[str, set[str]] = {}
     for job in jobs:
         sections.setdefault(job.section_id, set()).add(job.track_id)
-    return {
-        "scenario_types": sorted(SUPPORTED_SCENARIOS),
-        "baseline_available": True,
-        "planning_week": approved.get("planning_week"),
-        "sections": [
-            {"section_id": section_id, "track_ids": sorted(track_ids)}
-            for section_id, track_ids in sorted(sections.items())
-        ],
-        "freight_surge_levels": [20, 40],
-        "monsoon_slowdown_levels": [10, 20, 30],
-    }
+    return {"scenario_types": sorted(SUPPORTED_SCENARIOS), "baseline_available": True, "planning_week": approved.get("planning_week"), "sections": [{"section_id": s, "track_ids": sorted(t)} for s, t in sorted(sections.items())]}
 
 
 @router.post("/simulate", response_model=Dict[str, Any])
 def run_what_if(request: WhatIfScenarioRequest):
     approved = get_approved_plan()
     if not approved:
-        raise HTTPException(
-            status_code=409,
-            detail={
-                "error": "NO_APPROVED_BASELINE",
-                "message": "What-If analysis requires an approved weekly baseline. Generate and approve a weekly plan first.",
-            },
-        )
-
+        raise HTTPException(status_code=409, detail={"error": "NO_APPROVED_BASELINE", "message": "What-If analysis requires an approved weekly baseline. Generate and approve a weekly plan first."})
     if request.scenario_type in {"TRACK_OUTAGE", "EMERGENCY_BLOCK"} and not request.track_id:
-        raise HTTPException(
-            status_code=422,
-            detail={"error": "TRACK_REQUIRED", "message": "A track must be selected for this scenario type."},
-        )
-    if request.scenario_type == "FREIGHT_SURGE" and request.impact_percent not in {20, 40}:
-        raise HTTPException(
-            status_code=422,
-            detail={"error": "INVALID_FREIGHT_SURGE", "message": "Freight surge must be 20% or 40%."},
-        )
-    if request.scenario_type == "MONSOON_SLOWDOWN" and request.impact_percent not in {10, 20, 30}:
-        raise HTTPException(
-            status_code=422,
-            detail={"error": "INVALID_WEATHER_SLOWDOWN", "message": "Monsoon slowdown must be 10%, 20%, or 30%."},
-        )
-
+        raise HTTPException(status_code=422, detail={"error": "TRACK_REQUIRED", "message": "A track must be selected for this scenario type."})
+    if request.scenario_type in {"FREIGHT_SURGE", "MONSOON_SLOWDOWN"} and request.impact_percent is None:
+        raise HTTPException(status_code=422, detail={"error": "IMPACT_PERCENT_REQUIRED", "message": "Enter an impact percentage for this scenario."})
     try:
         return simulate_scenario(request.model_dump(), approved)
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "WHAT_IF_SIMULATION_FAILED",
-                "message": "The scenario could not be evaluated by the planning engine.",
-                "reason": str(exc),
-            },
-        ) from exc
+        raise HTTPException(status_code=500, detail={"error": "WHAT_IF_SIMULATION_FAILED", "message": "The scenario could not be evaluated by the planning engine.", "reason": str(exc)}) from exc
