@@ -18,7 +18,6 @@ from app.core.priority_engine import PriorityEngine
 from app.core.router import _current_week_monday, _load_unified_jobs
 from app.models.train import TrainMovement
 
-
 SUPPORTED_SCENARIOS = {"TRACK_OUTAGE", "SECTION_OUTAGE", "EMERGENCY_BLOCK"}
 
 
@@ -43,8 +42,7 @@ def _index_scheduled(blocks: Iterable[Dict[str, Any]]) -> Dict[str, Tuple[str, s
 
 
 def _severity(impact: Dict[str, Any]) -> str:
-    score = 0
-    score += min(50, impact["jobs_affected"] * 3)
+    score = min(50, impact["jobs_affected"] * 3)
     score += min(30, impact["jobs_deferred"] * 8)
     score += min(20, impact["blocks_affected"] * 4)
     if impact["solver_status"] not in {"FEASIBLE", "OPTIMAL"}:
@@ -61,24 +59,22 @@ def _severity(impact: Dict[str, Any]) -> str:
 def _build_blockers(scenario: Dict[str, Any], tracks: List[str]) -> List[TrainMovement]:
     start = scenario["start_time"]
     end = start + timedelta(minutes=scenario["duration_minutes"])
-    blockers: List[TrainMovement] = []
-    for index, track_id in enumerate(tracks, start=1):
-        blockers.append(
-            TrainMovement(
-                train_id=f"WHATIF-{index}-{track_id}",
-                train_number="WHAT-IF-BLOCK",
-                train_name="Scenario Occupancy Window",
-                train_type="FREIGHT",
-                section_id=scenario["section_id"],
-                track_id=track_id,
-                entry_time=start,
-                exit_time=end,
-                priority=999,
-                direction="UP",
-                is_fixed=True,
-            )
+    return [
+        TrainMovement(
+            train_id=f"WHATIF-{index}-{track_id}",
+            train_number="WHAT-IF-BLOCK",
+            train_name="Scenario Occupancy Window",
+            train_type="FREIGHT",
+            section_id=scenario["section_id"],
+            track_id=track_id,
+            entry_time=start,
+            exit_time=end,
+            priority=999,
+            direction="UP",
+            is_fixed=True,
         )
-    return blockers
+        for index, track_id in enumerate(tracks, start=1)
+    ]
 
 
 def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dict[str, Any]:
@@ -132,13 +128,14 @@ def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dic
     scenario_index = _index_scheduled(result.get("scheduled_blocks", []))
     baseline_ids = set(baseline_index)
     scenario_ids = set(scenario_index)
-    affected: set[str] = set(baseline_ids | scenario_ids)
     moved: set[str] = set()
-    for job_id in affected:
+    for job_id in baseline_ids | scenario_ids:
         if baseline_index.get(job_id) != scenario_index.get(job_id):
             moved.add(job_id)
 
     deferred_ids = {str(value.get("job_id")) for value in result.get("deferred_jobs", []) if isinstance(value, dict) and value.get("job_id")}
+    baseline_deferred_ids = {str(value.get("job_id")) for value in baseline_plan.get("deferred_jobs", []) if isinstance(value, dict) and value.get("job_id")}
+    newly_deferred = deferred_ids - baseline_deferred_ids
     impacted_ids = sorted(moved | (baseline_ids - scenario_ids) | (scenario_ids - baseline_ids))
     baseline_block_count = len(baseline_blocks)
     scenario_block_count = len(result.get("scheduled_blocks", []))
@@ -146,8 +143,8 @@ def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dic
         "jobs_affected": len(impacted_ids),
         "blocks_affected": abs(scenario_block_count - baseline_block_count) + len(moved),
         "jobs_delayed_or_moved": len(moved),
-        "jobs_deferred": len(deferred_ids - baseline_ids),
-        "conflicts_introduced": max(0, len(result.get("deferred_jobs", [])) - len(baseline_plan.get("deferred_jobs", []))),
+        "jobs_deferred": len(newly_deferred),
+        "additional_deferrals": len(newly_deferred),
         "baseline_scheduled_jobs": len(baseline_ids),
         "scenario_scheduled_jobs": len(scenario_ids),
         "solver_status": result.get("status", result.get("solver_status", "UNKNOWN")),
@@ -159,22 +156,17 @@ def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dic
         f"Scenario window: {start_time.isoformat(timespec='minutes')} to {end_time.isoformat(timespec='minutes')}.",
     ]
     if moved:
-        details.append(f"{len(moved)} baseline job(s) changed schedule position or scheduling state.")
-    if deferred_ids:
-        details.append(f"{len(deferred_ids)} job(s) are deferred in the scenario result.")
-    if not moved and not deferred_ids:
+        details.append(f"{len(moved)} job(s) changed schedule position or scheduling state.")
+    if newly_deferred:
+        details.append(f"{len(newly_deferred)} additional job(s) are deferred in the scenario result.")
+    if not moved and not newly_deferred:
         details.append("The optimizer found no material change to the approved weekly schedule.")
 
     return {
         "status": "SIMULATED",
         "baseline_revision": approved.get("revision"),
         "planning_week": week,
-        "scenario": {
-            **scenario,
-            "start_time": start_time.isoformat(),
-            "end_time": end_time.isoformat(),
-            "blocked_tracks": blocker_tracks,
-        },
+        "scenario": {**scenario, "start_time": start_time.isoformat(), "end_time": end_time.isoformat(), "blocked_tracks": blocker_tracks},
         "impact": impact,
         "affected_job_ids": impacted_ids,
         "deferred_job_ids": sorted(deferred_ids),
