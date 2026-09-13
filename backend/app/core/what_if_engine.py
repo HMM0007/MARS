@@ -1,13 +1,12 @@
 """Non-destructive What-If scenario engine for the Planner Dashboard.
 
-The scenario engine reuses the production hardened weekly CP-SAT solver. A
-scenario only changes the in-memory train/block occupancy supplied to the
-solver; the approved plan store is never written to.
+All scenario changes are kept in memory and evaluated by the production weekly
+CP-SAT solver. The approved plan store is never modified.
 """
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Tuple
 
 from fastapi import HTTPException
@@ -18,7 +17,13 @@ from app.core.priority_engine import PriorityEngine
 from app.core.router import _current_week_monday, _load_unified_jobs
 from app.models.train import TrainMovement
 
-SUPPORTED_SCENARIOS = {"TRACK_OUTAGE", "SECTION_OUTAGE", "EMERGENCY_BLOCK"}
+SUPPORTED_SCENARIOS = {
+    "TRACK_OUTAGE",
+    "SECTION_OUTAGE",
+    "EMERGENCY_BLOCK",
+    "FREIGHT_SURGE",
+    "MONSOON_SLOWDOWN",
+}
 
 
 def _job_ids_from_blocks(blocks: Iterable[Dict[str, Any]]) -> set[str]:
@@ -56,12 +61,17 @@ def _severity(impact: Dict[str, Any]) -> str:
     return "LOW"
 
 
-def _build_blockers(scenario: Dict[str, Any], tracks: List[str]) -> List[TrainMovement]:
+def _scenario_window(scenario: Dict[str, Any]):
     start = scenario["start_time"]
     end = start + timedelta(minutes=scenario["duration_minutes"])
+    return start, end
+
+
+def _build_blockers(scenario: Dict[str, Any], tracks: List[str]) -> List[TrainMovement]:
+    start, end = _scenario_window(scenario)
     return [
         TrainMovement(
-            train_id=f"WHATIF-{index}-{track_id}",
+            train_id=f"WHATIF-BLOCK-{index}-{track_id}",
             train_number="WHAT-IF-BLOCK",
             train_name="Scenario Occupancy Window",
             train_type="FREIGHT",
@@ -75,6 +85,76 @@ def _build_blockers(scenario: Dict[str, Any], tracks: List[str]) -> List[TrainMo
         )
         for index, track_id in enumerate(tracks, start=1)
     ]
+
+
+def _build_freight_surge(trains: List[TrainMovement], scenario: Dict[str, Any], percent: int) -> List[TrainMovement]:
+    if percent not in {20, 40}:
+        raise HTTPException(status_code=422, detail={"error": "INVALID_FREIGHT_SURGE", "message": "Freight surge must be 20% or 40%."})
+    start, end = _scenario_window(scenario)
+    freight = [train for train in trains if getattr(train, "train_type", "") == "FREIGHT"]
+    if not freight:
+        raise HTTPException(status_code=422, detail={"error": "NO_FREIGHT_BASELINE", "message": "No freight movements are available in the timetable for the selected scenario."})
+
+    # Use the existing freight timetable movements as the baseline demand shape;
+    # the added paths are synthetic in-memory demand stress, never source-data edits.
+    count = max(1, round(len(freight) * percent / 100))
+    additions: List[TrainMovement] = []
+    for index, source in enumerate(freight[:count], start=1):
+        span = max(15, int((source.exit_time - source.entry_time).total_seconds() // 60))
+        entry = max(source.entry_time, start)
+        if entry >= end:
+            continue
+        exit_time = min(end, entry + timedelta(minutes=span))
+        additions.append(
+            TrainMovement(
+                train_id=f"WHATIF-FREIGHT-{percent}-{index}",
+                train_number="WHAT-IF-FRT",
+                train_name="Freight Demand Surge",
+                train_type="FREIGHT",
+                section_id=source.section_id,
+                track_id=source.track_id,
+                entry_time=entry,
+                exit_time=exit_time,
+                priority=source.priority,
+                direction=source.direction,
+                is_fixed=True,
+            )
+        )
+    if not additions:
+        raise HTTPException(status_code=422, detail={"error": "SURGE_WINDOW_EMPTY", "message": "The selected freight surge window does not overlap timetable freight movements."})
+    return additions
+
+
+def _build_monsoon_slowdown(trains: List[TrainMovement], scenario: Dict[str, Any], percent: int) -> List[TrainMovement]:
+    if percent not in {10, 20, 30}:
+        raise HTTPException(status_code=422, detail={"error": "INVALID_WEATHER_SLOWDOWN", "message": "Monsoon slowdown must be 10%, 20%, or 30%."})
+    start, end = _scenario_window(scenario)
+    affected = [train for train in trains if train.entry_time < end and train.exit_time > start]
+    if not affected:
+        raise HTTPException(status_code=422, detail={"error": "WEATHER_WINDOW_EMPTY", "message": "The selected weather window does not overlap timetable movements."})
+
+    additions: List[TrainMovement] = []
+    for index, source in enumerate(affected, start=1):
+        overlap_start = max(source.entry_time, start)
+        overlap_end = min(source.exit_time, end)
+        minutes = max(1, int((overlap_end - overlap_start).total_seconds() // 60))
+        extension = max(5, round(minutes * percent / 100))
+        additions.append(
+            TrainMovement(
+                train_id=f"WHATIF-WEATHER-{percent}-{index}",
+                train_number="WHAT-IF-WX",
+                train_name="Monsoon Slowdown Occupancy",
+                train_type=source.train_type,
+                section_id=source.section_id,
+                track_id=source.track_id,
+                entry_time=overlap_start,
+                exit_time=min(end, overlap_end + timedelta(minutes=extension)),
+                priority=998,
+                direction=source.direction,
+                is_fixed=True,
+            )
+        )
+    return additions
 
 
 def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dict[str, Any]:
@@ -98,7 +178,7 @@ def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dic
         raise HTTPException(status_code=422, detail={"error": "SCENARIO_OUTSIDE_WEEK", "message": "Scenario window must remain inside the selected seven-day planning horizon."})
 
     scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
-    candidate_ids = set(str(value) for value in baseline_plan.get("weekly_candidate_ids", []))
+    candidate_ids = {str(value) for value in baseline_plan.get("weekly_candidate_ids", [])}
     if not candidate_ids:
         candidate_ids = _job_ids_from_blocks(baseline_plan.get("scheduled_blocks", []))
         candidate_ids.update(str(value.get("job_id")) for value in baseline_plan.get("deferred_jobs", []) if isinstance(value, dict) and value.get("job_id"))
@@ -120,18 +200,22 @@ def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dic
         blocker_tracks = matching_tracks if scenario_type == "SECTION_OUTAGE" else matching_tracks[:1]
 
     trains = COAAdapter.fetch_passenger_timetable()
-    baseline_blocks = baseline_plan.get("scheduled_blocks", [])
-    scenario_trains = list(trains) + _build_blockers({**scenario, "section_id": requested_section}, blocker_tracks)
+    scenario_trains = list(trains)
+    if scenario_type in {"TRACK_OUTAGE", "SECTION_OUTAGE", "EMERGENCY_BLOCK"}:
+        scenario_trains += _build_blockers(scenario, blocker_tracks)
+    elif scenario_type == "FREIGHT_SURGE":
+        scenario_trains += _build_freight_surge(trains, scenario, int(scenario["impact_percent"]))
+    elif scenario_type == "MONSOON_SLOWDOWN":
+        scenario_trains += _build_monsoon_slowdown(trains, scenario, int(scenario["impact_percent"]))
+
     result = HardenedWeeklyCPSATSolver(jobs, scenario_trains, start_monday).solve()
 
+    baseline_blocks = baseline_plan.get("scheduled_blocks", [])
     baseline_index = _index_scheduled(baseline_blocks)
     scenario_index = _index_scheduled(result.get("scheduled_blocks", []))
     baseline_ids = set(baseline_index)
     scenario_ids = set(scenario_index)
-    moved: set[str] = set()
-    for job_id in baseline_ids | scenario_ids:
-        if baseline_index.get(job_id) != scenario_index.get(job_id):
-            moved.add(job_id)
+    moved = {job_id for job_id in baseline_ids | scenario_ids if baseline_index.get(job_id) != scenario_index.get(job_id)}
 
     deferred_ids = {str(value.get("job_id")) for value in result.get("deferred_jobs", []) if isinstance(value, dict) and value.get("job_id")}
     baseline_deferred_ids = {str(value.get("job_id")) for value in baseline_plan.get("deferred_jobs", []) if isinstance(value, dict) and value.get("job_id")}
@@ -151,10 +235,21 @@ def simulate_scenario(scenario: Dict[str, Any], approved: Dict[str, Any]) -> Dic
     }
     impact["severity"] = _severity(impact)
 
+    scenario_label = {
+        "TRACK_OUTAGE": "Track outage",
+        "SECTION_OUTAGE": "Section outage",
+        "EMERGENCY_BLOCK": "Emergency block",
+        "FREIGHT_SURGE": f"Freight demand surge (+{scenario['impact_percent']}%)",
+        "MONSOON_SLOWDOWN": f"Monsoon weather slowdown ({scenario['impact_percent']}%)",
+    }[scenario_type]
     details: List[str] = [
-        f"{scenario_type.replace('_', ' ').title()} applied to {requested_section}.",
+        f"{scenario_label} assessed for {requested_section}.",
         f"Scenario window: {start_time.isoformat(timespec='minutes')} to {end_time.isoformat(timespec='minutes')}.",
     ]
+    if scenario_type == "FREIGHT_SURGE":
+        details.append("Freight demand stress adds in-memory freight paths using the existing timetable as the demand shape; source timetable data is unchanged.")
+    elif scenario_type == "MONSOON_SLOWDOWN":
+        details.append("Weather stress is modelled as conservative occupancy-time extension; it is a scenario proxy, not a live railway speed restriction feed.")
     if moved:
         details.append(f"{len(moved)} job(s) changed schedule position or scheduling state.")
     if newly_deferred:
