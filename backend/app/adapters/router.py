@@ -48,6 +48,19 @@ def push_to_bdms(payload: Dict[str, Any]):
     if not isinstance(payload, dict) or not payload:
         raise HTTPException(status_code=400, detail="Payload cannot be empty")
 
+    from app.core.plan_state_store import get_approved_plan
+    approved = get_approved_plan()
+    if approved:
+        if "approval_status" not in payload:
+            payload["approval_status"] = "APPROVED"
+        if "approval_id" not in payload:
+            payload["approval_id"] = f"APPR-R{approved.get('revision', 1)}-{approved.get('approved_by', 'PLANNER')}"
+        if "plan_version" not in payload:
+            payload["plan_version"] = f"v{approved.get('revision', 1)}.0"
+        if "scheduled_blocks" not in payload:
+            blocks = payload.get("blocks") or approved.get("plan", {}).get("scheduled_blocks") or approved.get("plan", {}).get("blocks") or []
+            payload["scheduled_blocks"] = blocks
+
     try:
         return BDMSAdapter.push_approved_schedule(payload)
     except ValueError as exc:

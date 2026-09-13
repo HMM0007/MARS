@@ -100,14 +100,12 @@ export default function OperationalWorkflowBridge() {
     finally { setBusy(false); }
   };
 
-  if (!isWeekly && !notice && !pendingRevision && !department) return null;
+  if (!notice && !pendingRevision && !department) return null;
   const pendingPlan = pendingRevision?.revision?.plan;
   const pendingJob = pendingRevision?.revision?.new_job_id;
 
   return <div className="px-4 pt-3">
     {department && <div className="mb-2 flex justify-end"><button type="button" onClick={openEmergency} className="inline-flex items-center gap-2 rounded border border-[#C92A2A] bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-[#C92A2A] shadow-sm hover:bg-[#FFF5F5]"><AlertTriangle className="h-3.5 w-3.5"/> Report Emergency</button></div>}
-
-    {isWeekly && <div className="bg-white border border-[#D6DEE6] rounded shadow-sm px-3 py-2 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2"><div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-[#1E3A5F]"/><div><p className="text-[11px] font-bold uppercase tracking-wide text-[#1F2933]">Weekly Baseline Governance</p><p className="text-[10px] text-[#60748A]">{approval?.approved ? `Approved baseline R${approval.revision}` : 'Planner approval required before the weekly plan becomes the protected baseline.'}</p></div></div><button type="button" onClick={() => approvePlan(weekly, weekly?.planning_week || 1, 'Weekly baseline approved')} disabled={busy || !weekly || !['FEASIBLE','OPTIMAL'].includes(weekly.status)} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-[#1E3A5F] text-white text-[10px] font-bold disabled:opacity-50">{busy ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5"/>}{approval?.approved ? 'Approve Current Plan as New Baseline' : 'Approve Weekly Baseline'}</button></div>}
 
     {pendingRevision && <div className="mt-2 bg-white border border-[#F0C36A] rounded shadow-sm px-3 py-2 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2"><div><p className="text-[11px] font-bold uppercase tracking-wide text-[#8A5A00]">Plan Revision Awaiting Approval</p><p className="text-[10px] text-[#60748A]">New job <span className="font-mono font-bold">{pendingJob}</span> generated a controlled incremental repair. Unaffected approved blocks remain frozen.</p></div>{isPlanner && <button type="button" onClick={() => approvePlan(pendingPlan, pendingRevision.revision.planning_week, 'Incremental plan revision approved')} disabled={busy || !pendingPlan || !['FEASIBLE','OPTIMAL'].includes(pendingPlan.status)} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-[#8A5A00] text-white text-[10px] font-bold disabled:opacity-50">{busy ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5"/>} Approve Plan Revision</button>}</div>}
 

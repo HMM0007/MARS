@@ -40,9 +40,22 @@ export default function CorridorMapPage() {
         <div className="rounded-md border border-[#D6DEE6] bg-white px-3 py-2"><div className="text-[9px] font-bold uppercase tracking-wider text-[#8796A5]">Pending / Critical</div><div className="mt-0.5 flex items-baseline gap-2 text-lg font-bold text-[#C9842A]"><span>{pendingJobs}</span><span className="text-[10px] font-semibold text-[#C92A2A]">{criticalJobs} critical</span></div></div>
       </div>
     </>}
-    {fullScreen && <div className="fixed left-4 top-4 z-[2147483001] rounded-md border border-[#D6DEE6] bg-white/95 px-3 py-2 shadow-lg"><div className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#8796A5]">Central Railway • Pune Division</div><div className="text-sm font-bold text-[#173E6C]">Pune–Lonavala Corridor</div></div>}
-    {error && !fullScreen && <div className="rounded-md border border-[#F1B6B6] bg-[#FFF5F5] px-3 py-2 text-[10px] font-semibold text-[#C92A2A]">{error}</div>}
-    <section className={fullScreen ? 'h-0 overflow-visible' : 'min-h-0 flex-1'}><SatelliteMap blocks={blocks} jobs={jobs} selectedBlock={selectedBlock} onSelectBlock={setSelectedBlock} isFullScreenMode={fullScreen} onToggleFullScreen={() => setFullScreen((v) => !v)} /></section>
-    {!fullScreen && <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#D6DEE6] bg-white px-3 py-2 text-[9px] text-[#52606D] shadow-sm"><span><Wrench className="mr-1 inline h-3 w-3 text-[#1E3A5F]" />Maintenance is rendered as corridor possessions, not map pins.</span><span>Zoom-out is bounded to the Pune–Lonavala operational context • zoom-in remains available for route detail.</span></div>}
+    {error && <div className="rounded-md border border-[#F1B6B6] bg-[#FFF5F5] px-3 py-2 text-[10px] font-semibold text-[#C92A2A]">{error}</div>}
+    <section className="min-h-0 flex-1">
+      <SatelliteMap
+        blocks={blocks}
+        jobs={jobs}
+        selectedBlock={selectedBlock}
+        onSelectBlock={setSelectedBlock}
+        isFullScreenMode={fullScreen}
+        onToggleFullScreen={() => setFullScreen((v) => !v)}
+      />
+    </section>
+    {!fullScreen && (
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#D6DEE6] bg-white px-3 py-2 text-[9px] text-[#52606D] shadow-sm">
+        <span><Wrench className="mr-1 inline h-3 w-3 text-[#1E3A5F]" />Maintenance is rendered as corridor possessions, not map pins.</span>
+        <span>Zoom-out is bounded to the Pune–Lonavala operational context • zoom-in remains available for route detail.</span>
+      </div>
+    )}
   </main>;
 }

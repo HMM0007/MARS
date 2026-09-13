@@ -1,0 +1,705 @@
+/* Clean, Professional Indian Railways Official Portal Styling */
+
+.login-page {
+  min-height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 40% 60%;
+  background: #ffffff;
+  color: #263b4d;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================================================
+   LEFT VISUAL PANEL & BRANDING (HIGH CONTRAST, CRISP, 0 BLUR)
+   ========================================================================== */
+
+.login-visual-panel {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #091c28;
+  color: #ffffff;
+  isolation: isolate;
+}
+
+.login-railway-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1) contrast(1.05) brightness(0.65);
+}
+
+.login-visual-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      rgba(9, 28, 40, 0.4) 0%,
+      rgba(9, 28, 40, 0.25) 40%,
+      rgba(4, 18, 28, 0.9) 100%);
+  z-index: 1;
+}
+
+.login-mars-hero {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  text-align: center;
+}
+
+/* Centered Brand Lockup with Emblem Centered ABOVE MARS */
+.centered-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.mars-brand-symbol-centered {
+  width: 95px;
+  height: 95px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.65));
+  flex: none;
+  margin-bottom: 2px;
+}
+
+.centered-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* MARS Word Container */
+.mars-lettering-wrap {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  user-select: none;
+}
+
+/* Clean Official Government MARS Typography */
+/* OFFICIAL HIGH-TRUST GOVERNMENT BRANDING FOR MARS HERO */
+.mars-gov-title {
+  margin: 6px 0 0;
+  font-size: clamp(68px, 9vw, 108px);
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: 0.04em;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #ffffff;
+  text-shadow: 0 6px 22px rgba(0, 0, 0, 0.85);
+  user-select: none;
+}
+
+/* SUBTLE OFFICIAL INDIAN TRICOLOR DIVIDER ACCENT */
+.mars-gov-tricolor-divider {
+  height: 3px;
+  width: 140px;
+  margin: 12px auto 14px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ff9933 0%, #ffffff 50%, #138808 100%);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+/* Container for Track & Continuous 3D Train under MARS */
+.mars-under-track-container {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+  /* Fade left and right edges so train doesn't hard-clip at container border */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 18%,
+    black 82%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 18%,
+    black 82%,
+    transparent 100%
+  );
+}
+
+/* Railway 25kV OHE Electric Line under MARS (Pure Silver/White Electric Wire, 0 Blue) */
+.mars-track-rail {
+  position: relative;
+  height: 5px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.85);
+  overflow: hidden;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.25);
+}
+
+.track-rail-line {
+  position: absolute;
+  inset: 0;
+  background-image:
+    /* High Voltage Electric Pulse Nodes (Pure Silver / White) */
+    repeating-linear-gradient(90deg,
+      #ffffff 0px,
+      #f1f5f9 4px,
+      #cbd5e1 8px,
+      transparent 8px,
+      transparent 22px),
+    /* OHE Electric Contact Wire Metallic Beam Glow */
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(226, 232, 240, 0.9) 50%,
+      rgba(148, 163, 184, 0.75) 100%);
+  background-size: 26px 100%, 100% 100%;
+  animation: electricLineMoveLeftToRight 0.38s linear infinite;
+}
+
+@keyframes electricLineMoveLeftToRight {
+  0% {
+    background-position-x: -26px, 0;
+  }
+
+  100% {
+    background-position-x: 0px, 0;
+  }
+}
+
+/* 3D Train Viewport (Continuous Display) */
+.train-3d-viewport {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  pointer-events: none;
+  z-index: 10;
+  margin-top: 18px;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+}
+
+.train-3d-viewport canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.train-3d-loading {
+  font-size: 9px;
+  color: #38bdf8;
+  letter-spacing: 0.1em;
+  padding: 8px 0;
+  font-weight: bold;
+}
+
+.mars-full-form {
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: clamp(11px, 1.3vw, 15px);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  line-height: 2;        /* gap between the two lines */
+  white-space: normal;
+}
+
+.centered-status {
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.mars-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: rgba(233, 238, 240, 0.85);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.mars-status span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #63cda1;
+  box-shadow: 0 0 0 4px rgba(99, 205, 161, 0.11), 0 0 12px rgba(99, 205, 161, 0.55);
+  animation: statusPulse 2.1s infinite;
+}
+
+@keyframes statusPulse {
+  50% {
+    box-shadow: 0 0 0 7px rgba(99, 205, 161, 0.03), 0 0 18px rgba(99, 205, 161, 0.72);
+  }
+}
+
+.login-visual-footer {
+  position: absolute;
+  z-index: 5;
+  bottom: 25px;
+  left: 9%;
+  right: 9%;
+  text-align: center;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.login-visual-footer b {
+  margin: 0 8px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================================================
+   RIGHT FORM PANEL (STATIC, CLEAN OFFICIAL WEBSITE STYLE — ZERO HOVER EFFECTS)
+   ========================================================================== */
+
+.login-form-panel {
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.railway-authority {
+  min-height: 98px;
+  border-bottom: 1px solid #dfe4e7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 7%;
+  box-sizing: border-box;
+  gap: 16px;
+}
+
+.railway-symbol {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  flex: none;
+}
+
+.authority-titles {
+  flex: 1;
+}
+
+.railway-authority strong,
+.railway-authority span {
+  display: block;
+}
+
+.railway-authority strong {
+  font-size: 15.5px;
+  letter-spacing: 0.06em;
+  color: #1e3a5f;
+  font-weight: 800;
+}
+
+.railway-authority span {
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+.ashoka-chakra-symbol {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+  flex: none;
+  filter: contrast(1.08) brightness(1.02) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+
+.login-form-inner {
+  width: min(490px, 88%);
+  margin: auto;
+  padding: 20px 0;
+}
+
+.login-welcome-hero {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.login-welcome-hero .welcome-subtext {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+/* REVERTED TO SOLID CRISP OFFICIAL MARS BRANDING */
+.login-welcome-hero .highlight-mars-brand {
+  display: block;
+  color: #b91c1c;
+  font-size: 52px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  background: none;
+  -webkit-text-fill-color: initial;
+}
+
+/* STATIC FORM HEADING — ZERO HOVER EFFECTS */
+.login-heading-centered {
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: default;
+  user-select: none;
+}
+
+.heading-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.heading-title-row .heading-line {
+  display: inline-block;
+  width: 44px;
+  height: 2px;
+  background: #94a3b8;
+  flex-shrink: 0;
+}
+
+.heading-title-row h1 {
+  margin: 0;
+  color: #0f2942;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.login-heading-centered p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 8px 0 0;
+  letter-spacing: 0.02em;
+}
+
+.login-heading-centered p .highlight-mars {
+  color: #0284c7;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.login-heading-centered:hover p {
+  color: #334155;
+}
+
+.login-form {
+  margin: 0;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1e293b;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.field-label input,
+.field-label select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 46px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 7px;
+  margin-top: 4px;
+  padding: 0 14px;
+  color: #0f172a;
+  background: #f8fafc;
+  font-size: 14.5px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.field-label input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.field-label input:hover,
+.field-label select:hover {
+  border-color: #94a3b8;
+  background: #ffffff;
+}
+
+.field-label input:focus,
+.field-label select:focus {
+  border-color: #0284c7;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
+}
+
+.password-field {
+  display: flex;
+  margin-top: 4px;
+}
+
+.password-field input {
+  margin-top: 0;
+  border-radius: 7px 0 0 7px;
+}
+
+.password-field button {
+  width: 72px;
+  height: 46px;
+  border: 1.5px solid #cbd5e1;
+  border-left: 0;
+  border-radius: 0 7px 7px 0;
+  background: #f1f5f9;
+  color: #0284c7;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.password-field button:hover {
+  background: #e2e8f0;
+  color: #0369a1;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 6px 0 14px;
+  font-size: 12.5px;
+  color: #475569;
+}
+
+.form-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+}
+
+.form-options input {
+  width: 17px;
+  height: 17px;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+.form-options button {
+  border: 0;
+  background: none;
+  color: #0284c7;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.form-options button:hover {
+  color: #0369a1;
+  text-decoration: underline;
+}
+
+/* Clean Formal Government Login Button */
+.login-button {
+  height: 48px;
+  width: 100%;
+  border: 0;
+  border-radius: 7px;
+  background: #0f2942;
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 12px rgba(15, 41, 66, 0.25);
+}
+
+.login-button:hover {
+  background: #1e3a5f;
+}
+
+.login-button:active {
+  background: #091c28;
+}
+
+/* Prominent Red Note for Judges */
+.login-judge-banner {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.login-judge-banner .judge-badge {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #b91c1c;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.login-judge-banner .judge-note-text {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #dc2626;
+}
+
+.login-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 9px 14px;
+  font-size: 12px;
+  border-radius: 6px;
+  margin: -4px 0 12px;
+}
+
+.login-footer {
+  min-height: 46px;
+  border-top: 1px solid #d8dfe3;
+  padding: 0 7%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.login-footer span {
+  color: #60727e;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 900px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-visual-panel {
+    min-height: 470px;
+  }
+
+  .login-form-panel {
+    min-height: auto;
+  }
+
+  .login-form-inner {
+    margin: 0 auto;
+    padding: 42px 0;
+  }
+
+  .railway-authority {
+    padding: 0 7%;
+  }
+}
+
+@media (max-width: 560px) {
+  .login-visual-panel {
+    min-height: 400px;
+  }
+
+  .login-mars-hero {
+    left: 25px;
+    right: 25px;
+  }
+
+  .mars-brand-symbol-centered {
+    width: 65px;
+    height: 65px;
+  }
+
+  .topo-char {
+    font-size: 54px;
+  }
+
+  .mars-full-form {
+    font-size: 6px;
+    letter-spacing: 0.12em;
+    white-space: normal;
+    line-height: 1.4;
+  }
+
+  .mars-status {
+    font-size: 6px;
+  }
+
+  .railway-authority {
+    min-height: 76px;
+    padding: 0 22px;
+  }
+
+  .railway-symbol {
+    width: 40px;
+    height: 40px;
+  }
+
+  .railway-authority strong {
+    font-size: 10px;
+  }
+
+  .railway-authority span {
+    font-size: 7px;
+  }
+
+  .login-form-inner {
+    width: calc(100% - 44px);
+    padding: 32px 0;
+  }
+
+  .login-heading-centered h1 {
+    font-size: 22px;
+  }
+
+  .login-heading-centered .heading-line {
+    width: 25px;
+    margin: 0 7px 6px;
+  }
+
+  .login-footer {
+    justify-content: center;
+    font-size: 6px;
+    padding: 0 15px;
+  }
+
+  .login-footer span {
+    display: none;
+  }
+}

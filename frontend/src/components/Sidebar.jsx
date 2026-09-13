@@ -17,9 +17,6 @@ const plannerItems = [
   { to: '/what-if', icon: SlidersHorizontal, label: 'What-If Simulator' },
   { to: '/compliance', icon: ShieldCheck, label: 'Compliance & Safety' },
   { to: '/integration', icon: Database, label: 'BDMS Integration' },
-  { to: '/impact', icon: BarChart3, label: 'Impact & Reports' },
-  { to: '/system-status', icon: Zap, label: 'System Status' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 const deptItems = {
@@ -30,7 +27,6 @@ const deptItems = {
     { key: 'assets', icon: Map, label: 'Asset & Corridor', children: [{ to: '/dept/engineering/assets', label: 'Asset Risk' }, { to: '/corridor', label: 'Corridor Map' }] },
     { key: 'coordination', icon: Link2, label: 'Coordination', children: [{ to: '/dept/engineering/shared-blocks', label: 'Shared Blocks' }, { to: '/dept/engineering/dependencies', label: 'Dependencies' }] },
     { key: 'safety', icon: ShieldCheck, label: 'Safety & Compliance', children: [{ to: '/dept/engineering/tsr', label: 'TSR & Safety' }, { to: '/dept/engineering/heavy-machine', label: 'Heavy Machine Work' }] },
-    { to: '/impact', icon: BarChart3, label: 'Impact & Reports' }, { to: '/system-status', icon: Zap, label: 'System Status' },
   ],
   snt: [
     { to: '/dept/snt', icon: Home, label: 'Home', end: true },
@@ -39,7 +35,6 @@ const deptItems = {
     { key: 'snt-assets', icon: Map, label: 'Signalling & Telecom Assets', children: [{ to: '/dept/snt/assets', label: 'Asset Risk' }, { to: '/dept/snt/assets/signals', label: 'Signal Assets' }, { to: '/dept/snt/assets/telecom', label: 'Telecom Assets' }] },
     { key: 'snt-coordination', icon: Link2, label: 'Coordination', children: [{ to: '/dept/snt/shared-blocks', label: 'Shared Blocks' }, { to: '/dept/snt/dependencies', label: 'Dependencies' }, { to: '/dept/snt/engineering-coordination', label: 'Engineering Coordination' }] },
     { key: 'snt-safety', icon: ShieldCheck, label: 'Safety & Compliance', children: [{ to: '/dept/snt/tsr', label: 'Interlocking / Signal Safety' }, { to: '/dept/snt/testing', label: 'Testing & Restoration' }] },
-    { to: '/impact', icon: BarChart3, label: 'Impact & Reports' }, { to: '/system-status', icon: Zap, label: 'System Status' },
   ],
   traction: [
     { to: '/dept/traction', icon: Home, label: 'Home', end: true },
@@ -48,7 +43,6 @@ const deptItems = {
     { key: 'traction-assets', icon: Zap, label: 'Traction Assets', children: [{ to: '/dept/traction/assets', label: 'Asset Risk' }, { to: '/dept/traction/assets/ohe', label: 'OHE Assets' }, { to: '/dept/traction/assets/power', label: 'Power Supply / Isolation' }] },
     { key: 'traction-coordination', icon: Link2, label: 'Coordination', children: [{ to: '/dept/traction/shared-blocks', label: 'Shared Blocks' }, { to: '/dept/traction/dependencies', label: 'Dependencies' }, { to: '/dept/traction/engineering-coordination', label: 'Engineering Coordination' }, { to: '/dept/traction/snt-coordination', label: 'S&T Coordination' }] },
     { key: 'traction-safety', icon: ShieldCheck, label: 'Safety & Compliance', children: [{ to: '/dept/traction/ohe-safety', label: 'OHE / Power Block Safety' }, { to: '/dept/traction/isolation', label: 'Isolation & Restoration' }] },
-    { to: '/impact', icon: BarChart3, label: 'Impact & Reports' }, { to: '/system-status', icon: Zap, label: 'System Status' },
   ],
 };
 

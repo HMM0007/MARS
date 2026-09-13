@@ -1,0 +1,3598 @@
+[
+  {
+    "transaction_id": "MARS-BDMS-441FD6206685312C",
+    "idempotency_key": "441fd6206685312c20ad227d025f586a798bf48e0d0d90f5e3b9bf10e49e9f64",
+    "created_at": "2026-09-13T20:17:31.344014+00:00",
+    "source_system": "MARS_2.0",
+    "approval_id": "APPR-R25-Sr. DOM Pune",
+    "plan_version": "v25.0",
+    "planning_week": 1,
+    "status": "ACCEPTED",
+    "bdms_reference": "BDMS-SANDBOX-441FD6206685",
+    "request": {
+      "source_system": "MARS_2.0",
+      "adapter_version": "bdms-outbound-adapter-v1",
+      "division": "Pune Division (CR)",
+      "planning_week": 1,
+      "plan_version": "v25.0",
+      "approval_id": "APPR-R25-Sr. DOM Pune",
+      "idempotency_key": "441fd6206685312c20ad227d025f586a798bf48e0d0d90f5e3b9bf10e49e9f64",
+      "request_type": "CREATE_OR_UPDATE_BLOCK_PLAN",
+      "blocks": [
+        {
+          "block_reference": "BLK-W1-001",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T03:15:00",
+          "job_ids": [
+            "ENG-1047"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-002",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T02:30:00",
+          "job_ids": [
+            "ENG-1086"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-003",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-17T23:00:00",
+          "to_time": "2026-09-18T03:00:00",
+          "job_ids": [
+            "ENG-1141"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-004",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T00:00:00",
+          "to_time": "2026-09-19T01:00:00",
+          "job_ids": [
+            "SNT-862"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-005",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T01:45:00",
+          "to_time": "2026-09-19T04:15:00",
+          "job_ids": [
+            "ENG-1118"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-006",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1099"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-007",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:30:00",
+          "job_ids": [
+            "ENG-1123"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-008",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T07:15:00",
+          "job_ids": [
+            "TRC-368"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-009",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-14T23:00:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1063"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-010",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-15T23:00:00",
+          "to_time": "2026-09-16T02:30:00",
+          "job_ids": [
+            "ENG-1087"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-011",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-DN",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1074"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-012",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-17T04:15:00",
+          "to_time": "2026-09-17T06:45:00",
+          "job_ids": [
+            "TRC-410"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-013",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-18T00:15:00",
+          "to_time": "2026-09-18T03:45:00",
+          "job_ids": [
+            "ENG-1149"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-014",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1049"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-015",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:00:00",
+          "job_ids": [
+            "ENG-1079"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-016",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-14T00:15:00",
+          "to_time": "2026-09-14T03:15:00",
+          "job_ids": [
+            "ENG-1089"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-017",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-14T23:15:00",
+          "to_time": "2026-09-15T02:45:00",
+          "job_ids": [
+            "ENG-1091"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-018",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1113"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-019",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-18T00:15:00",
+          "to_time": "2026-09-18T04:15:00",
+          "job_ids": [
+            "ENG-1066"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-020",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-18T23:00:00",
+          "to_time": "2026-09-19T01:30:00",
+          "job_ids": [
+            "ENG-1095"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-021",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T07:45:00",
+          "job_ids": [
+            "ENG-1094"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-022",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T00:30:00",
+          "job_ids": [
+            "SNT-890"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-023",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1103"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-024",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T02:00:00",
+          "to_time": "2026-09-14T06:00:00",
+          "job_ids": [
+            "ENG-1001"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-025",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T10:30:00",
+          "to_time": "2026-09-14T12:30:00",
+          "job_ids": [
+            "TRC-332"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-026",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T04:15:00",
+          "job_ids": [
+            "ENG-1022"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-027",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-16T00:15:00",
+          "to_time": "2026-09-16T04:15:00",
+          "job_ids": [
+            "ENG-1020"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-028",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T04:15:00",
+          "job_ids": [
+            "ENG-1024"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-029",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:45:00",
+          "job_ids": [
+            "ENG-1017"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-030",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T01:30:00",
+          "job_ids": [
+            "SNT-PLN-044"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-031",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T00:00:00",
+          "to_time": "2026-09-14T02:00:00",
+          "job_ids": [
+            "SNT-948"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-032",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T23:30:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1056"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-033",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-16T02:15:00",
+          "to_time": "2026-09-16T05:15:00",
+          "job_ids": [
+            "ENG-1106"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-034",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T03:15:00",
+          "job_ids": [
+            "ENG-1127"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-035",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T00:15:00",
+          "to_time": "2026-09-19T03:15:00",
+          "job_ids": [
+            "ENG-1111"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-036",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1107"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-037",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1101"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-038",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T08:15:00",
+          "job_ids": [
+            "ENG-1104"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        }
+      ]
+    },
+    "response": {
+      "status": "ACCEPTED",
+      "message": "BDMS sandbox accepted the approved block plan.",
+      "accepted_block_count": 38,
+      "transport": "LOCAL_BDMS_SANDBOX"
+    }
+  },
+  {
+    "transaction_id": "MARS-BDMS-A77F18DB6FE66880",
+    "idempotency_key": "a77f18db6fe6688002bcf0f2dbec3246cd0c0b002defa986d643f6a9aa28b850",
+    "created_at": "2026-09-13T20:25:03.324521+00:00",
+    "source_system": "MARS_2.0",
+    "approval_id": "APPR-R26-Sr. DOM Pune",
+    "plan_version": "v26.0",
+    "planning_week": 1,
+    "status": "ACCEPTED",
+    "bdms_reference": "BDMS-SANDBOX-A77F18DB6FE6",
+    "request": {
+      "source_system": "MARS_2.0",
+      "adapter_version": "bdms-outbound-adapter-v1",
+      "division": "Pune Division (CR)",
+      "planning_week": 1,
+      "plan_version": "v26.0",
+      "approval_id": "APPR-R26-Sr. DOM Pune",
+      "idempotency_key": "a77f18db6fe6688002bcf0f2dbec3246cd0c0b002defa986d643f6a9aa28b850",
+      "request_type": "CREATE_OR_UPDATE_BLOCK_PLAN",
+      "blocks": [
+        {
+          "block_reference": "BLK-W1-001",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T03:15:00",
+          "job_ids": [
+            "ENG-1047"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-002",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T02:30:00",
+          "job_ids": [
+            "ENG-1086"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-003",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-17T23:00:00",
+          "to_time": "2026-09-18T03:00:00",
+          "job_ids": [
+            "ENG-1141"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-004",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T00:00:00",
+          "to_time": "2026-09-19T01:00:00",
+          "job_ids": [
+            "SNT-862"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-005",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T01:45:00",
+          "to_time": "2026-09-19T04:15:00",
+          "job_ids": [
+            "ENG-1118"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-006",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1099"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-007",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:30:00",
+          "job_ids": [
+            "ENG-1123"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-008",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T07:15:00",
+          "job_ids": [
+            "TRC-368"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-009",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-14T23:00:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1063"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-010",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-15T23:00:00",
+          "to_time": "2026-09-16T02:30:00",
+          "job_ids": [
+            "ENG-1087"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-011",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-DN",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1074"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-012",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-17T04:15:00",
+          "to_time": "2026-09-17T06:45:00",
+          "job_ids": [
+            "TRC-410"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-013",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-18T00:15:00",
+          "to_time": "2026-09-18T03:45:00",
+          "job_ids": [
+            "ENG-1149"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-014",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1049"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-015",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:00:00",
+          "job_ids": [
+            "ENG-1079"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-016",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-14T00:15:00",
+          "to_time": "2026-09-14T03:15:00",
+          "job_ids": [
+            "ENG-1089"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-017",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-14T23:15:00",
+          "to_time": "2026-09-15T02:45:00",
+          "job_ids": [
+            "ENG-1091"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-018",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1113"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-019",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-18T00:15:00",
+          "to_time": "2026-09-18T04:15:00",
+          "job_ids": [
+            "ENG-1066"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-020",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-18T23:00:00",
+          "to_time": "2026-09-19T01:30:00",
+          "job_ids": [
+            "ENG-1095"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-021",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T07:45:00",
+          "job_ids": [
+            "ENG-1094"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-022",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T00:30:00",
+          "job_ids": [
+            "SNT-890"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-023",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1103"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-024",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T02:00:00",
+          "to_time": "2026-09-14T06:00:00",
+          "job_ids": [
+            "ENG-1001"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-025",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T10:30:00",
+          "to_time": "2026-09-14T12:30:00",
+          "job_ids": [
+            "TRC-332"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-026",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T04:15:00",
+          "job_ids": [
+            "ENG-1022"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-027",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-16T00:15:00",
+          "to_time": "2026-09-16T04:15:00",
+          "job_ids": [
+            "ENG-1020"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-028",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T04:15:00",
+          "job_ids": [
+            "ENG-1024"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-029",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:45:00",
+          "job_ids": [
+            "ENG-1017"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-030",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T01:30:00",
+          "job_ids": [
+            "SNT-PLN-044"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-031",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T00:00:00",
+          "to_time": "2026-09-14T02:00:00",
+          "job_ids": [
+            "SNT-948"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-032",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T23:30:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1056"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-033",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-16T02:15:00",
+          "to_time": "2026-09-16T05:15:00",
+          "job_ids": [
+            "ENG-1106"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-034",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T03:15:00",
+          "job_ids": [
+            "ENG-1127"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-035",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T00:15:00",
+          "to_time": "2026-09-19T03:15:00",
+          "job_ids": [
+            "ENG-1111"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-036",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1107"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-037",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1101"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-038",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T08:15:00",
+          "job_ids": [
+            "ENG-1104"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        }
+      ]
+    },
+    "response": {
+      "status": "ACCEPTED",
+      "message": "BDMS sandbox accepted the approved block plan.",
+      "accepted_block_count": 38,
+      "transport": "LOCAL_BDMS_SANDBOX"
+    }
+  },
+  {
+    "transaction_id": "MARS-BDMS-FECD2B2888D019B8",
+    "idempotency_key": "fecd2b2888d019b8094f21d51fa82e6e231a2681ff2565e1f382aa88aa109e63",
+    "created_at": "2026-09-13T20:41:53.639363+00:00",
+    "source_system": "MARS_2.0",
+    "approval_id": "APPR-R26-PLANNER",
+    "plan_version": "v26.0",
+    "planning_week": 1,
+    "status": "ACCEPTED",
+    "bdms_reference": "BDMS-SANDBOX-FECD2B2888D0",
+    "request": {
+      "source_system": "MARS_2.0",
+      "adapter_version": "bdms-outbound-adapter-v1",
+      "division": "Pune Division (CR)",
+      "planning_week": 1,
+      "plan_version": "v26.0",
+      "approval_id": "APPR-R26-PLANNER",
+      "idempotency_key": "fecd2b2888d019b8094f21d51fa82e6e231a2681ff2565e1f382aa88aa109e63",
+      "request_type": "CREATE_OR_UPDATE_BLOCK_PLAN",
+      "blocks": [
+        {
+          "block_reference": "BLK-W1-001",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T03:15:00",
+          "job_ids": [
+            "ENG-1047"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-002",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T02:30:00",
+          "job_ids": [
+            "ENG-1086"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-003",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-17T23:00:00",
+          "to_time": "2026-09-18T03:00:00",
+          "job_ids": [
+            "ENG-1141"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-004",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T00:00:00",
+          "to_time": "2026-09-19T01:00:00",
+          "job_ids": [
+            "SNT-862"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-005",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T01:45:00",
+          "to_time": "2026-09-19T04:15:00",
+          "job_ids": [
+            "ENG-1118"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-006",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1099"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-007",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:30:00",
+          "job_ids": [
+            "ENG-1123"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-008",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T07:15:00",
+          "job_ids": [
+            "TRC-368"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-009",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-14T23:00:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1063"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-010",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-15T23:00:00",
+          "to_time": "2026-09-16T02:30:00",
+          "job_ids": [
+            "ENG-1087"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-011",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-DN",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1074"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-012",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-17T04:15:00",
+          "to_time": "2026-09-17T06:45:00",
+          "job_ids": [
+            "TRC-410"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-013",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-18T00:15:00",
+          "to_time": "2026-09-18T03:45:00",
+          "job_ids": [
+            "ENG-1149"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-014",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1049"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-015",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:00:00",
+          "job_ids": [
+            "ENG-1079"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-016",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-14T00:15:00",
+          "to_time": "2026-09-14T03:15:00",
+          "job_ids": [
+            "ENG-1089"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-017",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-14T23:15:00",
+          "to_time": "2026-09-15T02:45:00",
+          "job_ids": [
+            "ENG-1091"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-018",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1113"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-019",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-18T00:15:00",
+          "to_time": "2026-09-18T04:15:00",
+          "job_ids": [
+            "ENG-1066"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-020",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-18T23:00:00",
+          "to_time": "2026-09-19T01:30:00",
+          "job_ids": [
+            "ENG-1095"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-021",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T07:45:00",
+          "job_ids": [
+            "ENG-1094"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-022",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T00:30:00",
+          "job_ids": [
+            "SNT-890"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-023",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1103"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-024",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T02:00:00",
+          "to_time": "2026-09-14T06:00:00",
+          "job_ids": [
+            "ENG-1001"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-025",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T10:30:00",
+          "to_time": "2026-09-14T12:30:00",
+          "job_ids": [
+            "TRC-332"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-026",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T04:15:00",
+          "job_ids": [
+            "ENG-1022"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-027",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-16T00:15:00",
+          "to_time": "2026-09-16T04:15:00",
+          "job_ids": [
+            "ENG-1020"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-028",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T04:15:00",
+          "job_ids": [
+            "ENG-1024"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-029",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:45:00",
+          "job_ids": [
+            "ENG-1017"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-030",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T01:30:00",
+          "job_ids": [
+            "SNT-PLN-044"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-031",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T00:00:00",
+          "to_time": "2026-09-14T02:00:00",
+          "job_ids": [
+            "SNT-948"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-032",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T23:30:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1056"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-033",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-16T02:15:00",
+          "to_time": "2026-09-16T05:15:00",
+          "job_ids": [
+            "ENG-1106"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-034",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T03:15:00",
+          "job_ids": [
+            "ENG-1127"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-035",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T00:15:00",
+          "to_time": "2026-09-19T03:15:00",
+          "job_ids": [
+            "ENG-1111"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-036",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1107"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-037",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1101"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-038",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T08:15:00",
+          "job_ids": [
+            "ENG-1104"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        }
+      ]
+    },
+    "response": {
+      "status": "ACCEPTED",
+      "message": "BDMS sandbox accepted the approved block plan.",
+      "accepted_block_count": 38,
+      "transport": "LOCAL_BDMS_SANDBOX"
+    }
+  },
+  {
+    "transaction_id": "MARS-BDMS-A0A53288E3E9021F",
+    "idempotency_key": "a0a53288e3e9021fabbb406628e37c8de095872230d0750f619e2a302e8b9b75",
+    "created_at": "2026-09-13T20:43:33.148540+00:00",
+    "source_system": "MARS_2.0",
+    "approval_id": "APPR-R26-Sr. DOM Pune",
+    "plan_version": "v26.0",
+    "planning_week": 1,
+    "status": "ACCEPTED",
+    "bdms_reference": "BDMS-SANDBOX-A0A53288E3E9",
+    "request": {
+      "source_system": "MARS_2.0",
+      "adapter_version": "bdms-outbound-adapter-v1",
+      "division": "Pune Division (CR)",
+      "planning_week": 1,
+      "plan_version": "v26.0",
+      "approval_id": "APPR-R26-Sr. DOM Pune",
+      "idempotency_key": "a0a53288e3e9021fabbb406628e37c8de095872230d0750f619e2a302e8b9b75",
+      "request_type": "CREATE_OR_UPDATE_BLOCK_PLAN",
+      "blocks": [
+        {
+          "block_reference": "BLK-W1-001",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-14T00:15:00",
+          "to_time": "2026-09-14T03:15:00",
+          "job_ids": [
+            "ENG-1047"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-002",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-15T01:45:00",
+          "to_time": "2026-09-15T04:15:00",
+          "job_ids": [
+            "ENG-1118"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-003",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T02:30:00",
+          "job_ids": [
+            "ENG-1086"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-004",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-17T23:00:00",
+          "to_time": "2026-09-18T03:00:00",
+          "job_ids": [
+            "ENG-1141"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-005",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T00:00:00",
+          "to_time": "2026-09-19T01:00:00",
+          "job_ids": [
+            "SNT-862"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-006",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1099"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-007",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:30:00",
+          "job_ids": [
+            "ENG-1123"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-008",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T07:15:00",
+          "job_ids": [
+            "TRC-368"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-009",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-14T04:15:00",
+          "to_time": "2026-09-14T06:45:00",
+          "job_ids": [
+            "TRC-410"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-010",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-14T23:00:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1063"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-011",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-15T23:00:00",
+          "to_time": "2026-09-16T02:30:00",
+          "job_ids": [
+            "ENG-1087"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-012",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-DN",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1074"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-013",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-18T23:00:00",
+          "to_time": "2026-09-19T02:30:00",
+          "job_ids": [
+            "ENG-1149"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-014",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1049"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-015",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:00:00",
+          "job_ids": [
+            "ENG-1079"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-016",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-14T00:15:00",
+          "to_time": "2026-09-14T03:15:00",
+          "job_ids": [
+            "ENG-1089"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-017",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-15T23:15:00",
+          "to_time": "2026-09-16T02:45:00",
+          "job_ids": [
+            "ENG-1091"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-018",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1113"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-019",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-17T23:00:00",
+          "to_time": "2026-09-18T01:30:00",
+          "job_ids": [
+            "ENG-1095"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-020",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T00:15:00",
+          "to_time": "2026-09-19T04:15:00",
+          "job_ids": [
+            "ENG-1066"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-021",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T07:45:00",
+          "job_ids": [
+            "ENG-1094"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-022",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T00:30:00",
+          "job_ids": [
+            "SNT-890"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-023",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1103"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-024",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T02:00:00",
+          "to_time": "2026-09-14T06:00:00",
+          "job_ids": [
+            "ENG-1001"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-025",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T04:15:00",
+          "job_ids": [
+            "ENG-1022"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-026",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-16T00:15:00",
+          "to_time": "2026-09-16T04:15:00",
+          "job_ids": [
+            "ENG-1020"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-027",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T04:15:00",
+          "job_ids": [
+            "ENG-1024"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-028",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:45:00",
+          "job_ids": [
+            "ENG-1017"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-029",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-19T08:45:00",
+          "to_time": "2026-09-19T10:45:00",
+          "job_ids": [
+            "TRC-332"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-030",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T01:30:00",
+          "job_ids": [
+            "SNT-PLN-044"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-031",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T00:00:00",
+          "to_time": "2026-09-14T02:00:00",
+          "job_ids": [
+            "SNT-948"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-032",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T23:30:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1056"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-033",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-16T02:00:00",
+          "to_time": "2026-09-16T05:00:00",
+          "job_ids": [
+            "ENG-1106"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-034",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T03:15:00",
+          "job_ids": [
+            "ENG-1127"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-035",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T00:15:00",
+          "to_time": "2026-09-19T03:15:00",
+          "job_ids": [
+            "ENG-1111"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-036",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1107"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-037",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1101"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-038",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T08:15:00",
+          "job_ids": [
+            "ENG-1104"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        }
+      ]
+    },
+    "response": {
+      "status": "ACCEPTED",
+      "message": "BDMS sandbox accepted the approved block plan.",
+      "accepted_block_count": 38,
+      "transport": "LOCAL_BDMS_SANDBOX"
+    }
+  },
+  {
+    "transaction_id": "MARS-BDMS-25350D60EE961DC6",
+    "idempotency_key": "25350d60ee961dc60345f4fd889b770bcbf8972989bd5d639a27305aece3c998",
+    "created_at": "2026-09-13T20:43:53.667963+00:00",
+    "source_system": "MARS_2.0",
+    "approval_id": "APPR-R27-Sr. DOM Pune",
+    "plan_version": "v27.0",
+    "planning_week": 1,
+    "status": "ACCEPTED",
+    "bdms_reference": "BDMS-SANDBOX-25350D60EE96",
+    "request": {
+      "source_system": "MARS_2.0",
+      "adapter_version": "bdms-outbound-adapter-v1",
+      "division": "Pune Division (CR)",
+      "planning_week": 1,
+      "plan_version": "v27.0",
+      "approval_id": "APPR-R27-Sr. DOM Pune",
+      "idempotency_key": "25350d60ee961dc60345f4fd889b770bcbf8972989bd5d639a27305aece3c998",
+      "request_type": "CREATE_OR_UPDATE_BLOCK_PLAN",
+      "blocks": [
+        {
+          "block_reference": "BLK-W1-001",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-14T00:15:00",
+          "to_time": "2026-09-14T03:15:00",
+          "job_ids": [
+            "ENG-1047"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-002",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-15T01:45:00",
+          "to_time": "2026-09-15T04:15:00",
+          "job_ids": [
+            "ENG-1118"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-003",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T02:30:00",
+          "job_ids": [
+            "ENG-1086"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-004",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-17T23:00:00",
+          "to_time": "2026-09-18T03:00:00",
+          "job_ids": [
+            "ENG-1141"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-005",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T00:00:00",
+          "to_time": "2026-09-19T01:00:00",
+          "job_ids": [
+            "SNT-862"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-006",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1099"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-007",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:30:00",
+          "job_ids": [
+            "ENG-1123"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-008",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T07:15:00",
+          "job_ids": [
+            "TRC-368"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-009",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-14T04:15:00",
+          "to_time": "2026-09-14T06:45:00",
+          "job_ids": [
+            "TRC-410"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-010",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-14T23:00:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1063"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-011",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-15T23:00:00",
+          "to_time": "2026-09-16T02:30:00",
+          "job_ids": [
+            "ENG-1087"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-012",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-DN",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1074"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-013",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-18T23:00:00",
+          "to_time": "2026-09-19T02:30:00",
+          "job_ids": [
+            "ENG-1149"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-014",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1049"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-015",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T03:00:00",
+          "job_ids": [
+            "ENG-1079"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-016",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-14T00:15:00",
+          "to_time": "2026-09-14T03:15:00",
+          "job_ids": [
+            "ENG-1089"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-017",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-15T23:15:00",
+          "to_time": "2026-09-16T02:45:00",
+          "job_ids": [
+            "ENG-1091"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-018",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-16T23:00:00",
+          "to_time": "2026-09-17T03:00:00",
+          "job_ids": [
+            "ENG-1113"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-019",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-17T23:00:00",
+          "to_time": "2026-09-18T01:30:00",
+          "job_ids": [
+            "ENG-1095"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-020",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T00:15:00",
+          "to_time": "2026-09-19T04:15:00",
+          "job_ids": [
+            "ENG-1066"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-021",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T07:45:00",
+          "job_ids": [
+            "ENG-1094"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-022",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T00:30:00",
+          "job_ids": [
+            "SNT-890"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-023",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1103"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-024",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-14T02:00:00",
+          "to_time": "2026-09-14T06:00:00",
+          "job_ids": [
+            "ENG-1001"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-025",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-15T00:15:00",
+          "to_time": "2026-09-15T04:15:00",
+          "job_ids": [
+            "ENG-1022"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-026",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-16T00:15:00",
+          "to_time": "2026-09-16T04:15:00",
+          "job_ids": [
+            "ENG-1020"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-027",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T04:15:00",
+          "job_ids": [
+            "ENG-1024"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-028",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:45:00",
+          "job_ids": [
+            "ENG-1017"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-029",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-19T08:45:00",
+          "to_time": "2026-09-19T10:45:00",
+          "job_ids": [
+            "TRC-332"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-030",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T01:30:00",
+          "job_ids": [
+            "SNT-PLN-044"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-031",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T00:00:00",
+          "to_time": "2026-09-14T02:00:00",
+          "job_ids": [
+            "SNT-948"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-032",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-14T23:30:00",
+          "to_time": "2026-09-15T02:30:00",
+          "job_ids": [
+            "ENG-1056"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-033",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-16T02:00:00",
+          "to_time": "2026-09-16T05:00:00",
+          "job_ids": [
+            "ENG-1106"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-034",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-17T00:15:00",
+          "to_time": "2026-09-17T03:15:00",
+          "job_ids": [
+            "ENG-1127"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-035",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T00:15:00",
+          "to_time": "2026-09-19T03:15:00",
+          "job_ids": [
+            "ENG-1111"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-036",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T04:45:00",
+          "to_time": "2026-09-19T08:15:00",
+          "job_ids": [
+            "ENG-1107"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-037",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-19T23:30:00",
+          "to_time": "2026-09-20T02:30:00",
+          "job_ids": [
+            "ENG-1101"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-038",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-20T04:45:00",
+          "to_time": "2026-09-20T08:15:00",
+          "job_ids": [
+            "ENG-1104"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        }
+      ]
+    },
+    "response": {
+      "status": "ACCEPTED",
+      "message": "BDMS sandbox accepted the approved block plan.",
+      "accepted_block_count": 38,
+      "transport": "LOCAL_BDMS_SANDBOX"
+    }
+  },
+  {
+    "transaction_id": "MARS-BDMS-8816F09546C53445",
+    "idempotency_key": "8816f09546c534459e4d3fbcc89465eff14ee082966d0e9a7a96c2cf892df02c",
+    "created_at": "2026-09-13T21:03:59.298626+00:00",
+    "source_system": "MARS_2.0",
+    "approval_id": "APPR-R31-Sr. DOM Pune",
+    "plan_version": "v31.0",
+    "planning_week": 1,
+    "status": "ACCEPTED",
+    "bdms_reference": "BDMS-SANDBOX-8816F09546C5",
+    "request": {
+      "source_system": "MARS_2.0",
+      "adapter_version": "bdms-outbound-adapter-v1",
+      "division": "Pune Division (CR)",
+      "planning_week": 1,
+      "plan_version": "v31.0",
+      "approval_id": "APPR-R31-Sr. DOM Pune",
+      "idempotency_key": "8816f09546c534459e4d3fbcc89465eff14ee082966d0e9a7a96c2cf892df02c",
+      "request_type": "CREATE_OR_UPDATE_BLOCK_PLAN",
+      "blocks": [
+        {
+          "block_reference": "BLK-W1-001",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-07T04:45:00",
+          "to_time": "2026-09-07T08:45:00",
+          "job_ids": [
+            "ENG-1123"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-002",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-10T23:45:00",
+          "to_time": "2026-09-11T03:15:00",
+          "job_ids": [
+            "ENG-1086"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-003",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-11T03:15:00",
+          "to_time": "2026-09-11T04:15:00",
+          "job_ids": [
+            "SNT-862"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-004",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-11T04:45:00",
+          "to_time": "2026-09-11T07:45:00",
+          "job_ids": [
+            "ENG-1047"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-005",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-DN",
+          "from_time": "2026-09-12T02:15:00",
+          "to_time": "2026-09-12T04:45:00",
+          "job_ids": [
+            "TRC-368"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-006",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-12T04:45:00",
+          "to_time": "2026-09-12T07:15:00",
+          "job_ids": [
+            "ENG-1118"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-007",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-13T00:45:00",
+          "to_time": "2026-09-13T04:45:00",
+          "job_ids": [
+            "ENG-1141"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-008",
+          "section": "CWD-YARD",
+          "track": "CWD-YARD-UP",
+          "from_time": "2026-09-13T04:45:00",
+          "to_time": "2026-09-13T08:15:00",
+          "job_ids": [
+            "ENG-1099"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-009",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-07T00:00:00",
+          "to_time": "2026-09-07T02:30:00",
+          "job_ids": [
+            "TRC-410"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-010",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-07T02:30:00",
+          "to_time": "2026-09-07T06:00:00",
+          "job_ids": [
+            "ENG-1149"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-011",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-07T23:00:00",
+          "to_time": "2026-09-08T02:30:00",
+          "job_ids": [
+            "ENG-1049"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-012",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-08T02:30:00",
+          "to_time": "2026-09-08T06:00:00",
+          "job_ids": [
+            "ENG-1063"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-013",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-08T23:00:00",
+          "to_time": "2026-09-09T02:30:00",
+          "job_ids": [
+            "ENG-1087"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-014",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-UP",
+          "from_time": "2026-09-09T02:30:00",
+          "to_time": "2026-09-09T06:00:00",
+          "job_ids": [
+            "ENG-1079"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-015",
+          "section": "LNL-KJT",
+          "track": "LNL-KJT-DN",
+          "from_time": "2026-09-12T23:30:00",
+          "to_time": "2026-09-13T03:30:00",
+          "job_ids": [
+            "ENG-1074"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-016",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-07T00:00:00",
+          "to_time": "2026-09-07T02:30:00",
+          "job_ids": [
+            "ENG-1095"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-017",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-07T02:30:00",
+          "to_time": "2026-09-07T06:30:00",
+          "job_ids": [
+            "ENG-1113"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-018",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-07T23:00:00",
+          "to_time": "2026-09-08T02:00:00",
+          "job_ids": [
+            "ENG-1094"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-019",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-07T23:00:00",
+          "to_time": "2026-09-08T02:00:00",
+          "job_ids": [
+            "ENG-1089"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-020",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-08T02:00:00",
+          "to_time": "2026-09-08T03:00:00",
+          "job_ids": [
+            "SNT-890"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-021",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-UP",
+          "from_time": "2026-09-08T02:00:00",
+          "to_time": "2026-09-08T05:00:00",
+          "job_ids": [
+            "ENG-1103"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-022",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-12T04:45:00",
+          "to_time": "2026-09-12T08:45:00",
+          "job_ids": [
+            "ENG-1066"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-023",
+          "section": "PUNE-DD",
+          "track": "PUNE-DD-DN",
+          "from_time": "2026-09-12T23:45:00",
+          "to_time": "2026-09-13T03:15:00",
+          "job_ids": [
+            "ENG-1091"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-024",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-07T00:45:00",
+          "to_time": "2026-09-07T04:45:00",
+          "job_ids": [
+            "ENG-1017"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-025",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-07T04:45:00",
+          "to_time": "2026-09-07T08:45:00",
+          "job_ids": [
+            "ENG-1022"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-026",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-07T23:00:00",
+          "to_time": "2026-09-08T03:00:00",
+          "job_ids": [
+            "ENG-1020"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-027",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-08T23:00:00",
+          "to_time": "2026-09-09T03:00:00",
+          "job_ids": [
+            "ENG-1024"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-028",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-UP",
+          "from_time": "2026-09-09T23:00:00",
+          "to_time": "2026-09-10T01:00:00",
+          "job_ids": [
+            "ENG-EMG-TEST01",
+            "SNT-PLN-044"
+          ],
+          "departments": [
+            "Engineering",
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-029",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-12T00:00:00",
+          "to_time": "2026-09-12T02:00:00",
+          "job_ids": [
+            "TRC-332"
+          ],
+          "departments": [
+            "Traction"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-030",
+          "section": "PUNE-LNL",
+          "track": "PUNE-LNL-DN",
+          "from_time": "2026-09-12T23:30:00",
+          "to_time": "2026-09-13T03:30:00",
+          "job_ids": [
+            "ENG-1001"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-031",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-07T00:00:00",
+          "to_time": "2026-09-07T02:00:00",
+          "job_ids": [
+            "SNT-948"
+          ],
+          "departments": [
+            "S&T"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-032",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-07T00:00:00",
+          "to_time": "2026-09-07T03:30:00",
+          "job_ids": [
+            "ENG-1104"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-033",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-07T03:30:00",
+          "to_time": "2026-09-07T07:00:00",
+          "job_ids": [
+            "ENG-1107"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-034",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-07T23:00:00",
+          "to_time": "2026-09-08T02:00:00",
+          "job_ids": [
+            "ENG-1111"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-035",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-UP",
+          "from_time": "2026-09-08T02:00:00",
+          "to_time": "2026-09-08T05:00:00",
+          "job_ids": [
+            "ENG-1101"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-036",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-12T01:45:00",
+          "to_time": "2026-09-12T04:45:00",
+          "job_ids": [
+            "ENG-1106"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-037",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-12T04:45:00",
+          "to_time": "2026-09-12T07:45:00",
+          "job_ids": [
+            "ENG-1127"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        },
+        {
+          "block_reference": "BLK-W1-038",
+          "section": "PUNE-MRJ",
+          "track": "PUNE-MRJ-DN",
+          "from_time": "2026-09-12T23:30:00",
+          "to_time": "2026-09-13T02:30:00",
+          "job_ids": [
+            "ENG-1056"
+          ],
+          "departments": [
+            "Engineering"
+          ],
+          "machine_required": null,
+          "power_block_required": false
+        }
+      ]
+    },
+    "response": {
+      "status": "ACCEPTED",
+      "message": "BDMS sandbox accepted the approved block plan.",
+      "accepted_block_count": 38,
+      "transport": "LOCAL_BDMS_SANDBOX"
+    }
+  }
+]

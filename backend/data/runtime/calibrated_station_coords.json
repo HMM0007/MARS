@@ -1,0 +1,155 @@
+[
+  {
+    "code": "PUNE",
+    "name": "Pune Junction",
+    "km": 191.0,
+    "lng": 73.874415,
+    "lat": 18.528877,
+    "category": "Junction",
+    "platforms": 6
+  },
+  {
+    "code": "SVJR",
+    "name": "Shivajinagar",
+    "km": 193.5,
+    "lng": 73.851311,
+    "lat": 18.532591,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "KK",
+    "name": "Khadki",
+    "km": 197.2,
+    "lng": 73.842083,
+    "lat": 18.562262,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "DAPD",
+    "name": "Dapodi",
+    "km": 201.0,
+    "lng": 73.832686,
+    "lat": 18.581447,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "KSWD",
+    "name": "Kasarwadi",
+    "km": 204.1,
+    "lng": 73.820868,
+    "lat": 18.608093,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "PMP",
+    "name": "Pimpri",
+    "km": 207.3,
+    "lng": 73.802512,
+    "lat": 18.622953,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "CWD",
+    "name": "Chinchwad",
+    "km": 210.6,
+    "lng": 73.791713,
+    "lat": 18.640355,
+    "category": "Station",
+    "platforms": 4
+  },
+  {
+    "code": "AKRD",
+    "name": "Akurdi",
+    "km": 214.2,
+    "lng": 73.764716,
+    "lat": 18.648636,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "DEHR",
+    "name": "Dehu Road",
+    "km": 219.8,
+    "lng": 73.734331,
+    "lat": 18.680047,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "BGWI",
+    "name": "Begdewadi",
+    "km": 223.1,
+    "lng": 73.708,
+    "lat": 18.700945,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "GRWD",
+    "name": "Ghorawadi",
+    "km": 226.1,
+    "lng": 73.696204,
+    "lat": 18.721327,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "TGN",
+    "name": "Talegaon",
+    "km": 227.4,
+    "lng": 73.67209,
+    "lat": 18.735106,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "VDN",
+    "name": "Vadgaon",
+    "km": 233.2,
+    "lng": 73.63666,
+    "lat": 18.742587,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "KNHE",
+    "name": "Kanhe",
+    "km": 237.2,
+    "lng": 73.594046,
+    "lat": 18.762097,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "KMST",
+    "name": "Kamshet",
+    "km": 240.0,
+    "lng": 73.552432,
+    "lat": 18.766937,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "MVL",
+    "name": "Malavli",
+    "km": 248.5,
+    "lng": 73.480164,
+    "lat": 18.744214,
+    "category": "Station",
+    "platforms": 2
+  },
+  {
+    "code": "LNL",
+    "name": "Lonavala",
+    "km": 254.84,
+    "lng": 73.406944,
+    "lat": 18.750369,
+    "category": "Terminus",
+    "platforms": 3
+  }
+]

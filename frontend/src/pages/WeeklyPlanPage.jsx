@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, CalendarDays, CheckCircle2, Filter, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { fetchAllScoredJobs, fetchWeeklyPlan, fetchCOATimetable, fetchPendingWeeklyRevision } from '../services/api';
+import { fetchAllScoredJobs, fetchWeeklyPlan, fetchFreshWeeklyPlan, approveWeeklyPlan, fetchCOATimetable, fetchPendingWeeklyRevision } from '../services/api';
+import { Sparkles } from 'lucide-react';
 import UnifiedGantt from '../components/UnifiedGantt';
 import ExplainabilityModal from '../components/ExplainabilityModal';
 import PlannerRevisionReview from '../components/PlannerRevisionReview';
@@ -73,7 +74,39 @@ export default function WeeklyPlanPage({ currentRole }) {
   return (
     <main className="min-h-full bg-[#F4F6F8] p-3.5 font-sans text-[#1F2933]">
       <div className="mx-auto max-w-[1800px] space-y-3">
-        <header className="rounded-md border border-[#D6DEE6] bg-white shadow-sm"><div className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:justify-between"><div><div className="flex flex-wrap items-center gap-2"><CalendarDays className="h-5 w-5 text-[#1E3A5F]" /><h1 className="text-lg font-black uppercase tracking-wide text-[#1E3A5F]">Weekly Plan</h1><span className="rounded border border-[#1E3A5F]/20 bg-[#1E3A5F]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#1E3A5F]">7-Day Tactical Schedule</span></div><p className="mt-1 text-[10px] text-[#718294]">Pune Division • Approved baseline {baseline} • Planner scheduling workspace</p></div><div className="flex flex-wrap items-center gap-2"><div className={`flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-[10px] font-bold uppercase ${conflicts ? 'border-[#C92A2A]/25 bg-[#C92A2A]/5 text-[#C92A2A]' : 'border-[#2F9E44]/25 bg-[#2F9E44]/5 text-[#2F9E44]'}`}>{conflicts ? <AlertCircle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}{conflicts ? `${conflicts} conflict${conflicts === 1 ? '' : 's'}` : 'No conflicts'}</div><div className="rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-1.5 text-[10px] font-bold uppercase text-[#52606D]">Status: <span className="font-mono text-[#1E3A5F]">{loading ? '—' : status}</span></div><button type="button" onClick={loadData} disabled={loading} className="flex items-center gap-1.5 rounded bg-[#1E3A5F] px-3 py-1.5 text-[10px] font-bold text-white hover:bg-[#2F6F7E] disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh</button></div></div></header>
+        <header className="rounded-md border border-[#D6DEE6] bg-white shadow-sm">
+          <div className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-[#1E3A5F]" />
+                <h1 className="text-lg font-black uppercase tracking-wide text-[#1E3A5F]">Weekly Plan</h1>
+                <span className="rounded border border-[#1E3A5F]/20 bg-[#1E3A5F]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#1E3A5F]">
+                  7-Day Tactical Schedule • Approved baseline {baseline}
+                </span>
+              </div>
+              <p className="mt-1 text-[10px] text-[#718294]">
+                Pune Division • Official tactical possession schedule • Train conflict clearance verified
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className={`flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-[10px] font-bold uppercase ${conflicts ? 'border-[#C92A2A]/25 bg-[#C92A2A]/5 text-[#C92A2A]' : 'border-[#2F9E44]/25 bg-[#2F9E44]/5 text-[#2F9E44]'}`}>
+                {conflicts ? <AlertCircle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                {conflicts ? `${conflicts} conflict${conflicts === 1 ? '' : 's'}` : 'No conflicts'}
+              </div>
+              <div className="rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-1.5 text-[10px] font-bold uppercase text-[#52606D]">
+                Status: <span className="font-mono text-[#1E3A5F]">{loading ? '—' : status}</span>
+              </div>
+              <button
+                type="button"
+                onClick={loadData}
+                disabled={loading}
+                className="flex items-center gap-1.5 rounded border border-[#D6DEE6] bg-[#FAFBFC] px-3 py-1.5 text-[10px] font-bold text-[#1E3A5F] hover:bg-[#EEF2F5] disabled:opacity-50"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+              </button>
+            </div>
+          </div>
+        </header>
 
         {error && <div className="rounded border border-[#C92A2A]/25 bg-[#C92A2A]/5 px-3 py-2 text-[10px] font-semibold text-[#C92A2A]"><AlertCircle className="mr-1.5 inline h-3.5 w-3.5" />{error}</div>}
         {pendingRevision && <PlannerRevisionReview currentRole={currentRole} />}

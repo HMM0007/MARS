@@ -16,7 +16,7 @@ const roles = [
   { id: 'traction', name: 'Traction Officer', shortName: 'Sr. DEE (TRD)', badge: 'T', dept: 'Traction / OHE' },
 ];
 
-export default function Header({ selectedDivision, selectedRole, onDivisionChange, onRoleChange }) {
+export default function Header({ selectedDivision, selectedRole, onDivisionChange, onRoleChange, onLogout }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [now, setNow] = useState(new Date());
 
@@ -223,66 +223,58 @@ export default function Header({ selectedDivision, selectedRole, onDivisionChang
               </div>
             </button>
 
-            {/* Dropdown for Role and Division Selection */}
+            {/* Dropdown displaying only the logged-in user role & logout */}
             {userMenuOpen && (
               <div
                 className="absolute right-0 top-12 z-[100] w-72 overflow-hidden rounded-lg border border-[#CAD4DF] bg-white text-[#17345C] shadow-2xl animate-in fade-in zoom-in-95 duration-100"
               >
-                <div className="border-b border-[#E3E9F0] bg-[#F4F7FB] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#5A6E82]">
-                  Switch Role / Persona
-                </div>
-                <div className="py-1">
-                  {roles.map((r) => {
-                    const isSelected = r.id === currentRole?.id;
-                    return (
-                      <button
-                        key={r.id}
-                        type="button"
-                        onClick={() => {
-                          onRoleChange?.(r);
-                          setUserMenuOpen(false);
-                        }}
-                        className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors ${isSelected ? 'bg-[#EEF5FF] text-[#0A4EA3] font-bold' : 'hover:bg-[#F2F6FA]'
-                          }`}
-                      >
-                        <div className="min-w-0">
-                          <div>{r.name}</div>
-                          <div className="text-[10px] text-[#718294] font-normal">{r.dept}</div>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="flex h-5 w-5 items-center justify-center rounded bg-[#E4ECF7] font-mono text-[10px] font-bold text-[#0A4EA3]">
-                            {r.badge}
-                          </span>
-                          {isSelected && <Check className="h-3.5 w-3.5 text-[#0A4EA3]" />}
-                        </div>
-                      </button>
-                    );
-                  })}
+                {/* Active Session Header */}
+                <div className="border-b border-[#E3E9F0] bg-[#F4F7FB] px-3.5 py-2 flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#5A6E82]">
+                    Authorised Official Session
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-[#15803d]">
+                    <span className="h-2 w-2 rounded-full bg-[#22c55e] animate-pulse" />
+                    ACTIVE
+                  </span>
                 </div>
 
-                <div className="border-t border-[#E3E9F0] bg-[#F4F7FB] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#5A6E82]">
-                  Select Division
+                {/* Current Logged-in User Profile Card */}
+                <div className="p-4 bg-gradient-to-b from-[#F8FAFD] to-white border-b border-[#E3E9F0]">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#D1E3F8] text-[#0A3E87] font-black text-base shadow-sm ring-2 ring-[#0A3E87]/20">
+                      {currentRole?.badge || 'P'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13.5px] font-bold text-[#0F2942] truncate leading-tight">
+                        {currentRole?.name || 'Sr. DOM Pune'}
+                      </div>
+                      <div className="text-[11.5px] font-semibold text-[#0A4EA3] mt-0.5">
+                        {currentRole?.dept || 'Operations Department'}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10.5px] text-[#64748B] mt-1">
+                        <span>Division:</span>
+                        <span className="font-semibold text-[#1E293B]">{currentDivision} (CR)</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="py-1">
-                  {divisions.map((d) => {
-                    const isDivSelected = d.name === currentDivision;
-                    return (
-                      <button
-                        key={d.id}
-                        type="button"
-                        onClick={() => {
-                          onDivisionChange?.(d);
-                          setUserMenuOpen(false);
-                        }}
-                        className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs transition-colors ${isDivSelected ? 'bg-[#EEF5FF] text-[#0A4EA3] font-bold' : 'hover:bg-[#F2F6FA]'
-                          }`}
-                      >
-                        <span>{d.name}</span>
-                        <span className="font-mono text-[10px] text-[#718294]">{d.code}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+
+                {/* Sign Out / Logout Option */}
+                {onLogout && (
+                  <div className="p-2.5 bg-[#FAFBFD]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        onLogout();
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-md py-2 px-3 text-xs font-bold text-[#C92A2A] bg-[#FEF2F2] border border-[#FEE2E2] hover:bg-[#FEE2E2] hover:border-[#FECACA] transition-all shadow-sm"
+                    >
+                      <span>Sign Out to Official Login</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -1,267 +1,532 @@
-/**
- * MARS 2.0 Role-Based Authentication Portal
- * Indian Railways Divisional Control Room Enterprise Login
- * Ministry of Railways | Problem Statement 26027
- */
-
-import { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ShieldCheck,
-  UserCheck,
-  Wrench,
-  Radio,
-  Zap,
-  Lock,
-  ArrowRight,
-  CheckCircle2,
-  Building2,
-} from 'lucide-react';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import './login.css';
 
-const OFFICIAL_ROLES = [
-  {
+export const ROLE_CONFIGS = {
+  'Divisional Planner (Sr. DOM)': {
     id: 'planner',
     login_id: 'planner',
     name: 'Sr. DOM Pune',
-    title: 'Senior Divisional Operations Manager',
-    department: 'Operations (Divisional Control)',
-    badge: 'DOM',
-    color: '#1E3A5F',
-    icon: ShieldCheck,
-    permissions: 'Full Planning, CP-SAT Solver Execution, BDMS Outbound Sanctions',
+    shortName: 'Sr. DOM Pune',
+    dept: 'Operations',
+    departmentLabel: 'Divisional Planner (Sr. DOM)',
+    badge: 'D',
+    employeeId: 'PLAN001',
+    password: 'ir-pune-2026',
     defaultRoute: '/',
   },
-  {
+  'Civil Engineering Dept': {
     id: 'engineering',
     login_id: 'engg',
     name: 'Sr. DEN (Civil)',
-    title: 'Senior Divisional Engineer (P.Way)',
-    department: 'Engineering (Civil Track)',
-    badge: 'ENG',
-    color: '#3B6EA5',
-    icon: Wrench,
-    permissions: 'Track Maintenance Demands, Machine Blocks, TMS Jobs',
+    shortName: 'Sr. DEN (Civil)',
+    dept: 'Civil Engineering',
+    departmentLabel: 'Civil Engineering Dept',
+    badge: 'E',
+    employeeId: 'ENG001',
+    password: 'ir-pune-2026',
     defaultRoute: '/dept/engineering',
   },
-  {
+  'Signalling & Telecom Dept': {
     id: 'snt',
     login_id: 'snt',
     name: 'Sr. DSTE (Signals)',
-    title: 'Senior Divisional Signal & Telecom Engineer',
-    department: 'S&T (Signals & Interlocking)',
-    badge: 'S&T',
-    color: '#2F8F6B',
-    icon: Radio,
-    permissions: 'Signal Head Replacement, Point Machines, SMMS Sync',
+    shortName: 'Sr. DSTE (Signals)',
+    dept: 'Signalling & Telecom',
+    departmentLabel: 'Signalling & Telecom Dept',
+    badge: 'S',
+    employeeId: 'SNT001',
+    password: 'ir-pune-2026',
     defaultRoute: '/dept/snt',
   },
-  {
+  'Traction Distribution Dept': {
     id: 'traction',
     login_id: 'trac',
     name: 'Sr. DEE (TRD)',
-    title: 'Senior Divisional Electrical Engineer',
-    department: 'Traction Distribution (25kV OHE)',
-    badge: 'TRD',
-    color: '#C9842A',
-    icon: Zap,
-    permissions: 'OHE Power Isolation Permits, Wire Replacement, TDMS Jobs',
+    shortName: 'Sr. DEE (TRD)',
+    dept: 'Traction',
+    departmentLabel: 'Traction Distribution Dept',
+    badge: 'T',
+    employeeId: 'TRD001',
+    password: 'ir-pune-2026',
     defaultRoute: '/dept/traction',
   },
-];
+};
 
-const LoginPage = ({ onLoginSuccess }) => {
+/* -------------------------------------------------------------------------- */
+/* 3D Train Loader Component with Smooth Canvas Fade-In / Fade-Out Effects    */
+/* -------------------------------------------------------------------------- */
+function Train3DCanvas() {
+  const mountRef = useRef(null);
+  const trainGroupRef = useRef(null);
+  const particlesRef = useRef(null);
+  const pantographLightRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const container = mountRef.current;
+    if (!container) return;
+
+    const width = container.clientWidth || 480;
+    const height = container.clientHeight || 160;
+
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    } catch (e) {
+      console.warn('WebGL not available for 3D train, continuing in 2D mode', e);
+      setLoading(false);
+      return;
+    }
+
+    // Scene setup
+    const scene = new THREE.Scene();
+
+    // Side-view camera — locked, no parallax so train stays perfectly horizontal
+    const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 1000);
+    camera.position.set(0, 1, 18);
+    camera.lookAt(0, -0.5, 0);
+
+    // WebGL Renderer with High Dynamic Range Tone Mapping
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.5;
+    container.appendChild(renderer.domElement);
+
+    // Cinematic Lighting Setup
+    const ambient = new THREE.AmbientLight(0xffffff, 2.6);
+    scene.add(ambient);
+
+    const keySun = new THREE.DirectionalLight(0xfff7ed, 4.8);
+    keySun.position.set(25, 30, 25);
+    scene.add(keySun);
+
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 3.0);
+    rimLight.position.set(-25, 20, -15);
+    scene.add(rimLight);
+
+    // Locomotive Front Headlamp Spotlight (pointing right along track)
+    const headlight = new THREE.SpotLight(0xfff5ea, 8.0, 45, Math.PI / 6, 0.4);
+    headlight.position.set(8, 0, 2);
+    headlight.target.position.set(25, 0, 2);
+    scene.add(headlight);
+    scene.add(headlight.target);
+
+    // OHE Pantograph Electrical Arc Light (Electric Blue Flicker)
+    const pantoLight = new THREE.PointLight(0x38bdf8, 2.5, 15);
+    pantoLight.position.set(0, 2.5, 0);
+    scene.add(pantoLight);
+    pantographLightRef.current = pantoLight;
+
+    // High-Speed Particle Speedlines
+    const particleCount = 200;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 60;     // X range
+      positions[i + 1] = (Math.random() - 0.5) * 12; // Y range
+      positions[i + 2] = (Math.random() - 0.5) * 20; // Z range
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const pMaterial = new THREE.PointsMaterial({
+      color: 0x93c5fd,
+      size: 0.22,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending
+    });
+
+    const particleSystem = new THREE.Points(geometry, pMaterial);
+    scene.add(particleSystem);
+    particlesRef.current = particleSystem;
+
+    // Load 3D WAP-7 Locomotive GLB Model
+    const loader = new GLTFLoader();
+    const setupLocomotiveModel = (gltf) => {
+      const model = gltf.scene;
+
+      // Hide background tracks/camera/sun so only locomotive is displayed and measured
+      model.traverse((child) => {
+        const name = (child.name || '').toLowerCase();
+        if (name.includes('track') || name.includes('camera') || name.includes('sun')) {
+          child.visible = false;
+        } else if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      // Calculate bounding box strictly of the locomotive
+      const box = new THREE.Box3();
+      model.traverse((child) => {
+        if (child.isMesh && child.visible) {
+          box.expandByObject(child);
+        }
+      });
+
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 44 / maxDim;
+      model.scale.set(scale, scale, scale);
+
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      model.position.set(
+        -center.x * scale,
+        -center.y * scale,
+        -center.z * scale
+      );
+
+      // Rotate model so camera (at +Z) sees the SIDE of the train
+      model.rotation.x = 0;
+      model.rotation.y = 0; // Side profile visible from Z-axis camera
+      model.rotation.z = 0;
+
+      const group = new THREE.Group();
+      group.add(model);
+      scene.add(group);
+      trainGroupRef.current = group;
+      setLoading(false);
+    };
+
+    const glbPath = '/train locomotive .glb';
+    loader.load(
+      glbPath,
+      setupLocomotiveModel,
+      undefined,
+      (err) => {
+        console.warn('Could not load primary GLB path, trying fallback /train_locomotive.glb:', err);
+        loader.load(
+          '/train_locomotive.glb',
+          setupLocomotiveModel,
+          undefined,
+          (err2) => {
+            console.error('3D train model load error:', err2);
+            setLoading(false);
+          }
+        );
+      }
+    );
+
+    // Interactive Mouse Parallax Tracking
+    let mouseX = 0;
+    let mouseY = 0;
+    const onMouseMove = (event) => {
+      const rect = container.getBoundingClientRect();
+      mouseX = ((event.clientX - rect.left) / container.clientWidth - 0.5) * 2;
+      mouseY = ((event.clientY - rect.top) / container.clientHeight - 0.5) * 2;
+    };
+    container.addEventListener('mousemove', onMouseMove);
+
+    // High-Impact Cinematic Animation Loop - Moving in Arrow Direction (LEFT TO RIGHT -->)
+    let animId;
+    let clock = new THREE.Clock();
+    let posX = -24;
+
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
+
+      // 1. Continuous Motion towards RIGHT (-->)
+      posX += 0.055;  // Slowed down from 0.09
+      if (posX > 24) posX = -24;
+
+      // Fade-in as train enters from left, fade-out as it exits right
+      // Wide fade zone (12 units) so effect is clearly visible
+      let alpha = 1.0;
+      if (posX < -12) alpha = (posX + 24) / 12;      // Fade in over first 12 units
+      else if (posX > 12) alpha = (24 - posX) / 12;  // Fade out over last 12 units
+      alpha = Math.max(0, Math.min(1, alpha));
+
+      // Apply to canvas — renderer has alpha:true so background stays transparent
+      if (renderer.domElement) {
+        renderer.domElement.style.opacity = String(alpha);
+      }
+
+      // 2. High-speed rail movement - perfectly horizontal across track, facing right
+      if (trainGroupRef.current) {
+        trainGroupRef.current.position.x = posX;
+        trainGroupRef.current.position.y = -1.2;  // Shifted down slightly
+        trainGroupRef.current.position.z = 0;
+        trainGroupRef.current.rotation.x = 0;
+        trainGroupRef.current.rotation.y = -Math.PI * 0.5;
+        trainGroupRef.current.rotation.z = 0;
+      }
+
+      // 3. Dynamic Pantograph Electrical Arc Flicker
+      if (pantographLightRef.current) {
+        pantographLightRef.current.intensity = Math.random() > 0.82 ? 4.5 : 1.2 + Math.sin(elapsedTime * 10) * 0.8;
+      }
+
+      // 4. Particle Speedlines Stream Effect (blowing backwards towards left)
+      if (particlesRef.current) {
+        const posAttr = particlesRef.current.geometry.attributes.position;
+        const arr = posAttr.array;
+        for (let i = 0; i < particleCount * 3; i += 3) {
+          arr[i] -= 0.45; // High-speed particle stream backwards
+          if (arr[i] < -30) arr[i] = 30;
+        }
+        posAttr.needsUpdate = true;
+      }
+
+      // 5. Camera locked — no drift, pure side view
+      camera.lookAt(0, -0.5, 0);
+
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    const handleResize = () => {
+      if (!container) return;
+      const w = container.clientWidth || 480;
+      const h = container.clientHeight || 160;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      container.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('resize', handleResize);
+      if (renderer.domElement && container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, []);
+
+  return (
+    <div className="train-3d-viewport" ref={mountRef}>
+      {loading && <div className="train-3d-loading">Loading High-Speed Telemetry Viewport…</div>}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main Login Component                                                       */
+/* -------------------------------------------------------------------------- */
+export default function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState(OFFICIAL_ROLES[0]);
-  const [password, setPassword] = useState('ir-pune-2026');
-  const [loggingIn, setLoggingIn] = useState(false);
+  const defaultOption = 'Divisional Planner (Sr. DOM)';
+  const [department, setDepartment] = useState(defaultOption);
+  const [employeeId, setEmployeeId] = useState(ROLE_CONFIGS[defaultOption].employeeId);
+  const [password, setPassword] = useState(ROLE_CONFIGS[defaultOption].password);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = (e) => {
+  // When judge selects a different department, automatically pre-fill credentials
+  const handleDepartmentChange = (selectedDept) => {
+    setDepartment(selectedDept);
+    const config = ROLE_CONFIGS[selectedDept];
+    if (config) {
+      setEmployeeId(config.employeeId);
+      setPassword(config.password);
+    }
+    setError('');
+  };
+
+  const submit = async (e) => {
     e?.preventDefault();
-    setLoggingIn(true);
+    setError('');
+    if (!employeeId.trim() || !password.trim()) {
+      setError('Please enter your Employee ID and password.');
+      return;
+    }
+
+    setSubmitting(true);
+    const roleConfig = ROLE_CONFIGS[department] || ROLE_CONFIGS[defaultOption];
+
     setTimeout(() => {
-      localStorage.setItem('mars_user', JSON.stringify(selectedRole));
-      onLoginSuccess?.(selectedRole);
-      navigate(selectedRole.defaultRoute);
-    }, 400);
+      try {
+        localStorage.setItem('mars_user', JSON.stringify(roleConfig));
+        localStorage.setItem('mars_authenticated', 'true');
+        onLoginSuccess?.(roleConfig);
+        navigate(roleConfig.defaultRoute || '/');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unable to authenticate with MARS backend.');
+      } finally {
+        setSubmitting(false);
+      }
+    }, 450);
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex flex-col justify-between font-sans select-none">
-      {/* Institutional Top Header */}
-      <header className="bg-[#1E3A5F] text-white px-6 py-3 border-b border-[#13263E] shadow-sm flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 bg-white rounded flex items-center justify-center shadow-xs">
-            <span className="text-[#1E3A5F] font-bold text-sm tracking-wider">IR</span>
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-base tracking-wide">MARS 2.0</span>
-              <span className="text-[#D6DEE6] text-xs">|</span>
-              <span className="text-xs text-[#D6DEE6] font-medium tracking-wide">
-                Automatic Block Planning System
-              </span>
+    <div className="login-page">
+      {/* Left Visual Panel - High Contrast, Static Layout */}
+      <section className="login-visual-panel">
+        <img
+          className="login-railway-image"
+          src="/railway-login.jpg"
+          alt="Indian Railways locomotive"
+        />
+        <div className="login-visual-shade" />
+
+        {/* MARS Brand Hero Block */}
+        <div className="login-mars-hero">
+          <div className="mars-brand-lockup centered-lockup">
+            {/* Official Indian Railways Emblem Centered Above MARS */}
+            <img
+              src="/railway-symbol.png"
+              alt="Indian Railways symbol"
+              className="mars-brand-symbol-centered"
+            />
+
+            <div className="mars-brand-copy centered-copy">
+              <div className="mars-lettering-wrap">
+                {/* Official Clean High-Trust MARS Brand Title */}
+                <h1 className="mars-gov-title" aria-label="MARS">MARS</h1>
+                <div className="mars-gov-tricolor-divider" />
+
+                {/* Continuous 3D Train Viewport */}
+                <div className="mars-under-track-container">
+                  <Train3DCanvas />
+                </div>
+              </div>
+
+              <div className="mars-full-form">
+                MAINTENANCE ALLOCATION &amp; ROUTING SYSTEM<br />
+                परिरक्षण वाटप और मार्गनियोजन प्रणाली
+              </div>
             </div>
-            <p className="text-[11px] text-[#D6DEE6]/80">
-              Ministry of Railways, Government of India • Central Railway, Pune Division
-            </p>
+          </div>
+
+          <div className="mars-status centered-status">
+            <span /> भारतीय रेल · INDIAN RAILWAYS DIVISIONAL OPERATIONS
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 text-xs font-mono bg-[#13263E] px-3 py-1.5 rounded border border-white/10">
-          <Building2 className="w-3.5 h-3.5 text-[#2F6F7E]" />
-          <span>Divisional Control Office (DCO) Portal</span>
+        <div className="login-visual-footer">
+          MINISTRY OF RAILWAYS <b>·</b> GOVERNMENT OF INDIA
         </div>
-      </header>
+      </section>
 
-      {/* Main Login Interface */}
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-4xl bg-white border border-[#D6DEE6] rounded-md shadow-lg overflow-hidden flex flex-col md:flex-row">
-          {/* Left Column: Role Selector & System Identity */}
-          <div className="md:w-3/5 p-6 bg-[#F4F6F8] border-b md:border-b-0 md:border-r border-[#D6DEE6] flex flex-col justify-between">
-            <div>
-              <span className="text-[10px] font-bold text-[#1E3A5F] uppercase tracking-wider bg-[#1E3A5F]/10 px-2 py-0.5 rounded">
-                Operational Access Protocol
-              </span>
-              <h2 className="text-xl font-black text-[#1F2933] uppercase mt-2 tracking-tight">
-                Select Operational Role
-              </h2>
-              <p className="text-xs text-[#52606D] mt-1">
-                Choose your divisional authority persona to load departmental job queues,
-                safety clearance thresholds, and sanction powers.
-              </p>
+      {/* Right Form Panel - Clean Official Government Style */}
+      <section className="login-form-panel">
+        <div className="railway-authority">
+          <img
+            src="/railway-symbol.png"
+            alt="Indian Railways symbol"
+            className="railway-symbol"
+          />
+          <div className="authority-titles">
+            <strong>MINISTRY OF RAILWAYS · रेल मंत्रालय</strong>
+            <span>Government of India · भारत सरकार</span>
+          </div>
+          <img
+            src="/emblem.png"
+            alt="State Emblem of India"
+            className="ashoka-chakra-symbol"
+          />
+        </div>
 
-              {/* 4 Interactive Persona Cards */}
-              <div className="mt-4 space-y-2.5">
-                {OFFICIAL_ROLES.map((role) => {
-                  const Icon = role.icon;
-                  const isSelected = selectedRole.id === role.id;
-
-                  return (
-                    <div
-                      key={role.id}
-                      onClick={() => setSelectedRole(role)}
-                      className={`p-3 rounded border transition-all cursor-pointer flex items-start space-x-3 ${
-                        isSelected
-                          ? 'bg-white border-[#1E3A5F] shadow-sm ring-1 ring-[#1E3A5F]'
-                          : 'bg-white/60 border-[#D6DEE6] hover:bg-white hover:border-[#52606D]'
-                      }`}
-                    >
-                      <div
-                        className="w-8 h-8 rounded flex items-center justify-center text-white flex-shrink-0 mt-0.5"
-                        style={{ backgroundColor: role.color }}
-                      >
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#1F2933]">
-                            {role.name}
-                          </span>
-                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-[#D6DEE6] text-[#1F2933]">
-                            {role.badge}
-                          </span>
-                        </div>
-                        <p className="text-[11px] font-medium text-[#52606D] truncate">
-                          {role.title}
-                        </p>
-                        <p className="text-[10px] text-[#2F6F7E] font-mono mt-0.5 truncate">
-                          {role.permissions}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-[#D6DEE6] text-[10px] text-[#52606D] flex items-center justify-between">
-              <span>Security Level: Divisional Authorized User</span>
-              <span className="font-mono font-bold text-[#2F9E44]">● 256-BIT ENCRYPTION</span>
-            </div>
+        <div className="login-form-inner">
+          {/* Stacked Welcome Header */}
+          <div className="login-welcome-hero">
+            <span className="welcome-subtext">WELCOME TO</span>
+            <div className="highlight-mars-brand">MARS</div>
           </div>
 
-          {/* Right Column: Authentication Form */}
-          <div className="md:w-2/5 p-6 flex flex-col justify-between bg-white">
-            <div>
-              <div className="flex items-center space-x-2 text-[#1E3A5F] mb-4">
-                <UserCheck className="w-5 h-5" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">
-                  Secure Sign-In
-                </h3>
-              </div>
+          {/* Form Section Title */}
+          <div className="login-heading-centered">
+            <div className="heading-title-row">
+              <span className="heading-line" />
+              <h1>OFFICIAL SYSTEM ACCESS</h1>
+              <span className="heading-line" />
+            </div>
+            <p>Authorised credentials required for MARS operations</p>
+          </div>
 
-              <form onSubmit={handleLogin} className="space-y-4">
-                {/* Active Role Indicator */}
-                <div className="bg-[#F4F6F8] p-2.5 rounded border border-[#D6DEE6]">
-                  <span className="text-[10px] font-bold text-[#52606D] uppercase">
-                    Active Operational Identity
-                  </span>
-                  <p className="text-xs font-bold text-[#1E3A5F] mt-0.5">
-                    {selectedRole.name}
-                  </p>
-                  <p className="text-[10px] text-[#52606D]">
-                    {selectedRole.department}
-                  </p>
-                </div>
+          <form className="login-form" onSubmit={submit}>
+            <label className="field-label">
+              DEPARTMENT / ROLE
+              <select
+                value={department}
+                onChange={e => handleDepartmentChange(e.target.value)}
+              >
+                <option value="Divisional Planner (Sr. DOM)">Divisional Planner (Sr. DOM)</option>
+                <option value="Civil Engineering Dept">Civil Engineering Dept</option>
+                <option value="Signalling & Telecom Dept">Signalling &amp; Telecom Dept</option>
+                <option value="Traction Distribution Dept">Traction Distribution Dept</option>
+              </select>
+            </label>
 
-                {/* Login ID Input */}
-                <div>
-                  <label className="block text-[11px] font-bold text-[#52606D] uppercase mb-1">
-                    Railway Employee / Login ID
-                  </label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={selectedRole.login_id}
-                    className="w-full text-xs font-mono bg-[#F4F6F8] border border-[#D6DEE6] rounded px-3 py-2 text-[#1F2933] cursor-not-allowed focus:outline-none"
-                  />
-                </div>
+            <label className="field-label">
+              EMPLOYEE ID
+              <input
+                value={employeeId}
+                onChange={e => setEmployeeId(e.target.value)}
+                placeholder="Enter Official Employee ID"
+                autoComplete="username"
+              />
+            </label>
 
-                {/* Access PIN / Passcode Input */}
-                <div>
-                  <label className="block text-[11px] font-bold text-[#52606D] uppercase mb-1">
-                    Passcode / Divisional Token
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full text-xs font-mono bg-white border border-[#D6DEE6] rounded px-3 py-2 text-[#1F2933] focus:outline-none focus:border-[#1E3A5F]"
-                    />
-                    <Lock className="w-3.5 h-3.5 text-[#52606D] absolute right-3 top-2.5" />
-                  </div>
-                  <span className="text-[10px] text-[#52606D] mt-1 block font-mono">
-                    Default token: ir-pune-2026
-                  </span>
-                </div>
-
-                {/* Submit Sign-In Button */}
-                <button
-                  type="submit"
-                  disabled={loggingIn}
-                  className="w-full flex items-center justify-center space-x-2 py-2.5 bg-[#1E3A5F] hover:bg-[#2F6F7E] text-white rounded text-xs font-bold uppercase tracking-wider transition-colors shadow-xs disabled:opacity-60"
-                >
-                  <span>{loggingIn ? 'Authenticating...' : 'Enter Control Room'}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+            <label className="field-label">
+              PASSWORD
+              <span className="password-field">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter Password"
+                  autoComplete="current-password"
+                />
+                <button type="button" onClick={() => setShowPassword(v => !v)}>
+                  {showPassword ? 'HIDE' : 'SHOW'}
                 </button>
-              </form>
+              </span>
+            </label>
+
+            <div className="form-options">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={e => setRemember(e.target.checked)}
+                />
+                <span>Remember this device</span>
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  setError('Please contact your Divisional System Administrator for password recovery.')
+                }
+              >
+                Forgot Password?
+              </button>
             </div>
 
-            <div className="pt-4 border-t border-[#D6DEE6] text-center text-[10px] text-[#52606D]">
-              <p>Indian Railways CRIS Network Access</p>
-              <p className="font-mono mt-0.5">Central Railway • Pune Division Control</p>
+            {error && <div className="login-error" role="alert">{error}</div>}
+
+            <button className="login-button" type="submit" disabled={submitting}>
+              <span>{submitting ? 'AUTHENTICATING…' : 'AUTHORISED LOGIN'}</span>
+            </button>
+
+            {/* Red Note for Judges */}
+            <div className="login-judge-banner">
+              <span className="judge-badge">DEMO INSTRUCTION FOR JUDGES</span>
+              <p className="judge-note-text">
+                * Select the role and login to see prototype.
+              </p>
             </div>
-          </div>
+          </form>
         </div>
-      </main>
 
-      {/* Institutional Footer */}
-      <footer className="bg-white border-t border-[#D6DEE6] py-2.5 px-6 text-center text-[11px] text-[#52606D]">
-        MARS 2.0 • Ministry of Railways, Government of India • Smart India Hackathon 2026 (Problem Statement 26027)
-      </footer>
+        <footer className="login-footer">
+          MARS · Ministry of Railways, Government of India{' '}
+          <span>Secure Government Network · IR-NET</span>
+        </footer>
+      </section>
     </div>
   );
-};
-
-export default LoginPage;
+}

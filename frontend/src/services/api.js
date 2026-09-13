@@ -57,6 +57,7 @@ export const fetchAllScoredJobs = () => requestJson(`${BASE_URL}/api/v1/core/job
 export const fetchMonthlyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/monthly`);
 export const fetchWhatIfOptions = () => requestJson(`${BASE_URL}/api/v1/what-if/options`);
 export const simulateWhatIf = (payload) => requestJson(`${BASE_URL}/api/v1/what-if/simulate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+export const promoteWhatIfScenario = (payload) => requestJson(`${BASE_URL}/api/v1/what-if/promote-candidate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
 /**
  * Weekly view is baseline-aware: once a Planner has approved a plan, normal UI
@@ -66,7 +67,20 @@ export const simulateWhatIf = (payload) => requestJson(`${BASE_URL}/api/v1/what-
 export const fetchWeeklyPlan = async () => {
   try {
     const approved = await requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved`);
-    if (approved?.approved && approved.plan) return normalizeWeeklyPlan({ ...approved.plan, baseline_approved: true, baseline_revision: approved.revision });
+    if (approved?.approved && approved.plan) {
+      return normalizeWeeklyPlan({
+        ...approved.plan,
+        baseline_approved: true,
+        baseline_revision: approved.revision,
+        baseline_governance: {
+          mode: 'APPROVED_BASELINE',
+          revision: approved.revision,
+          approved_at: approved.approved_at,
+          approved_by: approved.approved_by,
+          requires_planner_approval: false,
+        },
+      });
+    }
   } catch (err) {
     console.warn('Approved baseline lookup failed; falling back to weekly solver:', err);
   }
@@ -80,6 +94,12 @@ export const fetchApprovedWeeklyPlan = () => requestJson(`${BASE_URL}/api/v1/cor
 export const fetchPendingWeeklyRevision = async () => {
   const data = await requestJson(`${BASE_URL}/api/v1/core/plan/weekly/pending-revision`);
   return data?.pending ? data : null;
+};
+
+export const fetchApprovedPlanHistory = () => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approved-history`);
+export const fetchFreshWeeklyPlan = async (week = 1) => {
+  const data = await requestJson(`${BASE_URL}/api/v1/core/plan/weekly?week=${week}&fresh=true`);
+  return normalizeWeeklyPlan(data);
 };
 
 export const approveWeeklyPlan = (payload) => requestJson(`${BASE_URL}/api/v1/core/plan/weekly/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });

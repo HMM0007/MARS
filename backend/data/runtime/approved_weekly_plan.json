@@ -1,0 +1,2674 @@
+{
+  "approved_at": "2026-09-13T21:33:44.872937+00:00",
+  "approved_by": "PLANNER",
+  "plan": {
+    "baseline_approved": true,
+    "baseline_governance": {
+      "approved_at": "2026-09-13T21:33:44.872937+00:00",
+      "approved_by": "PLANNER",
+      "mode": "APPROVED_BASELINE",
+      "requires_planner_approval": false,
+      "revision": 32
+    },
+    "baseline_revision": 32,
+    "blocks": [
+      {
+        "block_id": "BLK-SIM-001",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-10T07:45:00",
+        "explanation": "Scheduled window Thu 04:45 - Thu 07:45 selected for ENG-1047 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1047"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1047"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-10T04:45:00",
+        "track_id": "CWD-YARD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-002",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-11T03:15:00",
+        "explanation": "Scheduled window Thu 23:45 - Fri 03:15 selected for ENG-1086 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1086"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1086"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-10T23:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-003",
+        "departments": [
+          "S&T"
+        ],
+        "duration_hours": 1,
+        "end_time": "2026-09-11T04:15:00",
+        "explanation": "Scheduled window Fri 03:15 - Fri 04:15 selected for SNT-862 (DIGITAL_AXLE_COUNTER_RESET). AI Priority Score: 48.25. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "SNT-862"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 48.25,
+            "criticality_level": "MEDIUM",
+            "defect_type": "DIGITAL_AXLE_COUNTER_RESET",
+            "department": "S&T",
+            "job_id": "SNT-862"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-11T03:15:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-004",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-11T08:45:00",
+        "explanation": "Scheduled window Fri 04:45 - Fri 08:45 selected for ENG-1123 (BALLAST_DEEP_SCREENING). AI Priority Score: 86.59. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1123"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 86.59,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1123"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-11T04:45:00",
+        "track_id": "CWD-YARD-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-005",
+        "departments": [
+          "Traction"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-12T04:45:00",
+        "explanation": "Scheduled window Sat 02:15 - Sat 04:45 selected for TRC-368 (NEUTRAL_SECTION_INSULATOR). AI Priority Score: 93.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "TRC-368"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 93.45,
+            "criticality_level": "CRITICAL",
+            "defect_type": "NEUTRAL_SECTION_INSULATOR",
+            "department": "Traction",
+            "job_id": "TRC-368"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-12T02:15:00",
+        "track_id": "CWD-YARD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-006",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-12T07:15:00",
+        "explanation": "Scheduled window Sat 04:45 - Sat 07:15 selected for ENG-1118 (RAIL_CRACK_USFD). AI Priority Score: 99.56. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1118"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 99.56,
+            "criticality_level": "CRITICAL",
+            "defect_type": "RAIL_CRACK_USFD",
+            "department": "Engineering",
+            "job_id": "ENG-1118"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-12T04:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.9: Post Rail Replacement Speed Recovery (20 -> 45 -> 75 -> 110 km/h)",
+          "profile_name": "TSR_RAIL_REPLACEMENT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 12
+            },
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 5
+            },
+            {
+              "duration_hours": 18,
+              "max_speed_kmh": 75,
+              "stage": 3,
+              "train_padding_mins": 2
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-007",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-13T04:45:00",
+        "explanation": "Scheduled window Sun 00:45 - Sun 04:45 selected for ENG-1141 (BALLAST_DEEP_SCREENING). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1141"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1141"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-13T00:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-008",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-13T08:15:00",
+        "explanation": "Scheduled window Sun 04:45 - Sun 08:15 selected for ENG-1099 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1099"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1099"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-13T04:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-009",
+        "departments": [
+          "Traction"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-07T02:30:00",
+        "explanation": "Scheduled window Mon 00:00 - Mon 02:30 selected for TRC-410 (NEUTRAL_SECTION_INSULATOR). AI Priority Score: 96.69. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "TRC-410"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 96.69,
+            "criticality_level": "CRITICAL",
+            "defect_type": "NEUTRAL_SECTION_INSULATOR",
+            "department": "Traction",
+            "job_id": "TRC-410"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-07T00:00:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-010",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-07T06:00:00",
+        "explanation": "Scheduled window Mon 02:30 - Mon 06:00 selected for ENG-1149 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1149"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1149"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-07T02:30:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-011",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-08T02:30:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:30 selected for ENG-1049 (TRACK_GEOMETRY_TGI). AI Priority Score: 86.59. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1049"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 86.59,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1049"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-012",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-08T06:00:00",
+        "explanation": "Scheduled window Tue 02:30 - Tue 06:00 selected for ENG-1063 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1063"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1063"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-08T02:30:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-013",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-09T02:30:00",
+        "explanation": "Scheduled window Tue 23:00 - Wed 02:30 selected for ENG-1087 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1087"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1087"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-08T23:00:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-014",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-09T06:00:00",
+        "explanation": "Scheduled window Wed 02:30 - Wed 06:00 selected for ENG-1079 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1079"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1079"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-09T02:30:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-015",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-13T03:30:00",
+        "explanation": "Scheduled window Sat 23:30 - Sun 03:30 selected for ENG-1074 (BALLAST_DEEP_SCREENING). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1074"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1074"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-12T23:30:00",
+        "track_id": "LNL-KJT-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-016",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-07T02:30:00",
+        "explanation": "Scheduled window Mon 00:00 - Mon 02:30 selected for ENG-1095 (RAIL_CRACK_USFD). AI Priority Score: 100.0. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1095"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 100,
+            "criticality_level": "CRITICAL",
+            "defect_type": "RAIL_CRACK_USFD",
+            "department": "Engineering",
+            "job_id": "ENG-1095"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T00:00:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.9: Post Rail Replacement Speed Recovery (20 -> 45 -> 75 -> 110 km/h)",
+          "profile_name": "TSR_RAIL_REPLACEMENT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 12
+            },
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 5
+            },
+            {
+              "duration_hours": 18,
+              "max_speed_kmh": 75,
+              "stage": 3,
+              "train_padding_mins": 2
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-017",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-07T06:30:00",
+        "explanation": "Scheduled window Mon 02:30 - Mon 06:30 selected for ENG-1113 (BALLAST_DEEP_SCREENING). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1113"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1113"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T02:30:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-018",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T02:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:00 selected for ENG-1094 (TURNOUT_RENEWAL). AI Priority Score: 61.18. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1094"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 61.18,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1094"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-019",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T02:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:00 selected for ENG-1089 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1089"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1089"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-020",
+        "departments": [
+          "S&T"
+        ],
+        "duration_hours": 1,
+        "end_time": "2026-09-08T03:00:00",
+        "explanation": "Scheduled window Tue 02:00 - Tue 03:00 selected for SNT-890 (LED_SIGNAL_HEAD_REPLACEMENT). AI Priority Score: 29.47. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "SNT-890"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 29.47,
+            "criticality_level": "LOW",
+            "defect_type": "LED_SIGNAL_HEAD_REPLACEMENT",
+            "department": "S&T",
+            "job_id": "SNT-890"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-08T02:00:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-021",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T05:00:00",
+        "explanation": "Scheduled window Tue 02:00 - Tue 05:00 selected for ENG-1103 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1103"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1103"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-08T02:00:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-022",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-12T08:45:00",
+        "explanation": "Scheduled window Sat 04:45 - Sat 08:45 selected for ENG-1066 (BALLAST_DEEP_SCREENING). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1066"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1066"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-12T04:45:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-023",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-13T03:15:00",
+        "explanation": "Scheduled window Sat 23:45 - Sun 03:15 selected for ENG-1091 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1091"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1091"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-12T23:45:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-024",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-07T04:45:00",
+        "explanation": "Scheduled window Mon 00:45 - Mon 04:45 selected for ENG-1017 (BALLAST_DEEP_SCREENING). AI Priority Score: 97.47. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1017"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 97.47,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1017"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-07T00:45:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-025",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-07T08:45:00",
+        "explanation": "Scheduled window Mon 04:45 - Mon 08:45 selected for ENG-1022 (BALLAST_DEEP_SCREENING). AI Priority Score: 88.75. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1022"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 88.75,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1022"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-07T04:45:00",
+        "track_id": "PUNE-LNL-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-026",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-08T03:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 03:00 selected for ENG-1020 (BALLAST_DEEP_SCREENING). AI Priority Score: 93.79. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1020"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 93.79,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1020"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-027",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-09T03:00:00",
+        "explanation": "Scheduled window Tue 23:00 - Wed 03:00 selected for ENG-1024 (BALLAST_DEEP_SCREENING). AI Priority Score: 88.75. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1024"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 88.75,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1024"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-08T23:00:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-028",
+        "departments": [
+          "Engineering",
+          "S&T"
+        ],
+        "duration_hours": 2,
+        "end_time": "2026-09-10T01:00:00",
+        "explanation": "Scheduled window Wed 23:00 - Thu 01:00 selected for ENG-EMG-TEST01 (RAIL_CRACK_UFSD). AI Priority Score: 99.74. Train clearance protected with 15-min setup and 15-min clearance buffers. CONSOLIDATED shared possession combining 2 jobs across 2 departments (Engineering, S&T).",
+        "is_consolidated": true,
+        "job_ids": [
+          "ENG-EMG-TEST01",
+          "SNT-PLN-044"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 99.74,
+            "criticality_level": "CRITICAL",
+            "defect_type": "RAIL_CRACK_UFSD",
+            "department": "Engineering",
+            "job_id": "ENG-EMG-TEST01"
+          },
+          {
+            "ai_priority_score": 82.9,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_CIRCUIT_BOND_FAILURE",
+            "department": "S&T",
+            "job_id": "SNT-PLN-044"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-09T23:00:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-029",
+        "departments": [
+          "Traction"
+        ],
+        "duration_hours": 2,
+        "end_time": "2026-09-12T02:00:00",
+        "explanation": "Scheduled window Sat 00:00 - Sat 02:00 selected for TRC-332 (CONTACT_WIRE_STAGGER_ADJUST). AI Priority Score: 91.07. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "TRC-332"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 91.07,
+            "criticality_level": "HIGH",
+            "defect_type": "CONTACT_WIRE_STAGGER_ADJUST",
+            "department": "Traction",
+            "job_id": "TRC-332"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-12T00:00:00",
+        "track_id": "PUNE-LNL-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-030",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-13T03:30:00",
+        "explanation": "Scheduled window Sat 23:30 - Sun 03:30 selected for ENG-1001 (BALLAST_DEEP_SCREENING). AI Priority Score: 88.75. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1001"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 88.75,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1001"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-12T23:30:00",
+        "track_id": "PUNE-LNL-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-031",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-07T03:30:00",
+        "explanation": "Scheduled window Mon 00:00 - Mon 03:30 selected for ENG-1104 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1104"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1104"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-07T00:00:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-032",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-07T07:00:00",
+        "explanation": "Scheduled window Mon 03:30 - Mon 07:00 selected for ENG-1107 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1107"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1107"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-07T03:30:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-033",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T02:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:00 selected for ENG-1111 (TURNOUT_RENEWAL). AI Priority Score: 65.71. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1111"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 65.71,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1111"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-034",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T05:00:00",
+        "explanation": "Scheduled window Tue 02:00 - Tue 05:00 selected for ENG-1101 (TURNOUT_RENEWAL). AI Priority Score: 61.18. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1101"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 61.18,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1101"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-08T02:00:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-035",
+        "departments": [
+          "S&T"
+        ],
+        "duration_hours": 2,
+        "end_time": "2026-09-11T01:45:00",
+        "explanation": "Scheduled window Thu 23:45 - Fri 01:45 selected for SNT-948 (TRACK_CIRCUIT_BOND_FAILURE). AI Priority Score: 81.12. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "SNT-948"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.12,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_CIRCUIT_BOND_FAILURE",
+            "department": "S&T",
+            "job_id": "SNT-948"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-10T23:45:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-036",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-12T04:45:00",
+        "explanation": "Scheduled window Sat 01:45 - Sat 04:45 selected for ENG-1106 (TURNOUT_RENEWAL). AI Priority Score: 65.71. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1106"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 65.71,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1106"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-12T01:45:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-037",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-12T07:45:00",
+        "explanation": "Scheduled window Sat 04:45 - Sat 07:45 selected for ENG-1127 (TURNOUT_RENEWAL). AI Priority Score: 61.18. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1127"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 61.18,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1127"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-12T04:45:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-038",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-13T02:30:00",
+        "explanation": "Scheduled window Sat 23:30 - Sun 02:30 selected for ENG-1056 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1056"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1056"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-12T23:30:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      }
+    ],
+    "contingency_reason": "Contingency plan promoted from What-If simulation: Track Outage (Single Track) on CWD-YARD",
+    "contingency_source": "WHATIF_TRACK_OUTAGE",
+    "deferred_jobs": [],
+    "planning_week": 1,
+    "scenario_name": "Track Outage (Single Track)",
+    "scheduled_blocks": [
+      {
+        "block_id": "BLK-SIM-001",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-10T07:45:00",
+        "explanation": "Scheduled window Thu 04:45 - Thu 07:45 selected for ENG-1047 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1047"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1047"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-10T04:45:00",
+        "track_id": "CWD-YARD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-002",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-11T03:15:00",
+        "explanation": "Scheduled window Thu 23:45 - Fri 03:15 selected for ENG-1086 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1086"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1086"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-10T23:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-003",
+        "departments": [
+          "S&T"
+        ],
+        "duration_hours": 1,
+        "end_time": "2026-09-11T04:15:00",
+        "explanation": "Scheduled window Fri 03:15 - Fri 04:15 selected for SNT-862 (DIGITAL_AXLE_COUNTER_RESET). AI Priority Score: 48.25. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "SNT-862"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 48.25,
+            "criticality_level": "MEDIUM",
+            "defect_type": "DIGITAL_AXLE_COUNTER_RESET",
+            "department": "S&T",
+            "job_id": "SNT-862"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-11T03:15:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-004",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-11T08:45:00",
+        "explanation": "Scheduled window Fri 04:45 - Fri 08:45 selected for ENG-1123 (BALLAST_DEEP_SCREENING). AI Priority Score: 86.59. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1123"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 86.59,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1123"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-11T04:45:00",
+        "track_id": "CWD-YARD-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-005",
+        "departments": [
+          "Traction"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-12T04:45:00",
+        "explanation": "Scheduled window Sat 02:15 - Sat 04:45 selected for TRC-368 (NEUTRAL_SECTION_INSULATOR). AI Priority Score: 93.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "TRC-368"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 93.45,
+            "criticality_level": "CRITICAL",
+            "defect_type": "NEUTRAL_SECTION_INSULATOR",
+            "department": "Traction",
+            "job_id": "TRC-368"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-12T02:15:00",
+        "track_id": "CWD-YARD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-006",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-12T07:15:00",
+        "explanation": "Scheduled window Sat 04:45 - Sat 07:15 selected for ENG-1118 (RAIL_CRACK_USFD). AI Priority Score: 99.56. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1118"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 99.56,
+            "criticality_level": "CRITICAL",
+            "defect_type": "RAIL_CRACK_USFD",
+            "department": "Engineering",
+            "job_id": "ENG-1118"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-12T04:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.9: Post Rail Replacement Speed Recovery (20 -> 45 -> 75 -> 110 km/h)",
+          "profile_name": "TSR_RAIL_REPLACEMENT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 12
+            },
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 5
+            },
+            {
+              "duration_hours": 18,
+              "max_speed_kmh": 75,
+              "stage": 3,
+              "train_padding_mins": 2
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-007",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-13T04:45:00",
+        "explanation": "Scheduled window Sun 00:45 - Sun 04:45 selected for ENG-1141 (BALLAST_DEEP_SCREENING). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1141"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1141"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-13T00:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-008",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-13T08:15:00",
+        "explanation": "Scheduled window Sun 04:45 - Sun 08:15 selected for ENG-1099 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1099"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1099"
+          }
+        ],
+        "section_id": "CWD-YARD",
+        "start_time": "2026-09-13T04:45:00",
+        "track_id": "CWD-YARD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-009",
+        "departments": [
+          "Traction"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-07T02:30:00",
+        "explanation": "Scheduled window Mon 00:00 - Mon 02:30 selected for TRC-410 (NEUTRAL_SECTION_INSULATOR). AI Priority Score: 96.69. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "TRC-410"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 96.69,
+            "criticality_level": "CRITICAL",
+            "defect_type": "NEUTRAL_SECTION_INSULATOR",
+            "department": "Traction",
+            "job_id": "TRC-410"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-07T00:00:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-010",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-07T06:00:00",
+        "explanation": "Scheduled window Mon 02:30 - Mon 06:00 selected for ENG-1149 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1149"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1149"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-07T02:30:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-011",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-08T02:30:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:30 selected for ENG-1049 (TRACK_GEOMETRY_TGI). AI Priority Score: 86.59. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1049"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 86.59,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1049"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-012",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-08T06:00:00",
+        "explanation": "Scheduled window Tue 02:30 - Tue 06:00 selected for ENG-1063 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1063"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1063"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-08T02:30:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-013",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-09T02:30:00",
+        "explanation": "Scheduled window Tue 23:00 - Wed 02:30 selected for ENG-1087 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1087"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1087"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-08T23:00:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-014",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-09T06:00:00",
+        "explanation": "Scheduled window Wed 02:30 - Wed 06:00 selected for ENG-1079 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1079"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1079"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-09T02:30:00",
+        "track_id": "LNL-KJT-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-015",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-13T03:30:00",
+        "explanation": "Scheduled window Sat 23:30 - Sun 03:30 selected for ENG-1074 (BALLAST_DEEP_SCREENING). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1074"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1074"
+          }
+        ],
+        "section_id": "LNL-KJT",
+        "start_time": "2026-09-12T23:30:00",
+        "track_id": "LNL-KJT-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-016",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 2.5,
+        "end_time": "2026-09-07T02:30:00",
+        "explanation": "Scheduled window Mon 00:00 - Mon 02:30 selected for ENG-1095 (RAIL_CRACK_USFD). AI Priority Score: 100.0. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1095"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 100,
+            "criticality_level": "CRITICAL",
+            "defect_type": "RAIL_CRACK_USFD",
+            "department": "Engineering",
+            "job_id": "ENG-1095"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T00:00:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.9: Post Rail Replacement Speed Recovery (20 -> 45 -> 75 -> 110 km/h)",
+          "profile_name": "TSR_RAIL_REPLACEMENT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 12
+            },
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 5
+            },
+            {
+              "duration_hours": 18,
+              "max_speed_kmh": 75,
+              "stage": 3,
+              "train_padding_mins": 2
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-017",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-07T06:30:00",
+        "explanation": "Scheduled window Mon 02:30 - Mon 06:30 selected for ENG-1113 (BALLAST_DEEP_SCREENING). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1113"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1113"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T02:30:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-018",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T02:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:00 selected for ENG-1094 (TURNOUT_RENEWAL). AI Priority Score: 61.18. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1094"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 61.18,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1094"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-019",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T02:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:00 selected for ENG-1089 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1089"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1089"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-020",
+        "departments": [
+          "S&T"
+        ],
+        "duration_hours": 1,
+        "end_time": "2026-09-08T03:00:00",
+        "explanation": "Scheduled window Tue 02:00 - Tue 03:00 selected for SNT-890 (LED_SIGNAL_HEAD_REPLACEMENT). AI Priority Score: 29.47. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "SNT-890"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 29.47,
+            "criticality_level": "LOW",
+            "defect_type": "LED_SIGNAL_HEAD_REPLACEMENT",
+            "department": "S&T",
+            "job_id": "SNT-890"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-08T02:00:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-021",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T05:00:00",
+        "explanation": "Scheduled window Tue 02:00 - Tue 05:00 selected for ENG-1103 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1103"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1103"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-08T02:00:00",
+        "track_id": "PUNE-DD-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-022",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-12T08:45:00",
+        "explanation": "Scheduled window Sat 04:45 - Sat 08:45 selected for ENG-1066 (BALLAST_DEEP_SCREENING). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1066"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1066"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-12T04:45:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-023",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-13T03:15:00",
+        "explanation": "Scheduled window Sat 23:45 - Sun 03:15 selected for ENG-1091 (TRACK_GEOMETRY_TGI). AI Priority Score: 81.45. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1091"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.45,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1091"
+          }
+        ],
+        "section_id": "PUNE-DD",
+        "start_time": "2026-09-12T23:45:00",
+        "track_id": "PUNE-DD-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-024",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-07T04:45:00",
+        "explanation": "Scheduled window Mon 00:45 - Mon 04:45 selected for ENG-1017 (BALLAST_DEEP_SCREENING). AI Priority Score: 97.47. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1017"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 97.47,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1017"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-07T00:45:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-025",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-07T08:45:00",
+        "explanation": "Scheduled window Mon 04:45 - Mon 08:45 selected for ENG-1022 (BALLAST_DEEP_SCREENING). AI Priority Score: 88.75. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1022"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 88.75,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1022"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-07T04:45:00",
+        "track_id": "PUNE-LNL-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-026",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-08T03:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 03:00 selected for ENG-1020 (BALLAST_DEEP_SCREENING). AI Priority Score: 93.79. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1020"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 93.79,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1020"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-027",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-09T03:00:00",
+        "explanation": "Scheduled window Tue 23:00 - Wed 03:00 selected for ENG-1024 (BALLAST_DEEP_SCREENING). AI Priority Score: 88.75. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1024"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 88.75,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1024"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-08T23:00:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-028",
+        "departments": [
+          "Engineering",
+          "S&T"
+        ],
+        "duration_hours": 2,
+        "end_time": "2026-09-10T01:00:00",
+        "explanation": "Scheduled window Wed 23:00 - Thu 01:00 selected for ENG-EMG-TEST01 (RAIL_CRACK_UFSD). AI Priority Score: 99.74. Train clearance protected with 15-min setup and 15-min clearance buffers. CONSOLIDATED shared possession combining 2 jobs across 2 departments (Engineering, S&T).",
+        "is_consolidated": true,
+        "job_ids": [
+          "ENG-EMG-TEST01",
+          "SNT-PLN-044"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 99.74,
+            "criticality_level": "CRITICAL",
+            "defect_type": "RAIL_CRACK_UFSD",
+            "department": "Engineering",
+            "job_id": "ENG-EMG-TEST01"
+          },
+          {
+            "ai_priority_score": 82.9,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_CIRCUIT_BOND_FAILURE",
+            "department": "S&T",
+            "job_id": "SNT-PLN-044"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-09T23:00:00",
+        "track_id": "PUNE-LNL-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-029",
+        "departments": [
+          "Traction"
+        ],
+        "duration_hours": 2,
+        "end_time": "2026-09-12T02:00:00",
+        "explanation": "Scheduled window Sat 00:00 - Sat 02:00 selected for TRC-332 (CONTACT_WIRE_STAGGER_ADJUST). AI Priority Score: 91.07. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "TRC-332"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 91.07,
+            "criticality_level": "HIGH",
+            "defect_type": "CONTACT_WIRE_STAGGER_ADJUST",
+            "department": "Traction",
+            "job_id": "TRC-332"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-12T00:00:00",
+        "track_id": "PUNE-LNL-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-030",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 4,
+        "end_time": "2026-09-13T03:30:00",
+        "explanation": "Scheduled window Sat 23:30 - Sun 03:30 selected for ENG-1001 (BALLAST_DEEP_SCREENING). AI Priority Score: 88.75. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1001"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 88.75,
+            "criticality_level": "HIGH",
+            "defect_type": "BALLAST_DEEP_SCREENING",
+            "department": "Engineering",
+            "job_id": "ENG-1001"
+          }
+        ],
+        "section_id": "PUNE-LNL",
+        "start_time": "2026-09-12T23:30:00",
+        "track_id": "PUNE-LNL-DN",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.8: Ballast Cleaning Machine (BCM) Track Settling Profile",
+          "profile_name": "TSR_DEEP_SCREENING",
+          "recovery_stages": [
+            {
+              "duration_hours": 4,
+              "max_speed_kmh": 20,
+              "stage": 1,
+              "train_padding_mins": 15
+            },
+            {
+              "duration_hours": 8,
+              "max_speed_kmh": 45,
+              "stage": 2,
+              "train_padding_mins": 6
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-031",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-07T03:30:00",
+        "explanation": "Scheduled window Mon 00:00 - Mon 03:30 selected for ENG-1104 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1104"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1104"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-07T00:00:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-032",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3.5,
+        "end_time": "2026-09-07T07:00:00",
+        "explanation": "Scheduled window Mon 03:30 - Mon 07:00 selected for ENG-1107 (TRACK_GEOMETRY_TGI). AI Priority Score: 90.67. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1107"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 90.67,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_GEOMETRY_TGI",
+            "department": "Engineering",
+            "job_id": "ENG-1107"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-07T03:30:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": {
+          "description": "IRPWM Ch.3: CSM Tamping Light Speed Restriction",
+          "profile_name": "TSR_TAMPING_LIGHT",
+          "recovery_stages": [
+            {
+              "duration_hours": 2,
+              "max_speed_kmh": 45,
+              "stage": 1,
+              "train_padding_mins": 4
+            }
+          ]
+        }
+      },
+      {
+        "block_id": "BLK-SIM-033",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T02:00:00",
+        "explanation": "Scheduled window Mon 23:00 - Tue 02:00 selected for ENG-1111 (TURNOUT_RENEWAL). AI Priority Score: 65.71. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1111"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 65.71,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1111"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-07T23:00:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-034",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-08T05:00:00",
+        "explanation": "Scheduled window Tue 02:00 - Tue 05:00 selected for ENG-1101 (TURNOUT_RENEWAL). AI Priority Score: 61.18. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1101"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 61.18,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1101"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-08T02:00:00",
+        "track_id": "PUNE-MRJ-UP",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-035",
+        "departments": [
+          "S&T"
+        ],
+        "duration_hours": 2,
+        "end_time": "2026-09-11T01:45:00",
+        "explanation": "Scheduled window Thu 23:45 - Fri 01:45 selected for SNT-948 (TRACK_CIRCUIT_BOND_FAILURE). AI Priority Score: 81.12. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "SNT-948"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 81.12,
+            "criticality_level": "HIGH",
+            "defect_type": "TRACK_CIRCUIT_BOND_FAILURE",
+            "department": "S&T",
+            "job_id": "SNT-948"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-10T23:45:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-036",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-12T04:45:00",
+        "explanation": "Scheduled window Sat 01:45 - Sat 04:45 selected for ENG-1106 (TURNOUT_RENEWAL). AI Priority Score: 65.71. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1106"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 65.71,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1106"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-12T01:45:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-037",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-12T07:45:00",
+        "explanation": "Scheduled window Sat 04:45 - Sat 07:45 selected for ENG-1127 (TURNOUT_RENEWAL). AI Priority Score: 61.18. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1127"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 61.18,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1127"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-12T04:45:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      },
+      {
+        "block_id": "BLK-SIM-038",
+        "departments": [
+          "Engineering"
+        ],
+        "duration_hours": 3,
+        "end_time": "2026-09-13T02:30:00",
+        "explanation": "Scheduled window Sat 23:30 - Sun 02:30 selected for ENG-1056 (TURNOUT_RENEWAL). AI Priority Score: 56.65. Train clearance protected with 15-min setup and 15-min clearance buffers.",
+        "is_consolidated": false,
+        "job_ids": [
+          "ENG-1056"
+        ],
+        "jobs_detail": [
+          {
+            "ai_priority_score": 56.65,
+            "criticality_level": "MEDIUM",
+            "defect_type": "TURNOUT_RENEWAL",
+            "department": "Engineering",
+            "job_id": "ENG-1056"
+          }
+        ],
+        "section_id": "PUNE-MRJ",
+        "start_time": "2026-09-12T23:30:00",
+        "track_id": "PUNE-MRJ-DN",
+        "tsr_recovery_profile": null
+      }
+    ],
+    "solver_status": "OPTIMAL",
+    "status": "OPTIMAL"
+  },
+  "planning_week": 1,
+  "revision": 32
+}

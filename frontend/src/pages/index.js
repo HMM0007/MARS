@@ -4,3 +4,4 @@
  */
 
 export { default as PlannerDashboard } from './PlannerDashboard';
+export { default as ComplianceSafetyPage } from './ComplianceSafetyPage';

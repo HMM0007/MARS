@@ -1,170 +1,1087 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Activity, LocateFixed, Maximize2, Search, X, MapPinned, TrainFront, ShieldCheck } from 'lucide-react';
-import { PUNE_LNL_STATIONS, getCoordinatesForKm } from '../utils/corridorGeo';
+import {
+  Activity,
+  LocateFixed,
+  Maximize2,
+  Minimize2,
+  Search,
+  X,
+  MapPinned,
+  TrainFront,
+  Compass,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Wrench,
+  Zap,
+  Radio,
+  Clock,
+  ShieldAlert,
+  CheckCircle2,
+  SlidersHorizontal,
+  ZoomIn,
+  ZoomOut
+} from 'lucide-react';
+import {
+  PUNE_LNL_STATIONS,
+  CONNECTED_CORRIDOR_TRACK,
+  getCoordinatesForKm,
+  getCoordinatesRangeForKm
+} from '../utils/corridorGeo';
 
-const CORRIDOR_BOUNDS = [[73.397, 18.515], [73.887, 18.775]];
-const MAP_BOUNDS = [[73.36, 18.48], [73.93, 18.82]];
-const RAILWAY_GEOJSON_URL = `${import.meta.env.BASE_URL || '/'}geojson/pune_lonavala_railways.geojson`;
-const COLORS = { Engineering: '#2F6EA6', 'S&T': '#14866B', Traction: '#C77918', Shared: '#66539A', Deferred: '#6B7785', Pending: '#E06B18' };
+const CORRIDOR_BOUNDS = [[73.37, 18.46], [73.98, 18.79]];
+const MAP_BOUNDS = [[73.20, 18.30], [74.25, 18.98]];
 
-const departmentsOf = (item) => [...new Set((item?.departments || item?.jobs_detail?.map((j) => j.department) || (item?.department ? [item.department] : [])).filter(Boolean))];
-const colorOf = (departments) => departments.length > 1 ? COLORS.Shared : (COLORS[departments[0]] || COLORS.Engineering);
+const CORRIDOR_ARROWS = [
+  { label: '← Towards Mumbai CSMT / Kalyan (Central Railway)', lng: 73.345, lat: 18.756 },
+  { label: 'Towards Daund & Solapur (Central Railway) →', lng: 74.035, lat: 18.514 },
+  { label: 'Towards Satara & Miraj (Central Railway) ↓', lng: 73.895, lat: 18.452 },
+];
 
-function corridorTrackFeatures() {
-  return [
-    { type: 'Feature', properties: { track_id: 'PUNE-LNL-UP', direction: 'UP' }, geometry: { type: 'LineString', coordinates: PUNE_LNL_STATIONS.map((s) => [s.lng, s.lat]) } },
-    { type: 'Feature', properties: { track_id: 'PUNE-LNL-DN', direction: 'DN' }, geometry: { type: 'LineString', coordinates: PUNE_LNL_STATIONS.map((s) => [s.lng + 0.00018, s.lat + 0.00012]) } },
-  ];
-}
-
-function possessionFeature(block) {
-  const details = block.jobs_detail || [];
-  const kms = details.map((j) => Number(j.location_km)).filter(Number.isFinite);
-  const center = Number(block.location_km);
-  const anchor = kms.length ? kms.reduce((a, b) => a + b, 0) / kms.length : (Number.isFinite(center) ? center : 210);
-  const spread = kms.length > 1 ? Math.max(0.18, Math.min(0.90, (Math.max(...kms) - Math.min(...kms)) / 2 + 0.12)) : 0.28;
-  const departments = departmentsOf(block);
-  const status = block.status === 'DEFERRED' ? 'DEFERRED' : 'SCHEDULED';
-  const trackId = block.track_id || details[0]?.track_id || 'PUNE-LNL-UP';
-  return { type: 'Feature', properties: { entity_type: 'BLOCK', block_id: block.block_id || 'BLOCK', color: status === 'DEFERRED' ? COLORS.Deferred : colorOf(departments), status, department: departments.join(' + '), job_count: details.length, track_id: trackId, location_km: anchor, start_km: anchor - spread, end_km: anchor + spread }, geometry: { type: 'LineString', coordinates: [getCoordinatesForKm(anchor - spread, trackId), getCoordinatesForKm(anchor + spread, trackId)] } };
-}
-
-function jobFeature(job) {
-  const km = Number(job.location_km);
-  if (!Number.isFinite(km)) return null;
-  const departments = departmentsOf(job);
-  const status = job.status === 'DEFERRED' ? 'DEFERRED' : 'PENDING';
-  const trackId = job.track_id || 'PUNE-LNL-UP';
-  return { type: 'Feature', properties: { entity_type: 'JOB', job_id: job.job_id || 'JOB', color: status === 'DEFERRED' ? COLORS.Deferred : COLORS.Pending, status, department: departments.join(' + '), location_km: km, track_id: trackId, defect_type: job.defect_type || job.maintenance_type || 'Maintenance', asset_id: job.asset_id || '', criticality: job.criticality_level || job.criticality || '' }, geometry: { type: 'LineString', coordinates: [getCoordinatesForKm(km - 0.18, trackId), getCoordinatesForKm(km + 0.18, trackId)] } };
-}
-
-export default function SatelliteMap({ blocks = [], jobs = [], onOpenExplainability, isFullScreenMode = false, onToggleFullScreen }) {
+export default function SatelliteMap({
+  blocks = [],
+  jobs = [],
+  selectedBlock,
+  onSelectBlock,
+  isFullScreenMode = false,
+  onToggleFullScreen
+}) {
+  const wrapperRef = useRef(null);
   const containerRef = useRef(null);
   const mapRef = useRef(null);
-  const stationLabelRefs = useRef([]);
-  const activityLabelRefs = useRef([]);
+  const markersRef = useRef([]);
+  const workZoneMarkersRef = useRef([]);
   const [loaded, setLoaded] = useState(false);
-  const [mapError, setMapError] = useState(null);
-  const [dept, setDept] = useState('ALL');
-  const [status, setStatus] = useState('ALL');
+  const [isNativeFs, setIsNativeFs] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(10.35);
+  const [selectedDate, setSelectedDate] = useState('2026-09-13');
+  const [selectedDeptFilter, setSelectedDeptFilter] = useState('ALL');
+  const [selectedZone, setSelectedZone] = useState(null);
   const [query, setQuery] = useState('');
-  const [inspection, setInspection] = useState(null);
 
-  const scheduledJobIds = useMemo(() => new Set(blocks.flatMap((b) => b.job_ids || [])), [blocks]);
-  const activityFeatures = useMemo(() => {
-    const blockFeatures = blocks.filter((block) => {
-      const departments = departmentsOf(block);
-      if (dept !== 'ALL' && dept !== 'Shared' && !departments.includes(dept)) return false;
-      if (dept === 'Shared' && departments.length < 2) return false;
-      const blockStatus = block.status === 'DEFERRED' ? 'DEFERRED' : 'SCHEDULED';
-      if (status !== 'ALL' && status !== blockStatus) return false;
-      const text = `${block.block_id || ''} ${(block.job_ids || []).join(' ')} ${(block.jobs_detail || []).map((j) => `${j.asset_id || ''} ${j.defect_type || ''} ${j.location_km || ''}`).join(' ')}`.toLowerCase();
-      return !query || text.includes(query.toLowerCase());
-    }).map(possessionFeature);
-    const jobFeatures = jobs.filter((job) => !scheduledJobIds.has(job.job_id)).map((job) => {
-      const departments = departmentsOf(job);
-      if (dept !== 'ALL' && dept !== 'Shared' && !departments.includes(dept)) return null;
-      if (dept === 'Shared' && departments.length < 2) return null;
-      const jobStatus = job.status === 'DEFERRED' ? 'DEFERRED' : 'PENDING';
-      if (status !== 'ALL' && status !== jobStatus) return null;
-      const text = `${job.job_id || ''} ${job.asset_id || ''} ${job.asset_type || ''} ${job.section_id || ''} ${job.track_id || ''} ${job.defect_type || ''} ${job.location_km || ''}`.toLowerCase();
-      if (query && !text.includes(query.toLowerCase())) return null;
-      return jobFeature(job);
-    }).filter(Boolean);
-    return [...blockFeatures, ...jobFeatures];
-  }, [blocks, jobs, scheduledJobIds, dept, status, query]);
-
-  const counts = useMemo(() => ({ blocks: blocks.length, scheduled: blocks.filter((b) => b.status !== 'DEFERRED').length, deferred: blocks.filter((b) => b.status === 'DEFERRED').length, pending: jobs.filter((j) => !scheduledJobIds.has(j.job_id) && j.status !== 'DEFERRED').length, critical: jobs.filter((j) => (j.criticality_level || j.criticality) === 'CRITICAL').length }), [blocks, jobs, scheduledJobIds]);
-
-  const updateStationLabels = () => {
-    const map = mapRef.current;
-    if (!map) return;
-    stationLabelRefs.current.forEach(({ el, station }) => { const p = map.project([station.lng, station.lat]); el.style.transform = `translate(${p.x}px,${p.y - 14}px) translate(-50%,-100%)`; });
+  // Robust Fullscreen API handler: promotes map element to browser Top Layer or CSS fullscreen
+  const handleToggleFullscreen = () => {
+    const elem = wrapperRef.current;
+    if (!elem) return;
+    const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement || isNativeFs);
+    if (!isFs) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch((err) => {
+          console.warn('requestFullscreen error, activating CSS fullscreen:', err);
+          setIsNativeFs(true);
+          document.body.classList.add('map-fullscreen-active');
+          if (onToggleFullScreen) onToggleFullScreen();
+        });
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else {
+        setIsNativeFs(true);
+        document.body.classList.add('map-fullscreen-active');
+        if (onToggleFullScreen) onToggleFullScreen();
+      }
+    } else {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => { });
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+      setIsNativeFs(false);
+      document.body.classList.remove('map-fullscreen-active');
+      if (onToggleFullScreen && isFullScreenMode) onToggleFullScreen();
+    }
   };
-  const updateActivityLabels = () => {
-    const map = mapRef.current;
-    if (!map) return;
-    activityLabelRefs.current.forEach(({ el }) => el.remove()); activityLabelRefs.current = [];
-    const zoom = map.getZoom();
-    if (zoom < 10.45) return;
-    activityFeatures.forEach((feature, index) => {
-      const coords = feature.geometry.coordinates; const mid = coords[Math.floor(coords.length / 2)]; const p = map.project(mid); const isBlock = feature.properties.entity_type === 'BLOCK'; const critical = !isBlock && feature.properties.criticality === 'CRITICAL';
-      const el = document.createElement('button'); el.type = 'button'; el.textContent = isBlock ? `${feature.properties.block_id}  •  ${feature.properties.job_count || 0} JOBS` : feature.properties.job_id; el.title = isBlock ? `${feature.properties.block_id} • ${feature.properties.status} • ${feature.properties.start_km?.toFixed?.(2) || ''}-${feature.properties.end_km?.toFixed?.(2) || ''} km` : `${feature.properties.job_id} • ${feature.properties.defect_type} • Km ${Number(feature.properties.location_km).toFixed(2)}`;
-      const offset = (index % 3 - 1) * 18; el.style.cssText = `position:absolute;left:0;top:0;z-index:18;pointer-events:auto;transform:translate(${p.x + offset}px,${p.y - (isBlock ? 20 : 15)}px) translate(-50%,-50%);background:${isBlock ? feature.properties.color : '#FFF7ED'};color:${isBlock ? '#FFFFFF' : '#9A3412'};border:2px solid ${feature.properties.color};border-radius:4px;padding:3px 6px;font:800 ${isBlock ? 8 : 7}px/11px Arial,sans-serif;box-shadow:0 2px 5px rgba(0,0,0,.24);white-space:nowrap;cursor:pointer;${critical ? 'box-shadow:0 0 0 2px #B42318,0 2px 6px rgba(0,0,0,.25);' : ''}`;
-      el.addEventListener('click', () => setInspection({ type: 'ACTIVITY', data: feature.properties })); map.getCanvasContainer().appendChild(el); activityLabelRefs.current.push({ el });
-    });
-  };
-  useEffect(() => { const map = mapRef.current; if (!map || !map.isStyleLoaded()) return; const source = map.getSource('operational-activity'); if (source) source.setData({ type: 'FeatureCollection', features: activityFeatures }); requestAnimationFrame(() => updateActivityLabels()); }, [activityFeatures]);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return undefined;
-    const map = new maplibregl.Map({ container: containerRef.current, style: { version: 8, sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, minzoom: 0, maxzoom: 19, attribution: '© OpenStreetMap contributors' } }, layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }] }, center: [73.64, 18.65], zoom: 10.45, minZoom: 10.25, maxZoom: 18, maxBounds: MAP_BOUNDS, maxBoundsViscosity: 1, renderWorldCopies: false, attributionControl: true });
-    mapRef.current = map; map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
-    const refreshLabels = () => { updateStationLabels(); updateActivityLabels(); };
-    const addOperationalLayers = () => {
-      map.addSource('railway', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-      map.addSource('stations-corridor', { type: 'geojson', data: { type: 'FeatureCollection', features: PUNE_LNL_STATIONS.map((s) => ({ type: 'Feature', properties: { code: s.code, name: s.name, km: s.km }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] } })) } });
-      map.addSource('operational-activity', { type: 'geojson', data: { type: 'FeatureCollection', features: activityFeatures } });
-      map.addLayer({ id: 'rail-route-halo', type: 'line', source: 'railway', minzoom: 8.5, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 4.5, 11, 5.5, 14, 7, 18, 9], 'line-opacity': 0.72, 'line-blur': 0.15, 'line-cap': 'round', 'line-join': 'round' } });
-      map.addLayer({ id: 'rail-route-up', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#0B4F8A', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.6, 11, 3.1, 14, 3.9, 18, 5], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } });
-      map.addLayer({ id: 'rail-route-dn', type: 'line', source: 'railway', minzoom: 8.5, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#00838F', 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 2.6, 11, 3.1, 14, 3.9, 18, 5], 'line-opacity': 0.98, 'line-cap': 'round', 'line-join': 'round' } });
-      map.addLayer({ id: 'rail-route-inner-up', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'UP'], paint: { 'line-color': '#8FC4E8', 'line-width': 0.9, 'line-opacity': 0.95, 'line-cap': 'round' } });
-      map.addLayer({ id: 'rail-route-inner-dn', type: 'line', source: 'railway', minzoom: 13, filter: ['==', ['get', 'direction'], 'DN'], paint: { 'line-color': '#8AD8DC', 'line-width': 0.9, 'line-opacity': 0.95, 'line-cap': 'round' } });
-      map.addLayer({ id: 'station-halo', type: 'circle', source: 'stations-corridor', paint: { 'circle-radius': 9, 'circle-color': '#FFFFFF', 'circle-stroke-color': '#173E6C', 'circle-stroke-width': 2.5 } });
-      map.addLayer({ id: 'station-core', type: 'circle', source: 'stations-corridor', paint: { 'circle-radius': 3.5, 'circle-color': '#173E6C' } });
-      map.addLayer({ id: 'station-code', type: 'symbol', source: 'stations-corridor', layout: { 'text-field': ['get', 'code'], 'text-size': 10, 'text-font': ['Open Sans Bold'], 'text-offset': [0, -1.9], 'text-anchor': 'bottom', 'text-allow-overlap': true }, paint: { 'text-color': '#173E6C', 'text-halo-color': '#FFFFFF', 'text-halo-width': 2.5 } });
-      map.addLayer({ id: 'possession-halo', type: 'line', source: 'operational-activity', filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': '#FFFFFF', 'line-width': 17, 'line-opacity': 0.98 } });
-      map.addLayer({ id: 'possession-block', type: 'line', source: 'operational-activity', filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'line-color': ['get', 'color'], 'line-width': 11, 'line-opacity': 0.98 } });
-      map.addLayer({ id: 'possession-endpoints', type: 'circle', source: 'operational-activity', filter: ['==', ['get', 'entity_type'], 'BLOCK'], paint: { 'circle-radius': 5.5, 'circle-color': '#FFFFFF', 'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 2.5 } });
-      map.addLayer({ id: 'job-halo', type: 'line', source: 'operational-activity', filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': '#FFFFFF', 'line-width': 10, 'line-opacity': 1 } });
-      map.addLayer({ id: 'job-marker-line', type: 'line', source: 'operational-activity', filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'line-color': ['get', 'color'], 'line-width': 5.5, 'line-opacity': 1, 'line-dasharray': [0.8, 0.8] } });
-      map.addLayer({ id: 'job-core', type: 'circle', source: 'operational-activity', filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'circle-radius': ['case', ['==', ['get', 'criticality'], 'CRITICAL'], 7, 5.5], 'circle-color': '#FFFFFF', 'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 3 } });
-      map.addLayer({ id: 'job-dot', type: 'circle', source: 'operational-activity', filter: ['==', ['get', 'entity_type'], 'JOB'], paint: { 'circle-radius': 2.5, 'circle-color': ['get', 'color'] } });
-      const inspect = (e) => { const features = map.queryRenderedFeatures(e.point, { layers: ['possession-block', 'job-marker-line', 'job-core'] }); if (features[0]) setInspection({ type: 'ACTIVITY', data: features[0].properties }); };
-      map.on('click', inspect); map.on('move', refreshLabels); map.on('zoom', refreshLabels); map.on('resize', refreshLabels); map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 100, right: 110, bottom: 95, left: 95 }, duration: 0 }); requestAnimationFrame(refreshLabels); setLoaded(true); setMapError(null);
-
-      fetch(RAILWAY_GEOJSON_URL, { cache: 'no-store' })
-        .then((response) => {
-          if (!response.ok) throw new Error(`Railway geometry HTTP ${response.status}`);
-          return response.json();
-        })
-        .then((data) => {
-          const candidates = (data?.features || []).filter((feature) => feature?.geometry?.type === 'LineString' && Array.isArray(feature.geometry.coordinates) && feature.geometry.coordinates.length > 1 && feature.properties?.section_id === 'PUNE-LNL');
-          const directions = new Set(candidates.map((feature) => String(feature.properties?.direction || '').toUpperCase()));
-          if (!directions.has('UP') || !directions.has('DN')) throw new Error('PUNE-LNL UP/DN route geometry not found');
-          const route = candidates.filter((feature) => ['UP', 'DN'].includes(String(feature.properties?.direction || '').toUpperCase())).map((feature) => ({ ...feature, properties: { ...(feature.properties || {}), direction: String(feature.properties.direction).toUpperCase() } }));
-          if (route.length < 2) throw new Error('PUNE-LNL double-line geometry is incomplete');
-          map.getSource('railway')?.setData({ type: 'FeatureCollection', features: route });
-          setMapError(null);
-        })
-        .catch((error) => {
-          console.error('Authoritative PUNE-LNL railway geometry could not be loaded:', error);
-          setMapError('Authoritative Pune–Lonavala railway geometry could not be loaded. The map remains available without a fabricated route.');
-        });
+    const handleFsChange = () => {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      setIsNativeFs(isFs);
+      if (isFs) {
+        document.body.classList.add('map-fullscreen-active');
+      } else {
+        document.body.classList.remove('map-fullscreen-active');
+      }
+      requestAnimationFrame(() => mapRef.current?.resize());
+      setTimeout(() => mapRef.current?.resize(), 50);
+      setTimeout(() => mapRef.current?.resize(), 150);
+      setTimeout(() => mapRef.current?.resize(), 300);
+      setTimeout(() => mapRef.current?.resize(), 500);
     };
-    map.once('load', () => { try { addOperationalLayers(); } catch (error) { console.error('Operational railway layers failed:', error); setMapError(error?.message || 'Railway control-centre layers could not be initialized.'); setLoaded(true); } });
-    const resize = () => map.resize(); window.addEventListener('resize', resize);
-    return () => { stationLabelRefs.current.forEach(({ el }) => el.remove()); activityLabelRefs.current.forEach(({ el }) => el.remove()); stationLabelRefs.current = []; activityLabelRefs.current = []; window.removeEventListener('resize', resize); map.remove(); mapRef.current = null; };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen().catch(() => { });
+        }
+        setIsNativeFs(false);
+        document.body.classList.remove('map-fullscreen-active');
+        if (onToggleFullScreen && isFullScreenMode) onToggleFullScreen();
+        setTimeout(() => mapRef.current?.resize(), 100);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.classList.remove('map-fullscreen-active');
+    };
+  }, [onToggleFullScreen, isFullScreenMode]);
+
+  // Index jobs by job_id for fast lookup
+  const jobsById = useMemo(() => {
+    const map = {};
+    if (Array.isArray(jobs)) {
+      jobs.forEach((j) => {
+        if (j?.job_id) map[j.job_id] = j;
+      });
+    }
+    return map;
+  }, [jobs]);
+
+  // Filter scheduled blocks strictly by selectedDate
+  const dayBlocks = useMemo(() => {
+    if (!Array.isArray(blocks)) return [];
+    return blocks.filter((b) => b.start_time?.startsWith(selectedDate));
+  }, [blocks, selectedDate]);
+
+  // Clustered operational work-zones for the selected date
+  const workZones = useMemo(() => {
+    if (!dayBlocks.length) return [];
+
+    const zones = [];
+
+    dayBlocks.forEach((b) => {
+      const bJobs = (b.job_ids || []).map((id) => jobsById[id]).filter(Boolean);
+      let km = 205;
+      let sectionName = b.section_id || 'Corridor Section';
+
+      if (b.section_id === 'CWD-YARD') {
+        km = 210.6;
+        sectionName = 'Chinchwad Yard';
+      } else if (b.section_id === 'LNL-KJT') {
+        km = 254.84;
+        sectionName = 'Lonavala – Karjat Ghat';
+      } else if (b.section_id === 'PUNE-DD') {
+        km = 191.0;
+        sectionName = 'Pune – Daund Junction';
+      } else if (b.section_id === 'PUNE-MRJ') {
+        km = 191.0;
+        sectionName = 'Pune – Miraj Junction';
+      } else if (bJobs.length > 0 && Number.isFinite(bJobs[0].location_km)) {
+        km = bJobs[0].location_km;
+        let nearest = PUNE_LNL_STATIONS[0];
+        let minDist = 999;
+        PUNE_LNL_STATIONS.forEach((s) => {
+          const d = Math.abs(s.km - km);
+          if (d < minDist) {
+            minDist = d;
+            nearest = s;
+          }
+        });
+        sectionName = `${nearest.name} (${nearest.code})`;
+      }
+
+      // Group blocks that are in the same section or within 2.5 km of each other
+      const existingZone = zones.find(
+        (z) =>
+          Math.abs(z.km - km) <= 2.5 ||
+          (z.sectionId === b.section_id && String(b.section_id).includes('YARD'))
+      );
+
+      const blockDepts = b.departments || bJobs.map((j) => j.department).filter(Boolean);
+
+      if (existingZone) {
+        existingZone.blocks.push({ block: b, jobs: bJobs });
+        blockDepts.forEach((d) => existingZone.departments.add(d));
+        existingZone.minKm = Math.min(existingZone.minKm, km);
+        existingZone.maxKm = Math.max(existingZone.maxKm, km);
+      } else {
+        const deptsSet = new Set(blockDepts);
+        zones.push({
+          id: `zone-${zones.length + 1}`,
+          sectionId: b.section_id,
+          sectionName,
+          km,
+          minKm: km,
+          maxKm: km,
+          trackId: b.track_id,
+          departments: deptsSet,
+          blocks: [{ block: b, jobs: bJobs }]
+        });
+      }
+    });
+
+    // Decorate zones with color codes and primary department styling
+    return zones.map((z) => {
+      const depts = [...z.departments].filter(Boolean);
+      let primaryDept = 'Engineering';
+      let color = '#DC2626'; // Engineering Crimson
+      let glowColor = '#F87171';
+      let bgLight = '#FEF2F2';
+      let borderCol = '#EF4444';
+      let textCol = '#991B1B';
+
+      if (depts.length > 1) {
+        primaryDept = 'Joint Block';
+        color = '#6366F1'; // Multi-dept Indigo
+        glowColor = '#A5B4FC';
+        bgLight = '#EEF2FF';
+        borderCol = '#818CF8';
+        textCol = '#3730A3';
+      } else if (depts.includes('Traction')) {
+        primaryDept = 'Traction';
+        color = '#D97706'; // Traction Amber
+        glowColor = '#FBBF24';
+        bgLight = '#FFFBEB';
+        borderCol = '#F59E0B';
+        textCol = '#92400E';
+      } else if (depts.includes('S&T')) {
+        primaryDept = 'S&T';
+        color = '#059669'; // S&T Emerald
+        glowColor = '#34D399';
+        bgLight = '#ECFDF5';
+        borderCol = '#10B981';
+        textCol = '#065F46';
+      }
+
+      return {
+        ...z,
+        primaryDept,
+        deptList: depts,
+        color,
+        glowColor,
+        bgLight,
+        borderCol,
+        textCol
+      };
+    });
+  }, [dayBlocks, jobsById]);
+
+  // Filtered work zones based on department filter
+  const visibleWorkZones = useMemo(() => {
+    if (selectedDeptFilter === 'ALL') return workZones;
+    return workZones.filter((z) => z.deptList.includes(selectedDeptFilter));
+  }, [workZones, selectedDeptFilter]);
+
+  // Department counts for the selected date
+  const deptCounts = useMemo(() => {
+    const counts = { ALL: dayBlocks.length, Engineering: 0, Traction: 0, 'S&T': 0 };
+    dayBlocks.forEach((b) => {
+      const depts = b.departments || [];
+      if (depts.includes('Engineering')) counts.Engineering++;
+      if (depts.includes('Traction')) counts.Traction++;
+      if (depts.includes('S&T')) counts['S&T']++;
+    });
+    return counts;
+  }, [dayBlocks]);
+
+  // Date formatted display helper
+  const formattedDate = useMemo(() => {
+    try {
+      const d = new Date(selectedDate);
+      return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    } catch {
+      return selectedDate;
+    }
+  }, [selectedDate]);
+
+  const changeDateBy = (days) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + days);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    setSelectedDate(`${yyyy}-${mm}-${dd}`);
+    setSelectedZone(null);
+  };
+
+  // Filter stations based on search query
+  const filteredStations = useMemo(() => {
+    if (!query) return PUNE_LNL_STATIONS;
+    const q = query.toLowerCase();
+    return PUNE_LNL_STATIONS.filter(
+      (s) => s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || String(s.km).includes(q)
+    );
+  }, [query]);
+
+  // Setup MapLibre instance
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return undefined;
+
+    const map = new maplibregl.Map({
+      container: containerRef.current,
+      style: {
+        version: 8,
+        glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            minzoom: 0,
+            maxzoom: 19,
+            attribution: '© OpenStreetMap contributors'
+          }
+        },
+        layers: [{ id: 'osm-base', type: 'raster', source: 'osm' }]
+      },
+      center: [73.66, 18.64],
+      zoom: 10.35,
+      minZoom: 9.2,
+      maxZoom: 18,
+      maxBounds: MAP_BOUNDS,
+      maxBoundsViscosity: 1,
+      renderWorldCopies: false,
+      attributionControl: true
+    });
+    mapRef.current = map;
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), 'bottom-right');
+
+    map.on('zoom', () => {
+      setCurrentZoom(map.getZoom());
+    });
+
+    const addOperationalLayers = () => {
+      if (map.getSource('corridor-blue-track')) return;
+
+      // 1. Authoritative Railway Blue Track Source
+      map.addSource('corridor-blue-track', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: { name: 'Pune–Lonavala Railway Corridor' },
+          geometry: {
+            type: 'LineString',
+            coordinates: CONNECTED_CORRIDOR_TRACK
+          }
+        }
+      });
+
+      // 2. Deep contrast dark outer casing
+      map.addLayer({
+        id: 'corridor-track-casing',
+        type: 'line',
+        source: 'corridor-blue-track',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#0B192C',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 6.0, 11, 8.5, 14, 12.0, 18, 16.0],
+          'line-opacity': 0.95
+        }
+      });
+
+      // 3. Vibrant Blue Corridor Track Line
+      map.addLayer({
+        id: 'corridor-track-blue',
+        type: 'line',
+        source: 'corridor-blue-track',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#2563EB',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 3.8, 11, 5.5, 14, 8.0, 18, 11.5],
+          'line-opacity': 1
+        }
+      });
+
+      // 4. Inner Cyan Highlight Line
+      map.addLayer({
+        id: 'corridor-track-inner',
+        type: 'line',
+        source: 'corridor-blue-track',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#93C5FD',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.2, 11, 1.8, 14, 2.6, 18, 4.0],
+          'line-opacity': 0.9
+        }
+      });
+
+      // 5. Dynamic Work Zones Track Glow Source & Layers
+      map.addSource('corridor-work-zones', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+
+      map.addLayer({
+        id: 'corridor-work-zones-glow',
+        type: 'line',
+        source: 'corridor-work-zones',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': ['get', 'glowColor'],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 8, 12, 14, 16, 20],
+          'line-opacity': 0.65,
+          'line-blur': 2.5
+        }
+      });
+
+      map.addLayer({
+        id: 'corridor-work-zones-line',
+        type: 'line',
+        source: 'corridor-work-zones',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 4.5, 12, 7.0, 16, 10.5],
+          'line-opacity': 0.95
+        }
+      });
+
+      // Directional Corridor Arrows
+      CORRIDOR_ARROWS.forEach((arrow) => {
+        const el = document.createElement('div');
+        el.style.cssText =
+          'background:#0B192C;color:#93C5FD;border:1.5px solid #2563EB;border-radius:4px;padding:3px 8px;font:bold 9px/13px sans-serif;box-shadow:0 2px 6px rgba(0,0,0,0.35);letter-spacing:0.04em;white-space:nowrap;pointer-events:none;';
+        el.textContent = arrow.label;
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([arrow.lng, arrow.lat])
+          .addTo(map);
+        markersRef.current.push(marker);
+      });
+
+      map.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 90, right: 100, bottom: 90, left: 90 }, duration: 0 });
+      setLoaded(true);
+    };
+
+    if (map.isStyleLoaded()) {
+      addOperationalLayers();
+    } else {
+      map.once('load', addOperationalLayers);
+      map.once('styledata', addOperationalLayers);
+    }
+
+    const resize = () => map.resize();
+    window.addEventListener('resize', resize);
+    return () => {
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+      workZoneMarkersRef.current.forEach((m) => m.remove());
+      workZoneMarkersRef.current = [];
+      window.removeEventListener('resize', resize);
+      map.remove();
+      mapRef.current = null;
+    };
   }, []);
 
-  useEffect(() => { const map = mapRef.current; if (!map) return undefined; requestAnimationFrame(() => map.resize()); const a = setTimeout(() => map.resize(), 150); const b = setTimeout(() => map.resize(), 500); return () => { clearTimeout(a); clearTimeout(b); }; }, [isFullScreenMode]);
-  const resetView = () => mapRef.current?.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 100, right: 110, bottom: 95, left: 95 }, duration: 450 });
-  const shell = <div className={`relative overflow-hidden border border-[#C8D2DC] bg-[#DCE5E9] shadow-sm ${isFullScreenMode ? 'fixed inset-0 z-[2147483000] h-screen w-screen rounded-none' : 'h-[calc(100vh-245px)] min-h-[620px] rounded-lg'}`}>
-    <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-    <div className="pointer-events-none absolute left-4 top-4 z-30 rounded-md border border-[#BFCBD6] bg-[#F8FAFC]/96 px-3 py-2 shadow-lg"><div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#52606D]"><Activity className="h-3.5 w-3.5 text-[#173E6C]" /> Central Railway • Operations Control</div><div className="text-sm font-extrabold text-[#102A43]">Pune–Lonavala Double Line</div><div className="text-[10px] font-mono text-[#52606D]">Km 191.00 → 254.84 • UP / DN • 25 kV AC</div></div>
-    <div className="absolute left-4 top-[88px] z-30 flex flex-wrap gap-1 rounded-md border border-[#C7D1DA] bg-white/96 p-1.5 shadow-lg">{['ALL','Engineering','S&T','Traction','Shared'].map((item) => <button key={item} onClick={() => setDept(item)} className={`rounded px-2 py-1 text-[9px] font-bold ${dept === item ? 'bg-[#173E6C] text-white' : 'text-[#52606D] hover:bg-[#EEF3F7]'}`}>{item}</button>)}<span className="mx-0.5 w-px bg-[#D6DEE6]" />{['ALL','SCHEDULED','DEFERRED','PENDING'].map((item) => <button key={item} onClick={() => setStatus(item)} className={`rounded px-2 py-1 text-[9px] font-bold ${status === item ? 'bg-[#0B7189] text-white' : 'text-[#52606D] hover:bg-[#EEF3F7]'}`}>{item}</button>)}</div>
-    <div className="absolute left-4 top-[134px] z-30 w-[300px]"><div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#718294]" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search job, asset, defect, block or chainage" className="h-9 w-full rounded-md border border-[#C7D1DA] bg-white/96 pl-8 pr-8 text-[10px] font-mono shadow-lg outline-none focus:border-[#173E6C]" />{query && <button onClick={() => setQuery('')} className="absolute right-2.5 top-2.5 text-[#718294]"><X className="h-3.5 w-3.5" /></button>}</div></div>
-    <div className="absolute right-4 top-4 z-30 flex gap-2"><button onClick={resetView} className="flex h-9 items-center gap-1.5 rounded-md border border-[#C7D1DA] bg-white px-3 text-[10px] font-bold text-[#173E6C] shadow-lg"><LocateFixed className="h-3.5 w-3.5" />Reset</button><button onClick={onToggleFullScreen} className="flex h-9 items-center gap-1.5 rounded-md border border-[#C7D1DA] bg-white px-3 text-[10px] font-bold text-[#173E6C] shadow-lg"><Maximize2 className="h-3.5 w-3.5" />{isFullScreenMode ? 'Exit' : 'Full Screen'}</button></div>
-    <div className="absolute right-4 top-[88px] z-30 w-[250px] rounded-md border border-[#C7D1DA] bg-[#F8FAFC]/96 px-3 py-2 shadow-lg text-[9px] font-semibold text-[#52606D]"><div className="mb-1 flex items-center gap-1.5 font-bold uppercase tracking-wider text-[#52606D]"><ShieldCheck className="h-3 w-3 text-[#14866B]" />Live operational layers</div><div className="grid grid-cols-2 gap-x-2 gap-y-1"><span><i className="mr-1 inline-block h-2 w-6 rounded bg-[#0B4F8A]" />UP track</span><span><i className="mr-1 inline-block h-2 w-6 rounded bg-[#087F8C]" />DN track</span><span><i className="mr-1 inline-block h-2 w-6 rounded bg-[#2F6EA6]" />Possession</span><span><i className="mr-1 inline-block h-2 w-6 rounded bg-[#E06B18]" />Pending job</span></div></div>
-    <div className="absolute right-4 top-[145px] z-30 grid w-[250px] grid-cols-3 gap-1.5"><div className="rounded border border-[#C7D1DA] bg-white/96 p-2 shadow-md"><div className="text-[8px] font-bold uppercase text-[#7B8794]">Blocks</div><div className="text-base font-extrabold text-[#173E6C]">{counts.blocks}</div></div><div className="rounded border border-[#C7D1DA] bg-white/96 p-2 shadow-md"><div className="text-[8px] font-bold uppercase text-[#7B8794]">Pending</div><div className="text-base font-extrabold text-[#C05621]">{counts.pending}</div></div><div className="rounded border border-[#C7D1DA] bg-white/96 p-2 shadow-md"><div className="text-[8px] font-bold uppercase text-[#7B8794]">Critical</div><div className="text-base font-extrabold text-[#B42318]">{counts.critical}</div></div></div>
-    {!loaded && <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#E9EEF2]/60"><div className="rounded-md border border-[#C7D1DA] bg-white px-4 py-3 text-[10px] font-bold text-[#52606D] shadow">Loading railway control-centre layers…</div></div>}
-    {mapError && <div className="absolute left-4 bottom-24 z-40 max-w-[520px] rounded-md border border-[#F1B6B6] bg-white px-3 py-2 text-[9px] font-semibold text-[#B42318] shadow-lg">{mapError}</div>}
-    {inspection && <aside className="absolute bottom-20 right-4 z-50 w-[350px] rounded-lg border border-[#C7D1DA] bg-white p-3 shadow-2xl"><div className="flex items-start justify-between gap-3"><div><div className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#7B8794]">Maintenance Activity</div><div className="text-sm font-extrabold text-[#173E6C]">{inspection.data.block_id || inspection.data.job_id}</div></div><button onClick={() => setInspection(null)} className="rounded p-1 text-[#718294] hover:bg-[#F4F6F8]"><X className="h-4 w-4" /></button></div><div className="mt-3 space-y-2 text-[10px]"><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Department</div><div className="font-bold">{inspection.data.department || 'Maintenance'}</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Status</div><div className="font-bold">{inspection.data.status || 'PENDING'}</div></div></div><div className="grid grid-cols-2 gap-2"><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Chainage</div><div className="font-mono font-bold">{Number(inspection.data.location_km || 0).toFixed(2)} km</div></div><div className="rounded bg-[#F4F6F8] p-2"><div className="text-[#8796A5]">Track</div><div className="font-mono font-bold">{inspection.data.track_id || 'UP'}</div></div></div><div className="rounded bg-[#FFF7ED] p-2"><div className="text-[#9A3412]">Work / Defect</div><div className="font-bold text-[#7C2D12]">{inspection.data.defect_type || `${inspection.data.job_count || 0} jobs in possession`}</div></div><button onClick={() => onOpenExplainability?.(inspection.data)} className="w-full rounded bg-[#173E6C] px-3 py-2 text-[10px] font-bold text-white">Open Block Details</button></div></aside>}
-    <div className="absolute bottom-4 left-4 z-30 rounded-md border border-[#C7D1DA] bg-white/96 px-3 py-2 shadow-lg text-[9px] font-semibold text-[#52606D]"><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#0B4F8A]" />UP</span><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#087F8C]" />DN</span><span className="mr-3"><i className="mr-1 inline-block h-2 w-7 rounded bg-[#2F6EA6]" />Possession</span><span><i className="mr-1 inline-block h-2 w-7 rounded bg-[#E06B18]" />Job</span><div className="mt-1 text-[8px] font-normal text-[#8796A5]">Authoritative PUNE-LNL railway alignment is highlighted over the geographic basemap.</div></div>
-    <div className="absolute right-4 bottom-4 z-30 rounded-md border border-[#C7D1DA] bg-white/96 px-3 py-2 shadow-lg text-[9px] font-semibold text-[#52606D]"><div className="flex items-center gap-2"><TrainFront className="h-3.5 w-3.5 text-[#B42318]" />Protected train paths remain operational constraints</div><div className="mt-1 flex items-center gap-2"><MapPinned className="h-3.5 w-3.5 text-[#173E6C]" />Stations and blocks follow corridor chainage</div></div>
-  </div>;
-  return isFullScreenMode && typeof document !== 'undefined' ? createPortal(shell, document.body) : shell;
+  // Update station markers with intelligent Level-of-Detail (LOD)
+  // When zoomed out (< 11.4), only key junctions show labels to prevent crowding.
+  // When zoomed in (>= 11.4), all stations display their clear badges.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    markersRef.current.forEach((m) => {
+      if (m._isStationMarker) m.remove();
+    });
+    markersRef.current = markersRef.current.filter((m) => !m._isStationMarker);
+
+    const isZoomedOut = currentZoom < 11.4;
+
+    filteredStations.forEach((s) => {
+      const isHq = s.code === 'PUNE';
+      const isTerminus = s.code === 'LNL';
+      const isMajorJunction = s.code === 'CWD' || s.code === 'TGN';
+      // At low zoom, only show labels for terminal/junctions or if searched
+      const showLabel = !isZoomedOut || isHq || isTerminus || isMajorJunction || Boolean(query);
+
+      const el = document.createElement('div');
+      el.className = 'station-precision-marker';
+      el.style.cssText = 'position:relative;width:0;height:0;cursor:pointer;pointer-events:auto;user-select:none;z-index:15;';
+
+      const dot = document.createElement('div');
+      dot.style.cssText = `position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:${isHq ? '#F59E0B' : isTerminus ? '#EA580C' : '#FFFFFF'
+        };border:2px solid #0B192C;box-shadow:0 0 0 1.5px #2563EB;`;
+
+      if (showLabel) {
+        const badge = document.createElement('div');
+        badge.style.cssText = `position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:${isHq ? '#0B192C' : '#FFFFFF'
+          };color:${isHq ? '#FDE047' : '#0B192C'};border:1.5px solid ${isHq ? '#F59E0B' : '#0B192C'
+          };border-radius:4px;padding:2px 6px;font:800 10px/12px sans-serif;box-shadow:0 2px 5px rgba(0,0,0,0.3);letter-spacing:0.02em;white-space:nowrap;`;
+        badge.textContent = isHq ? `◆ PUNE JN` : isTerminus ? `◆ LONAVALA` : `${s.code} • ${s.name}`;
+        el.appendChild(badge);
+      } else {
+        // Subtle hover tooltip when zoomed out
+        const tip = document.createElement('div');
+        tip.style.cssText =
+          'position:absolute;left:50%;bottom:9px;transform:translateX(-50%);display:none;background:#0B192C;color:#FFFFFF;border-radius:3px;padding:2px 5px;font:800 9px/11px sans-serif;white-space:nowrap;box-shadow:0 2px 5px rgba(0,0,0,0.35);pointer-events:none;z-index:25;';
+        tip.textContent = `${s.code} • ${s.name}`;
+        el.appendChild(tip);
+        el.onmouseenter = () => { tip.style.display = 'block'; };
+        el.onmouseleave = () => { tip.style.display = 'none'; };
+      }
+
+      el.appendChild(dot);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([s.lng, s.lat])
+        .addTo(map);
+
+      marker._isStationMarker = true;
+      markersRef.current.push(marker);
+    });
+  }, [filteredStations, currentZoom, query]);
+
+  // Update Dynamic Work Zones along the railway track strictly for selectedDate
+  // When zoomed out (< 11.4), render compact non-overlapping circular railway tokens.
+  // When zoomed in (>= 11.4), expand to detailed railway possession pill badges.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+
+    // 1. Update GeoJSON curved track highlights
+    const source = map.getSource('corridor-work-zones');
+    if (source) {
+      const features = visibleWorkZones.map((z) => {
+        const startKm = Math.max(191.0, z.minKm - 0.35);
+        const endKm = Math.min(254.84, z.maxKm + 0.35);
+        const coords = getCoordinatesRangeForKm(startKm, endKm, z.trackId);
+        return {
+          type: 'Feature',
+          properties: {
+            id: z.id,
+            color: z.color,
+            glowColor: z.glowColor
+          },
+          geometry: {
+            type: 'LineString',
+            coordinates: coords.length >= 2 ? coords : [getCoordinatesForKm(startKm), getCoordinatesForKm(endKm)]
+          }
+        };
+      });
+      source.setData({ type: 'FeatureCollection', features });
+    }
+
+    // 2. Clear old work zone HTML markers
+    workZoneMarkersRef.current.forEach((m) => m.remove());
+    workZoneMarkersRef.current = [];
+
+    const isZoomedOut = currentZoom < 11.4;
+
+    // 3. Render Level-of-Detail work zone markers
+    visibleWorkZones.forEach((z) => {
+      const centerCoords = getCoordinatesForKm(z.km, z.trackId);
+      const isSelected = selectedZone?.id === z.id;
+      const blockCount = z.blocks.length;
+      const firstBlock = z.blocks[0].block;
+      const firstJob = z.blocks[0].jobs[0];
+
+      const startTimeStr = firstBlock?.start_time ? firstBlock.start_time.slice(11, 16) : '00:00';
+      const endTimeStr = firstBlock?.end_time ? firstBlock.end_time.slice(11, 16) : '04:00';
+      const timeWindow = blockCount === 1 ? `${startTimeStr}–${endTimeStr}` : `${blockCount} Possessions`;
+      const titleLabel = blockCount === 1
+        ? (firstJob?.defect_type || firstBlock?.section_id || 'Maintenance').replace(/_/g, ' ')
+        : `${z.sectionName}`;
+
+      const el = document.createElement('div');
+      el.className = 'railway-possession-marker';
+      el.style.cssText = `position:relative;width:0;height:0;cursor:pointer;pointer-events:auto;user-select:none;z-index:${isSelected ? 20 : 10
+        };`;
+
+      if (isZoomedOut) {
+        // SLEEK COMPACT PLANNER JOB CAPSULE FOR ZOOMED-OUT OVERVIEW
+        // High visibility with zero jargon: shows Department, Time Window, Work Type, and Track
+        const pulseDot = document.createElement('div');
+        pulseDot.style.cssText = `position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:${z.color};border:2px solid #FFFFFF;box-shadow:0 0 6px ${z.glowColor};`;
+
+        const pill = document.createElement('div');
+        const isUp = z.trackId?.includes('UP');
+        const posStyle = isUp ? 'bottom:9px;' : 'top:9px;';
+        pill.style.cssText = `position:absolute;left:50%;${posStyle}transform:translateX(-50%);display:flex;align-items:center;gap:4.5px;background:#FFFFFF;border:1.5px solid ${isSelected ? '#0B192C' : z.borderCol};border-left:3.5px solid ${z.color};border-radius:5px;padding:2px 6px;box-shadow:0 3px 8px rgba(0,0,0,0.26);white-space:nowrap;transition:transform 0.15s ease;`;
+
+        const deptTag = document.createElement('span');
+        deptTag.style.cssText = `font:900 8px/9px sans-serif;letter-spacing:0.03em;background:${z.color};color:#FFFFFF;padding:1.5px 4px;border-radius:2.5px;text-transform:uppercase;`;
+        deptTag.textContent = z.deptList.length > 1 ? `JOINT (${z.deptList.length})` : z.primaryDept.slice(0, 4).toUpperCase();
+
+        const timeSpan = document.createElement('span');
+        timeSpan.style.cssText = 'font:800 9px/11px sans-serif;color:#0B192C;letter-spacing:0.01em;';
+        timeSpan.textContent = timeWindow;
+
+        const taskSpan = document.createElement('span');
+        taskSpan.style.cssText = 'font:600 8px/10px sans-serif;color:#475569;max-width:115px;overflow:hidden;text-overflow:ellipsis;';
+        taskSpan.textContent = titleLabel;
+
+        const trackBadge = document.createElement('span');
+        const trk = z.trackId?.includes('UP') ? 'UP' : z.trackId?.includes('DN') ? 'DN' : 'YD';
+        trackBadge.style.cssText = 'font:800 8px/9px monospace;background:#F1F5F9;color:#334155;border:1px solid #CBD5E1;padding:1px 3.5px;border-radius:2.5px;';
+        trackBadge.textContent = trk;
+
+        pill.appendChild(deptTag);
+        pill.appendChild(timeSpan);
+        pill.appendChild(taskSpan);
+        pill.appendChild(trackBadge);
+
+        el.appendChild(pulseDot);
+        el.appendChild(pill);
+
+        el.onmouseenter = () => {
+          pill.style.transform = 'translateX(-50%) scale(1.06)';
+          pill.style.boxShadow = '0 5px 12px rgba(0,0,0,0.35)';
+        };
+        el.onmouseleave = () => {
+          pill.style.transform = 'translateX(-50%) scale(1)';
+          pill.style.boxShadow = '0 3px 8px rgba(0,0,0,0.26)';
+        };
+      } else {
+        // FULL DETAILED PILL BADGE FOR ZOOMED-IN VIEW
+        const pulseDot = document.createElement('div');
+        pulseDot.style.cssText = `position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:${z.color
+          };border:2px solid #FFFFFF;box-shadow:0 0 10px ${z.color}, 0 0 0 2px ${z.color};`;
+
+        const pill = document.createElement('div');
+        pill.style.cssText = `position:absolute;left:50%;top:11px;transform:translateX(-50%);display:flex;align-items:center;gap:5px;background:#FFFFFF;border:2px solid ${isSelected ? '#0B192C' : z.borderCol
+          };border-radius:6px;padding:3px 7px;box-shadow:0 4px 10px rgba(0,0,0,0.3);white-space:nowrap;transition:transform 0.15s ease;`;
+
+        const deptTag = document.createElement('span');
+        deptTag.style.cssText = `font:900 9px/10px sans-serif;letter-spacing:0.04em;background:${z.color};color:#FFFFFF;padding:2px 5px;border-radius:3px;text-transform:uppercase;`;
+        deptTag.textContent = z.deptList.length > 1 ? `JOINT (${z.deptList.length})` : z.primaryDept.slice(0, 4).toUpperCase();
+
+        const infoSpan = document.createElement('div');
+        infoSpan.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;';
+        infoSpan.innerHTML = `
+          <span style="font:800 10px/12px sans-serif;color:#0B192C;letter-spacing:0.02em;">${timeWindow}</span>
+          <span style="font:600 8.5px/10px sans-serif;color:#475569;max-width:140px;overflow:hidden;text-overflow:ellipsis;">${titleLabel}</span>
+        `;
+
+        const trackBadge = document.createElement('span');
+        const trk = z.trackId?.includes('UP') ? 'UP' : z.trackId?.includes('DN') ? 'DN' : 'YARD';
+        trackBadge.style.cssText = 'font:800 8.5px/10px monospace;background:#F1F5F9;color:#334155;border:1px solid #CBD5E1;padding:2px 4px;border-radius:3px;';
+        trackBadge.textContent = trk;
+
+        pill.appendChild(deptTag);
+        pill.appendChild(infoSpan);
+        pill.appendChild(trackBadge);
+
+        el.appendChild(pulseDot);
+        el.appendChild(pill);
+      }
+
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setSelectedZone(z);
+        if (onSelectBlock && z.blocks[0]?.block) {
+          onSelectBlock(z.blocks[0].block);
+        }
+      });
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat(centerCoords)
+        .addTo(map);
+
+      marker._isWorkZoneMarker = true;
+      workZoneMarkersRef.current.push(marker);
+    });
+  }, [visibleWorkZones, selectedZone, currentZoom, loaded, onSelectBlock]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return undefined;
+    requestAnimationFrame(() => map.resize());
+    const a = setTimeout(() => map.resize(), 50);
+    const b = setTimeout(() => map.resize(), 150);
+    const c = setTimeout(() => map.resize(), 350);
+    const d = setTimeout(() => map.resize(), 600);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(b);
+      clearTimeout(c);
+      clearTimeout(d);
+    };
+  }, [isFullScreenMode, isNativeFs]);
+
+  const resetView = () => {
+    setSelectedZone(null);
+    mapRef.current?.fitBounds(CORRIDOR_BOUNDS, { padding: { top: 90, right: 100, bottom: 90, left: 90 }, duration: 450 });
+  };
+
+  const flyToZone = (z) => {
+    const coords = getCoordinatesForKm(z.km, z.trackId);
+    mapRef.current?.flyTo({ center: coords, zoom: 13.8, duration: 800 });
+  };
+
+  const shell = (
+    <div
+      ref={wrapperRef}
+      className="relative overflow-hidden rounded-lg border border-[#B8C5D0] bg-[#D6DEE5] shadow-sm h-[calc(100vh-245px)] min-h-[620px]"
+    >
+      {/* Background raster base map with real track line clearly visible */}
+      <div ref={containerRef} className="absolute inset-0 h-full w-full" />
+
+      {/* Top Left: Compact Corridor Info */}
+      <div className="pointer-events-none absolute left-4 top-4 z-30 w-[270px] rounded-md border border-[#0B192C]/20 bg-white/95 px-3 py-2 shadow-lg backdrop-blur-sm">
+        <div className="flex items-center gap-1.5 text-[8.5px] font-bold uppercase tracking-[0.14em] text-[#52606D]">
+          <Activity className="h-3 w-3 text-[#2563EB]" /> Central Railway • Pune Division
+        </div>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="text-xs font-black text-[#0B192C]">Pune Division Network</span>
+          <span className="rounded bg-[#EFF6FF] px-1.5 py-0.2 text-[8px] font-extrabold uppercase text-[#1D4ED8] border border-[#2563EB]">
+            Blue Track
+          </span>
+        </div>
+        <div className="text-[8.5px] font-mono text-[#64748B]">
+          Km 191.0 (Pune) → Km 254.84 (LNL)
+        </div>
+      </div>
+
+      {/* Station Search Input (Right below top-left title) */}
+      <div className="absolute left-4 top-[78px] z-30 w-[270px]">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2 h-3 w-3 text-[#64748B]" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search station (e.g. Akurdi, Dehu Road)"
+            className="h-7 w-full rounded border border-[#CBD5E1] bg-white/96 pl-7 pr-7 text-[9px] font-mono shadow-md outline-none focus:border-[#2563EB]"
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="absolute right-2 top-2 text-[#64748B]">
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Top Center-Right: DATE & SCHEDULE CONTROLLER */}
+      <div className="absolute left-[295px] top-4 z-30 flex flex-col gap-1.5 rounded-lg border border-[#CBD5E1] bg-white/95 p-2 shadow-lg backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          {/* Formatted Date Pill */}
+          <div className="flex items-center gap-1.5 rounded-md bg-[#EFF6FF] px-2.5 py-1 text-[#1D4ED8] border border-[#BFDBFE]">
+            <Calendar className="h-3.5 w-3.5 text-[#2563EB]" />
+            <span className="text-[11px] font-extrabold">{formattedDate}</span>
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => changeDateBy(-1)}
+              title="Previous Day"
+              className="flex h-7 w-7 items-center justify-center rounded border border-[#CBD5E1] bg-white text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0B192C]"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                setSelectedZone(null);
+              }}
+              className="h-7 rounded border border-[#CBD5E1] bg-white px-2 text-[10px] font-mono text-[#0B192C] shadow-sm outline-none focus:border-[#2563EB]"
+            />
+            <button
+              onClick={() => changeDateBy(1)}
+              title="Next Day"
+              className="flex h-7 w-7 items-center justify-center rounded border border-[#CBD5E1] bg-white text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0B192C]"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Quick Date Toggles */}
+          <div className="flex items-center gap-1 pl-1">
+            <button
+              onClick={() => {
+                setSelectedDate('2026-09-13');
+                setSelectedZone(null);
+              }}
+              className={`rounded px-2 py-1 text-[9px] font-bold ${selectedDate === '2026-09-13' ? 'bg-[#2563EB] text-white' : 'text-[#64748B] hover:bg-[#F1F5F9]'
+                }`}
+            >
+              Today (13 Sep)
+            </button>
+            <button
+              onClick={() => {
+                setSelectedDate('2026-09-12');
+                setSelectedZone(null);
+              }}
+              className={`rounded px-2 py-1 text-[9px] font-bold ${selectedDate === '2026-09-12' ? 'bg-[#2563EB] text-white' : 'text-[#64748B] hover:bg-[#F1F5F9]'
+                }`}
+            >
+              Yesterday (12 Sep)
+            </button>
+          </div>
+
+          {/* Active Possessions Count */}
+          <div className="flex items-center gap-1.5 pl-2 border-l border-[#E2E8F0]">
+            <span className={`rounded-full px-2 py-0.5 text-[9px] font-extrabold ${dayBlocks.length > 0 ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#FCA5A5]' : 'bg-[#F0FDF4] text-[#16A34A] border border-[#86EFAC]'
+              }`}>
+              {dayBlocks.length} {dayBlocks.length === 1 ? 'Possession' : 'Possessions'}
+            </span>
+          </div>
+        </div>
+
+        {/* Row 2: Department Filters or Clear Track Status */}
+        {dayBlocks.length > 0 ? (
+          <div className="flex items-center gap-1.5 pt-1 border-t border-[#F1F5F9]">
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-[#64748B]">Filter Dept:</span>
+            <button
+              onClick={() => setSelectedDeptFilter('ALL')}
+              className={`rounded px-2 py-0.5 text-[8.5px] font-bold ${selectedDeptFilter === 'ALL' ? 'bg-[#0B192C] text-white' : 'bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]'
+                }`}
+            >
+              All ({deptCounts.ALL})
+            </button>
+            <button
+              onClick={() => setSelectedDeptFilter('Engineering')}
+              className={`rounded px-2 py-0.5 text-[8.5px] font-bold ${selectedDeptFilter === 'Engineering' ? 'bg-[#DC2626] text-white' : 'bg-[#FEF2F2] text-[#991B1B] hover:bg-[#FEE2E2]'
+                }`}
+            >
+              ENG ({deptCounts.Engineering})
+            </button>
+            <button
+              onClick={() => setSelectedDeptFilter('Traction')}
+              className={`rounded px-2 py-0.5 text-[8.5px] font-bold ${selectedDeptFilter === 'Traction' ? 'bg-[#D97706] text-white' : 'bg-[#FFFBEB] text-[#92400E] hover:bg-[#FEF3C7]'
+                }`}
+            >
+              TRD ({deptCounts.Traction})
+            </button>
+            <button
+              onClick={() => setSelectedDeptFilter('S&T')}
+              className={`rounded px-2 py-0.5 text-[8.5px] font-bold ${selectedDeptFilter === 'S&T' ? 'bg-[#059669] text-white' : 'bg-[#ECFDF5] text-[#065F46] hover:bg-[#D1FAE5]'
+                }`}
+            >
+              S&T ({deptCounts['S&T']})
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 text-[9px] font-semibold text-[#15803D] pt-0.5 border-t border-[#F1F5F9]">
+            <CheckCircle2 className="h-3 w-3 text-[#16A34A]" />
+            All Tracks Clear • No maintenance blocks scheduled on {formattedDate}
+          </div>
+        )}
+      </div>
+
+      {/* Top Right Controls */}
+      <div className="absolute right-4 top-4 z-30 flex gap-2">
+        <button
+          onClick={resetView}
+          className="flex h-9 items-center gap-1.5 rounded-md border border-[#CBD5E1] bg-white px-3 text-[10px] font-bold text-[#0B192C] shadow-lg hover:bg-[#F8FAFC]"
+        >
+          <LocateFixed className="h-3.5 w-3.5 text-[#2563EB]" />
+          Reset View
+        </button>
+        <button
+          onClick={handleToggleFullscreen}
+          title={isNativeFs || isFullScreenMode ? 'Exit Full Screen (Esc)' : 'Enter Full Screen'}
+          className="flex h-9 items-center gap-1.5 rounded-md border border-[#CBD5E1] bg-white px-3 text-[10px] font-bold text-[#0B192C] shadow-lg hover:bg-[#F8FAFC]"
+        >
+          {isNativeFs || isFullScreenMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          {isNativeFs || isFullScreenMode ? 'Exit' : 'Full Screen'}
+        </button>
+      </div>
+
+      {/* Section Possession Inspector Card (Displays when a Work Zone is clicked) */}
+      {selectedZone && (
+        <div className="absolute right-4 top-[94px] z-40 w-[360px] max-h-[calc(100%-120px)] overflow-y-auto rounded-lg border border-[#CBD5E1] bg-white shadow-2xl">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E2E8F0] bg-white px-3.5 py-2.5">
+            <div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: selectedZone.color }}
+                />
+                <h3 className="text-xs font-bold text-[#0B192C]">{selectedZone.sectionName}</h3>
+              </div>
+              <div className="mt-0.5 text-[9px] font-mono text-[#64748B]">
+                Track Km: {selectedZone.minKm.toFixed(1)} – {selectedZone.maxKm.toFixed(1)} • {selectedZone.trackId || 'Mainline'}
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => flyToZone(selectedZone)}
+                title="Focus Track Section"
+                className="flex h-6 items-center gap-1 rounded bg-[#EFF6FF] px-2 text-[9px] font-bold text-[#1D4ED8] hover:bg-[#DBEAFE]"
+              >
+                <LocateFixed className="h-3 w-3" /> Focus
+              </button>
+              <button
+                onClick={() => setSelectedZone(null)}
+                className="rounded p-1 text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0B192C]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-3 space-y-2.5">
+            <div className="flex items-center justify-between text-[9px] font-bold text-[#64748B] uppercase tracking-wider">
+              <span>{selectedZone.blocks.length} Possessions Scheduled</span>
+              <span>{selectedDate}</span>
+            </div>
+
+            {selectedZone.blocks.map(({ block, jobs: bJobs }, idx) => {
+              const startT = block?.start_time ? block.start_time.slice(11, 16) : '00:00';
+              const endT = block?.end_time ? block.end_time.slice(11, 16) : '04:00';
+              const jobItem = bJobs[0];
+
+              return (
+                <div
+                  key={block?.block_id || idx}
+                  className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-2.5 text-[10px] space-y-1.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono font-bold text-[#0B192C]">{block?.block_id}</span>
+                    <span className="rounded bg-[#EFF6FF] px-1.5 py-0.5 text-[9px] font-extrabold text-[#1D4ED8]">
+                      {startT} – {endT} ({block?.duration_hours || 2}h)
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {(block?.departments || (jobItem ? [jobItem.department] : [])).map((d) => (
+                      <span
+                        key={d}
+                        className="rounded px-1.5 py-0.2 text-[8px] font-bold uppercase text-white"
+                        style={{
+                          backgroundColor:
+                            d === 'Engineering' ? '#DC2626' : d === 'Traction' ? '#D97706' : '#059669'
+                        }}
+                      >
+                        {d}
+                      </span>
+                    ))}
+                    <span className="font-semibold text-[#334155]">
+                      {(jobItem?.defect_type || 'TRACK MAINTENANCE').replace(/_/g, ' ')}
+                    </span>
+                  </div>
+
+                  {jobItem?.work_type && (
+                    <div className="text-[9px] text-[#475569]">
+                      <b className="text-[#0B192C]">Work Type:</b> {jobItem.work_type.replace(/_/g, ' ')}
+                    </div>
+                  )}
+
+                  {block?.explanation && (
+                    <div className="rounded bg-white p-1.5 text-[8.5px] leading-relaxed text-[#475569] border border-[#E2E8F0]">
+                      {block.explanation}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-1 border-t border-[#E2E8F0] text-[8.5px] text-[#64748B]">
+                    <span>Line: <b>{block?.track_id || 'Corridor Main'}</b></span>
+                    <span>AI Priority: <b className="text-[#0B192C]">{jobItem?.ai_priority_score || 90}/100</b></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Station Count / Network Legend (Shown when Inspector is closed) */}
+      {!selectedZone && (
+        <div className="absolute right-4 top-[94px] z-30 w-[270px] rounded-md border border-[#CBD5E1] bg-white/96 px-3.5 py-2.5 text-[9px] font-semibold text-[#334155] shadow-lg">
+          <div className="mb-2 flex items-center justify-between border-b border-[#E2E8F0] pb-1.5">
+            <div className="flex items-center gap-1.5 font-extrabold uppercase tracking-wider text-[#0B192C]">
+              <Compass className="h-3.5 w-3.5 text-[#2563EB]" />
+              Corridor Network Legend
+            </div>
+            <span className="rounded bg-[#EFF6FF] px-1.5 py-0.2 text-[8px] font-bold text-[#1D4ED8]">17 Stations</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-7 rounded border border-[#0B192C] bg-[#2563EB]" />
+                <span className="font-bold text-[#0B192C]">Corridor Track Line</span>
+              </span>
+              <span className="text-[8px] text-[#64748B]">Real Curve</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full border border-[#0B192C] bg-[#F59E0B] shadow-sm" />
+                <span className="font-bold text-[#0B192C]">Pune Jn (Divisional HQ)</span>
+              </span>
+              <span className="text-[8px] text-[#64748B]">Km 191.0</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full border border-[#0B192C] bg-[#EA580C] shadow-sm" />
+                <span>Lonavala Terminal Jn</span>
+              </span>
+              <span className="text-[8px] text-[#64748B]">Km 254.84</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full border border-[#0B192C] bg-[#FFFFFF] shadow-sm" />
+                <span>Way & Suburban Stations</span>
+              </span>
+              <span className="text-[8px] text-[#64748B]">
+                {currentZoom < 11.4 ? 'Zoom in to view all' : '15 Hubs'}
+              </span>
+            </div>
+            <div className="border-t border-[#E2E8F0] pt-1.5 space-y-1">
+              <div className="text-[8px] font-bold uppercase tracking-wider text-[#64748B]">
+                Active Possessions ({selectedDate})
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#DC2626] text-white text-[7px] font-bold flex items-center justify-center">E</span>
+                  <span>Engineering (ENGG)</span>
+                </span>
+                <span className="text-[8px] text-[#64748B]">{deptCounts.Engineering}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#D97706] text-white text-[7px] font-bold flex items-center justify-center">T</span>
+                  <span>Traction / OHE (TRD)</span>
+                </span>
+                <span className="text-[8px] text-[#64748B]">{deptCounts.Traction}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#059669] text-white text-[7px] font-bold flex items-center justify-center">S</span>
+                  <span>Signal & Telecom (S&T)</span>
+                </span>
+                <span className="text-[8px] text-[#64748B]">{deptCounts['S&T']}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Left Info Badge */}
+      <div className="absolute bottom-4 left-4 z-30 rounded-md border border-[#CBD5E1] bg-white/96 px-3 py-1.5 text-[9px] font-semibold text-[#334155] shadow-lg">
+        <div className="flex items-center gap-2.5">
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-5 rounded border border-[#0B192C] bg-[#2563EB]" />
+            <b>Corridor Line</b>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-2 rounded-full border border-[#0B192C] bg-white" />
+            <b>Stations</b>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-2 rounded-full bg-[#DC2626]" />
+            <b>Possessions</b>
+          </span>
+          <span className="text-[8px] font-mono text-[#64748B]">Zoom: {currentZoom.toFixed(1)}x</span>
+        </div>
+      </div>
+
+      {/* Bottom Right Info Badge */}
+      <div className="absolute bottom-4 right-4 z-30 rounded-md border border-[#CBD5E1] bg-white/96 px-3.5 py-1.5 text-[9px] font-semibold text-[#334155] shadow-lg">
+        <div className="flex items-center gap-2">
+          <TrainFront className="h-3.5 w-3.5 text-[#DC2626]" />
+          <span>Central Railway • Pune Division Operations Control</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  return shell;
 }

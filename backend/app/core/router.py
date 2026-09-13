@@ -20,6 +20,7 @@ from app.core.plan_state_store import (
     clear_pending_revision,
     get_approved_plan,
     get_pending_revision,
+    list_approved_plan_history,
     list_intake_jobs,
     save_pending_revision,
 )
@@ -91,9 +92,9 @@ def _load_unified_jobs() -> List[MaintenanceJob]:
 
 
 def _current_week_monday() -> datetime:
-    now = datetime.now()
-    monday = now - timedelta(days=now.weekday())
-    return monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    # MARS 2.0 September 2026 planning horizon Week 1 starts on Monday 2026-09-07
+    # Exactly matches the COA train timetable in trains.json (07 Sept - 13 Sept)
+    return datetime(2026, 9, 7, 0, 0, 0)
 
 
 def _monthly_week_job_ids(monthly_plan: Dict[str, Any], week: int) -> set[str]:
@@ -107,7 +108,21 @@ def _monthly_week_job_ids(monthly_plan: Dict[str, Any], week: int) -> set[str]:
 
 @router.get("/jobs/all-scored", response_model=List[MaintenanceJob])
 def get_all_scored_jobs():
-    return PriorityEngine.process_job_batch(_load_unified_jobs())
+    scored_jobs = PriorityEngine.process_job_batch(_load_unified_jobs())
+    approved = get_approved_plan()
+    if approved and isinstance(approved.get("plan"), dict):
+        blocks = approved["plan"].get("scheduled_blocks") or approved["plan"].get("blocks") or []
+        scheduled_ids = {jid for b in blocks if isinstance(b, dict) for jid in b.get("job_ids", [])}
+        deferred_ids = set(approved["plan"].get("deferred_jobs") or [])
+        for job in scored_jobs:
+            if job.status != "COMPLETED":
+                if job.job_id in scheduled_ids:
+                    job.status = "SCHEDULED"
+                elif job.job_id in deferred_ids:
+                    job.status = "DEFERRED"
+                else:
+                    job.status = "PENDING"
+    return scored_jobs
 
 
 @router.get("/jobs/intake", response_model=List[MaintenanceJob])
@@ -225,6 +240,11 @@ def get_approved_weekly_plan():
     if not record:
         return {"approved": False, "plan": None}
     return {"approved": True, **record}
+
+
+@router.get("/plan/weekly/approved-history", response_model=List[Dict[str, Any]])
+def get_approved_weekly_plan_history():
+    return list_approved_plan_history()
 
 
 @router.get("/plan/weekly/pending-revision", response_model=Dict[str, Any])
