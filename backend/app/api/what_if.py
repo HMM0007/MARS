@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.core.plan_state_store import get_approved_plan
+from app.core.priority_engine import PriorityEngine
 from app.core.what_if_engine import SUPPORTED_SCENARIOS, simulate_scenario
 from app.core.router import _load_unified_jobs
 
@@ -22,12 +23,30 @@ class WhatIfScenarioRequest(BaseModel):
 
 @router.get("/options", response_model=Dict[str, Any])
 def get_what_if_options():
-    jobs = _load_unified_jobs()
+    approved = get_approved_plan()
+    if not approved:
+        return {"scenario_types": sorted(SUPPORTED_SCENARIOS), "sections": [], "baseline_available": False}
+
+    baseline_plan = approved.get("plan") or {}
+    candidate_ids = {str(value) for value in baseline_plan.get("weekly_candidate_ids", [])}
+    if not candidate_ids:
+        for block in baseline_plan.get("scheduled_blocks", []):
+            if isinstance(block, dict):
+                candidate_ids.update(str(value) for value in block.get("job_ids", []))
+        candidate_ids.update(
+            str(value.get("job_id"))
+            for value in baseline_plan.get("deferred_jobs", [])
+            if isinstance(value, dict) and value.get("job_id")
+        )
+
+    jobs = [job for job in PriorityEngine.process_job_batch(_load_unified_jobs()) if job.job_id in candidate_ids]
     sections: Dict[str, set[str]] = {}
     for job in jobs:
         sections.setdefault(job.section_id, set()).add(job.track_id)
     return {
         "scenario_types": sorted(SUPPORTED_SCENARIOS),
+        "baseline_available": True,
+        "planning_week": approved.get("planning_week"),
         "sections": [
             {"section_id": section_id, "track_ids": sorted(track_ids)}
             for section_id, track_ids in sorted(sections.items())
