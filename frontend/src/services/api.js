@@ -55,6 +55,8 @@ const normalizeWeeklyPlan = (data) => {
 
 export const fetchAllScoredJobs = () => requestJson(`${BASE_URL}/api/v1/core/jobs/all-scored`);
 export const fetchMonthlyPlan = () => requestJson(`${BASE_URL}/api/v1/core/plan/monthly`);
+export const fetchWhatIfOptions = () => requestJson(`${BASE_URL}/api/v1/what-if/options`);
+export const simulateWhatIf = (payload) => requestJson(`${BASE_URL}/api/v1/what-if/simulate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
 /**
  * Weekly view is baseline-aware: once a Planner has approved a plan, normal UI

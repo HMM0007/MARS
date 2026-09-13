@@ -1,0 +1,127 @@
+import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, CheckCircle2, Clock3, GitBranch, Loader2, ShieldCheck, SlidersHorizontal, TrainFront } from 'lucide-react';
+import { fetchApprovedWeeklyPlan, fetchWhatIfOptions, simulateWhatIf } from '../services/api';
+
+const SCENARIO_LABELS = {
+  TRACK_OUTAGE: 'Track Outage',
+  SECTION_OUTAGE: 'Section Outage',
+  EMERGENCY_BLOCK: 'Emergency Block',
+};
+
+const pad = (value) => String(value).padStart(2, '0');
+const defaultStart = () => {
+  const now = new Date();
+  now.setMinutes(Math.ceil(now.getMinutes() / 15) * 15, 0, 0);
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+};
+
+const severityClass = {
+  LOW: 'border-[#CFEBDD] bg-[#F3FBF7] text-[#18794E]',
+  MODERATE: 'border-[#D8E4F1] bg-[#F5F9FD] text-[#28649B]',
+  HIGH: 'border-[#F0DEC1] bg-[#FFF9F0] text-[#9A6415]',
+  CRITICAL: 'border-[#F0CACA] bg-[#FFF4F4] text-[#B42318]',
+};
+
+function Metric({ label, value, hint }) {
+  return <div className="rounded-xl border border-[#DDE5EC] bg-white px-4 py-3 shadow-[0_1px_2px_rgba(16,42,67,0.03)]"><p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8392A1]">{label}</p><p className="mt-1 text-[22px] font-bold tracking-tight text-[#173E6C]">{value}</p>{hint && <p className="mt-0.5 text-[9px] text-[#718294]">{hint}</p>}</div>;
+}
+
+export default function WhatIfScenarioPage({ currentRole }) {
+  const [options, setOptions] = useState({ scenario_types: [], sections: [] });
+  const [baseline, setBaseline] = useState(null);
+  const [scenarioType, setScenarioType] = useState('TRACK_OUTAGE');
+  const [sectionId, setSectionId] = useState('');
+  const [trackId, setTrackId] = useState('');
+  const [startTime, setStartTime] = useState(defaultStart);
+  const [duration, setDuration] = useState(120);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingShell, setLoadingShell] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    Promise.all([fetchWhatIfOptions(), fetchApprovedWeeklyPlan()])
+      .then(([available, approved]) => {
+        setOptions(available || { scenario_types: [], sections: [] });
+        setBaseline(approved);
+        const firstSection = available?.sections?.[0];
+        if (firstSection) {
+          setSectionId(firstSection.section_id);
+          setTrackId(firstSection.track_ids?.[0] || '');
+        }
+      })
+      .catch((err) => setError(err.message || 'Unable to load What-If inputs.'))
+      .finally(() => setLoadingShell(false));
+  }, []);
+
+  const selectedSection = useMemo(() => options.sections.find((item) => item.section_id === sectionId), [options.sections, sectionId]);
+  const approvedWeek = Number(baseline?.planning_week || baseline?.plan?.planning_week || 1);
+  const hasBaseline = Boolean(baseline?.approved && baseline?.plan);
+
+  const handleSectionChange = (value) => {
+    setSectionId(value);
+    const section = options.sections.find((item) => item.section_id === value);
+    setTrackId(section?.track_ids?.[0] || '');
+    setResult(null);
+  };
+
+  const runScenario = async () => {
+    setError('');
+    setResult(null);
+    if (!hasBaseline) {
+      setError('An approved weekly baseline is required before running a What-If simulation.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const payload = {
+        week: approvedWeek,
+        scenario_type: scenarioType,
+        section_id: sectionId,
+        ...(scenarioType === 'TRACK_OUTAGE' || trackId ? { track_id: trackId } : {}),
+        start_time: new Date(startTime).toISOString(),
+        duration_minutes: Number(duration),
+      };
+      setResult(await simulateWhatIf(payload));
+    } catch (err) {
+      setError(err.message || 'Scenario simulation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loadingShell) return <div className="p-6 text-sm text-[#60748A]">Loading What-If Scenario Analysis…</div>;
+
+  return <main className="min-h-full bg-[#EEF2F6] p-5 lg:p-6">
+    <div className="mx-auto max-w-[1180px]">
+      <div className="mb-5 flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
+        <div><div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.18em] text-[#718294]"><SlidersHorizontal className="h-3.5 w-3.5"/> Planner / Scenario Analysis</div><h1 className="mt-1 text-[25px] font-bold tracking-tight text-[#173E6C]">What-If Scenario Analysis</h1><p className="mt-1 max-w-[760px] text-[11px] leading-5 text-[#60748A]">Simulate an operational change against the approved weekly plan. The scenario is evaluated in memory and never changes the approved baseline.</p></div>
+        <div className="flex items-center gap-2 rounded-lg border border-[#CFE0D8] bg-[#F5FBF8] px-3 py-2 text-[9px] font-bold text-[#18794E]"><ShieldCheck className="h-3.5 w-3.5"/> NON-DESTRUCTIVE SIMULATION</div>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+        <section className="rounded-2xl border border-[#D8E1E9] bg-white p-5 shadow-[0_2px_8px_rgba(20,50,80,0.04)]">
+          <div className="flex items-center gap-2 border-b border-[#E5EAF0] pb-4"><div className="rounded-lg bg-[#EAF2FB] p-2 text-[#1769D4]"><GitBranch className="h-4 w-4"/></div><div><h2 className="text-[13px] font-bold text-[#173E6C]">Scenario Configuration</h2><p className="text-[9px] text-[#7A8998]">Baseline: Week {approvedWeek}{baseline?.revision ? ` · Revision ${baseline.revision}` : ''}</p></div></div>
+          <div className="mt-5 space-y-4">
+            <label className="block"><span className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#718294]">Scenario Type</span><select value={scenarioType} onChange={(e) => { setScenarioType(e.target.value); setResult(null); }} className="h-10 w-full rounded-lg border border-[#CBD6E0] bg-white px-3 text-[11px] font-semibold text-[#274C72] outline-none focus:border-[#1769D4]">{(options.scenario_types.length ? options.scenario_types : ['TRACK_OUTAGE']).map((type) => <option key={type} value={type}>{SCENARIO_LABELS[type] || type}</option>)}</select></label>
+            <label className="block"><span className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#718294]">Section</span><select value={sectionId} onChange={(e) => handleSectionChange(e.target.value)} className="h-10 w-full rounded-lg border border-[#CBD6E0] bg-white px-3 text-[11px] font-semibold text-[#274C72] outline-none focus:border-[#1769D4]">{options.sections.map((section) => <option key={section.section_id} value={section.section_id}>{section.section_id}</option>)}</select></label>
+            <label className="block"><span className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#718294]">Track {scenarioType === 'SECTION_OUTAGE' ? '(optional)' : ''}</span><select value={trackId} onChange={(e) => { setTrackId(e.target.value); setResult(null); }} disabled={!selectedSection || scenarioType === 'SECTION_OUTAGE'} className="h-10 w-full rounded-lg border border-[#CBD6E0] bg-white px-3 text-[11px] font-semibold text-[#274C72] outline-none disabled:bg-[#F5F7F9] focus:border-[#1769D4]">{selectedSection?.track_ids?.map((track) => <option key={track} value={track}>{track}</option>)}</select></label>
+            <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#718294]">Start Time</span><input type="datetime-local" step="900" value={startTime} onChange={(e) => { setStartTime(e.target.value); setResult(null); }} className="h-10 w-full rounded-lg border border-[#CBD6E0] bg-white px-3 text-[10px] font-semibold text-[#274C72] outline-none focus:border-[#1769D4]"/></label><label className="block"><span className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#718294]">Duration</span><select value={duration} onChange={(e) => { setDuration(e.target.value); setResult(null); }} className="h-10 w-full rounded-lg border border-[#CBD6E0] bg-white px-3 text-[11px] font-semibold text-[#274C72] outline-none focus:border-[#1769D4]"><option value="60">1 hour</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option><option value="360">6 hours</option><option value="480">8 hours</option><option value="720">12 hours</option></select></label></div>
+            {error && <div className="rounded-lg border border-[#F0CACA] bg-[#FFF5F5] px-3 py-2.5 text-[10px] leading-4 text-[#B42318]"><div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0"/><span>{error}</span></div></div>}
+            {!hasBaseline && !error && <div className="rounded-lg border border-[#F0DEC1] bg-[#FFF9F0] px-3 py-2.5 text-[10px] text-[#8B5E15]">No approved weekly baseline is available. Approve the current weekly plan before using What-If.</div>}
+            <button type="button" disabled={loading || !hasBaseline || !sectionId} onClick={runScenario} className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#1769D4] text-[10px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_2px_5px_rgba(23,105,212,0.22)] transition hover:bg-[#145DA8] disabled:cursor-not-allowed disabled:opacity-50">{loading ? <><Loader2 className="h-4 w-4 animate-spin"/> Running CP-SAT Scenario…</> : <><TrainFront className="h-4 w-4"/> Run Scenario</>}</button>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-[#D8E1E9] bg-white p-5 shadow-[0_2px_8px_rgba(20,50,80,0.04)]">
+          <div className="flex items-center justify-between border-b border-[#E5EAF0] pb-4"><div><h2 className="text-[13px] font-bold text-[#173E6C]">What Would Happen?</h2><p className="text-[9px] text-[#7A8998]">Impact compared with the approved baseline</p></div>{result?.impact?.severity && <span className={`rounded-full border px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.12em] ${severityClass[result.impact.severity] || severityClass.MODERATE}`}>{result.impact.severity} IMPACT</span>}</div>
+          {!result ? <div className="flex min-h-[330px] flex-col items-center justify-center px-8 text-center"><div className="rounded-full bg-[#F1F5F8] p-4 text-[#7A8998]"><SlidersHorizontal className="h-6 w-6"/></div><h3 className="mt-4 text-[12px] font-bold text-[#355675]">No scenario evaluated</h3><p className="mt-1 max-w-[390px] text-[10px] leading-5 text-[#7A8998]">Configure an operational change and run the scenario. The result will show schedule movement, deferred work and the optimizer's operational impact.</p></div> : <div className="pt-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3"><Metric label="Jobs Affected" value={result.impact.jobs_affected}/><Metric label="Jobs Moved" value={result.impact.jobs_delayed_or_moved}/><Metric label="Jobs Deferred" value={result.impact.jobs_deferred}/><Metric label="Blocks Affected" value={result.impact.blocks_affected}/><Metric label="New Conflicts" value={result.impact.conflicts_introduced}/><Metric label="Scenario Jobs" value={result.impact.scenario_scheduled_jobs} hint={`baseline ${result.impact.baseline_scheduled_jobs}`}/></div>
+            <div className="mt-4 rounded-xl border border-[#DDE5EC] bg-[#FAFBFC] p-4"><div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-[#1769D4]"/><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#45647F]">Operational Impact</p></div><div className="mt-3 space-y-2">{result.operational_impact?.map((item, index) => <div key={`${item}-${index}`} className="flex gap-2 text-[10px] leading-4 text-[#5F7183]"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6E8296]"/>{item}</div>)}</div></div>
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-[#CFEBDD] bg-[#F4FBF7] px-4 py-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#18794E]"/><div><p className="text-[10px] font-bold text-[#236148]">Baseline Protected</p><p className="text-[9px] text-[#5E7A6D]">Scenario was evaluated without writing plan state.</p></div></div><span className="font-mono text-[8px] font-bold text-[#54816D]">{result.scenario_solver?.model || 'CP-SAT'}</span></div>
+          </div>}
+        </section>
+      </div>
+    </div>
+  </main>;
+}

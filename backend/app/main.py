@@ -5,6 +5,7 @@ from app.adapters.router import router as adapters_router
 from app.core.emergency_router import router as emergency_router
 from app.core.router import router as core_router
 from app.api.dataset import router as dataset_router
+from app.api.what_if import router as what_if_router
 
 app = FastAPI(
     title=settings.app_name,
@@ -22,11 +23,13 @@ app.add_middleware(
 
 # Register Routers. The hardened emergency router is registered before the
 # legacy core emergency route so emergency submissions use the durable,
-# explicit repair-outcome contract. All other core routes remain unchanged.
+# explicit repair-outcome contract. What-If is isolated and read-only with
+# respect to the approved plan state.
 app.include_router(adapters_router)
 app.include_router(emergency_router)
 app.include_router(core_router)
 app.include_router(dataset_router)
+app.include_router(what_if_router)
 
 
 @app.get("/")
