@@ -115,3 +115,21 @@ export const pushToBDMS = (schedulePayload) => requestJson(`${BASE_URL}/api/v1/a
 export const fetchHealth = () => requestJson(`${BASE_URL}/health`);
 export const fetchDatasetStatus = () => requestJson(`${BASE_URL}/api/v1/dataset/status`);
 export const apiRequest = (endpoint, options = {}) => requestJson(`${BASE_URL}${endpoint}`, options);
+
+export const fetchDepartmentJobs = async (department) => {
+  const endpoints = {
+    Engineering: `${BASE_URL}/api/v1/adapters/tms/jobs`,
+    'S&T': `${BASE_URL}/api/v1/adapters/smms/jobs`,
+    Traction: `${BASE_URL}/api/v1/adapters/tdms/jobs`,
+  };
+  const url = endpoints[department] || endpoints.Engineering;
+  try {
+    const data = await requestJson(url);
+    return Array.isArray(data) ? data : (data?.jobs || []);
+  } catch (err) {
+    console.warn(`Failed to fetch from ${url}, falling back to all-scored:`, err);
+    const scored = await fetchAllScoredJobs().catch(() => []);
+    const list = Array.isArray(scored) ? scored : (scored?.jobs || []);
+    return list.filter((j) => (j.department || '').toLowerCase() === (department || '').toLowerCase());
+  }
+};

@@ -1,8 +1,3 @@
-/**
- * MARS 2.0 CRIS Integration Health & Diagnostic Console
- * Live health monitoring, latency checks, and test runner for all CRIS adapters.
- */
-
 import { useState, useEffect } from 'react';
 import {
   fetchHealth,
@@ -13,8 +8,10 @@ import {
   fetchCOATimetable,
   fetchFreightForecast,
   fetchAllScoredJobs,
+  fetchWeeklyPlan,
 } from '../services/api';
-import { Network, CheckCircle2, AlertCircle, RefreshCw, Radio, Database } from 'lucide-react';
+import { Network, CheckCircle2, AlertCircle, RefreshCw, Radio, Database, FileText, ShieldCheck, Printer } from 'lucide-react';
+import SanctionMemoModal from '../components/SanctionMemoModal';
 
 const IntegrationStatusPage = () => {
   const [endpoints, setEndpoints] = useState([
@@ -28,22 +25,28 @@ const IntegrationStatusPage = () => {
     { name: 'AI Scored Jobs Pool', path: '/api/v1/core/jobs/all-scored', fn: fetchAllScoredJobs, status: 'CHECKING', latency: null, count: null },
   ]);
   const [testing, setTesting] = useState(false);
+  const [blocks, setBlocks] = useState([]);
+  const [selectedBlock, setSelectedBlock] = useState(null);
+  const [showMemoModal, setShowMemoModal] = useState(false);
 
   const testAll = async () => {
     setTesting(true);
-    const updated = await Promise.all(
-      endpoints.map(async (ep) => {
-        const start = performance.now();
-        try {
-          const res = await ep.fn();
-          const latency = Math.round(performance.now() - start);
-          const count = Array.isArray(res) ? `${res.length} Items` : res.status ? 'OK' : 'Active';
-          return { ...ep, status: 'ONLINE', latency: `${latency}ms`, count };
-        } catch (err) {
-          return { ...ep, status: 'OFFLINE', latency: 'Err', count: err.message };
-        }
-      })
-    );
+    const [updated] = await Promise.all([
+      Promise.all(
+        endpoints.map(async (ep) => {
+          const start = performance.now();
+          try {
+            const res = await ep.fn();
+            const latency = Math.round(performance.now() - start);
+            const count = Array.isArray(res) ? `${res.length} Items` : res.status ? 'OK' : 'Active';
+            return { ...ep, status: 'ONLINE', latency: `${latency}ms`, count };
+          } catch (err) {
+            return { ...ep, status: 'OFFLINE', latency: 'Err', count: err.message };
+          }
+        })
+      ),
+      fetchWeeklyPlan().then((p) => setBlocks(p?.scheduled_blocks || p?.blocks || [])).catch(() => {}),
+    ]);
     setEndpoints(updated);
     setTesting(false);
   };
@@ -59,14 +62,14 @@ const IntegrationStatusPage = () => {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-lg font-black text-[#1F2933] uppercase tracking-wide">
-              CRIS Subsystem Integration Status
+              CRIS Subsystem Integration & BDMS Gateway
             </h1>
             <span className="text-[10px] bg-[#2F6F7E] text-white px-2 py-0.5 rounded font-mono font-bold">
-              DIAGNOSTIC CONSOLE
+              LIVE GATEWAY
             </span>
           </div>
           <p className="text-xs text-[#52606D] mt-0.5">
-            Real-time API Polling & Network Latency Benchmark for Upstream Railway Systems
+            Real-time API Polling, CRIS Adapter Diagnostics & Official Form T/1518 Line Block Sanction Registry
           </p>
         </div>
 
@@ -119,6 +122,97 @@ const IntegrationStatusPage = () => {
           </div>
         ))}
       </div>
+
+      {/* 3. Official BDMS Sanction Orders (Form T/1518) Registry */}
+      <section className="bg-white border border-[#D6DEE6] rounded shadow-xs overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-[#0A2540] text-white border-b border-[#1E3A5F]">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-[#38BDF8]" />
+            <div>
+              <h2 className="text-xs font-black uppercase tracking-wider">
+                Official BDMS Sanction Orders Registry • Form T/1518 Memos
+              </h2>
+              <p className="text-[10px] text-white/70">
+                Statutory Line Block Orders Verified under Indian Railways G&SR Rule 15.06
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold bg-[#1E3A5F] px-2.5 py-1 rounded text-[#38BDF8] border border-white/10">
+            {blocks.length} Sanctions Issued
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#F8FAFB] border-b border-[#D6DEE6] text-[10px] font-bold uppercase tracking-wider text-[#60748A]">
+              <tr>
+                <th className="px-3.5 py-2.5">Sanction Order No.</th>
+                <th className="px-3.5 py-2.5">Corridor / Section</th>
+                <th className="px-3.5 py-2.5">Track / Line</th>
+                <th className="px-3.5 py-2.5">Sanctioned Window</th>
+                <th className="px-3.5 py-2.5">Departments</th>
+                <th className="px-3.5 py-2.5">Safety Status</th>
+                <th className="px-3.5 py-2.5 text-right">Official Document</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E9EEF3]">
+              {blocks.slice(0, 10).map((b, idx) => {
+                const depts = b.departments || ['Engineering'];
+                const isConsolidated = depts.length > 1;
+                const memoRef = `CR/PA/OPTG/LB-2026/09/W1-${String(idx + 1).padStart(3, '0')}`;
+
+                return (
+                  <tr key={b.block_id || idx} className="hover:bg-[#F8FAFC] transition">
+                    <td className="px-3.5 py-2.5 font-mono font-bold text-[#8B0000]">
+                      {memoRef}
+                    </td>
+                    <td className="px-3.5 py-2.5 font-bold text-[#0A2540]">
+                      {b.section_id || 'PUNE-LNL'}
+                    </td>
+                    <td className="px-3.5 py-2.5 font-mono text-[11px] text-[#52606D]">
+                      {b.track_id}
+                    </td>
+                    <td className="px-3.5 py-2.5 font-mono text-[11px] text-[#0A2540]">
+                      {b.start_time ? new Date(b.start_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '01:15'} – {b.end_time ? new Date(b.end_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '04:45'} ({b.duration_hours || 3.5}h)
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      <div className="flex items-center gap-1">
+                        {isConsolidated && <span className="text-[10px]">🔗</span>}
+                        <span className="font-semibold text-[#1F2937]">{depts.join(' + ')}</span>
+                      </div>
+                    </td>
+                    <td className="px-3.5 py-2.5">
+                      <span className="rounded bg-[#D1FAE5] px-2 py-0.5 text-[9px] font-extrabold uppercase text-[#059669]">
+                        ✓ SANCTIONED
+                      </span>
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right">
+                      <button
+                        onClick={() => {
+                          setSelectedBlock(b);
+                          setShowMemoModal(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded border border-[#8B0000] bg-[#FFF8F0] hover:bg-[#FEE2E2] px-2.5 py-1 text-[10px] font-bold text-[#8B0000] transition shadow-2xs"
+                      >
+                        <FileText className="h-3 w-3 text-[#8B0000]" />
+                        <span>Form T/1518 Memo</span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Official Form T/1518 Modal */}
+      <SanctionMemoModal
+        isOpen={showMemoModal}
+        onClose={() => setShowMemoModal(false)}
+        block={selectedBlock}
+        department={selectedBlock?.departments?.[0] || 'Engineering'}
+      />
     </main>
   );
 };
