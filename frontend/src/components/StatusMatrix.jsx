@@ -1,5 +1,5 @@
 /**
- * MARS 2.0 CRIS Integration Status Matrix Component
+ * MARS CRIS Integration Status Matrix Component
  * Displays live subsystem connectivity, latency, and adapter synchronization states.
  */
 

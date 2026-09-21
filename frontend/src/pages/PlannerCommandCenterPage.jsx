@@ -42,7 +42,7 @@ export default function PlannerCommandCenterPage() {
     if (t.status === 'fulfilled') setTrains(Array.isArray(t.value) ? t.value : (t.value?.timetable || []));
     if (r.status === 'fulfilled') setPendingRevision(r.value);
     if (h.status === 'fulfilled') setHealth(h.value);
-    if (w.status === 'rejected' && j.status === 'rejected') setError('Unable to load current planning data from MARS 2.0.');
+    if (w.status === 'rejected' && j.status === 'rejected') setError('Unable to load current planning data from MARS.');
     setLoading(false);
   };
 

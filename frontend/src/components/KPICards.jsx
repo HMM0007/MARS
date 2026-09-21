@@ -1,5 +1,5 @@
 /**
- * MARS 2.0 Operational KPI Strip Component
+ * MARS Operational KPI Strip Component
  * Information-dense enterprise railway counters with high contrast and structured borders.
  */
 

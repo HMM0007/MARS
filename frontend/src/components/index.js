@@ -1,5 +1,5 @@
 /**
- * MARS 2.0 Components Index
+ * MARS Components Index
  * Professional Government Railway Application
  */
 

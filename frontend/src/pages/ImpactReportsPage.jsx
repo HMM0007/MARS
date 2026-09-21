@@ -1,5 +1,5 @@
 /**
- * MARS 2.0 Impact & Compliance Reports Console
+ * MARS Impact & Compliance Reports Console
  * Regulatory Compliance (IRPWM, IRSEM, G&SR) & Asset Availability Metrics
  */
 

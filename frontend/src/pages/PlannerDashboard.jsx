@@ -1,5 +1,5 @@
 /**
- * MARS 2.0 Planner Command Center
+ * MARS Planner Command Center
  * Modernized Indian Railways Divisional Control Room System
  * Executive Decision, Review, Plan Approval & CRIS BDMS Sanction Cockpit
  * 
@@ -123,7 +123,7 @@ const PlannerDashboard = ({ currentRole }) => {
       }
     } catch (err) {
       console.error('Failed to load command center data:', err);
-      setError(err.message || 'Unable to establish operational handshake with MARS 2.0 backend');
+      setError(err.message || 'Unable to establish operational handshake with MARS backend');
     } finally {
       setLoading(false);
     }

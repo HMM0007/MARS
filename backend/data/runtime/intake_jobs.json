@@ -94,5 +94,31 @@
     "status": "PENDING",
     "track_id": "CWD-YARD-DN",
     "work_type": "EMERGENCY_MAINTENANCE"
+  },
+  {
+    "ai_priority_score": 100.0,
+    "asset_id": "821",
+    "asset_type": "Track",
+    "base_priority_score": 90,
+    "created_date": "2026-09-18",
+    "criticality_level": "CRITICAL",
+    "defect_type": "Critical",
+    "deferral_count": 0,
+    "department": "Engineering",
+    "dependency_job_id": null,
+    "due_date": "2026-09-18",
+    "emergency_reason": "Blah Blab Blah",
+    "estimated_duration_hours": 2.0,
+    "job_id": "ENG-EMG-66080",
+    "location_km": 227.4,
+    "machine_required": "DEPARTMENT_MACHINE",
+    "power_block_required": false,
+    "preferred_window": "ANY",
+    "safety_conflict_tag": "NORMAL",
+    "section_id": "PUNE-LNL",
+    "status": "PENDING",
+    "track_id": "PUNE-LNL-UP",
+    "train_operation_impact": false,
+    "work_type": "EMERGENCY_MAINTENANCE"
   }
 ]

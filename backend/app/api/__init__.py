@@ -1,1 +1,1 @@
-"""HTTP API modules for MARS 2.0."""
+"""HTTP API modules for MARS."""

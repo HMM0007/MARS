@@ -1,4 +1,4 @@
-"""Incremental CP-SAT repair engine for MARS 2.0.
+"""Incremental CP-SAT repair engine for MARS.
 
 The incremental engine reuses the hardened weekly CP-SAT model instead of
 creating a second, divergent constraint implementation. Existing approved

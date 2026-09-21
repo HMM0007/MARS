@@ -40,57 +40,76 @@ export default function MARSHomePage({ currentRole }) {
 
   return (
     <main className="min-h-full bg-[#EEF2F6] text-[#17345C]">
-      <section className="relative min-h-[500px] overflow-hidden border-b border-[#CBD6E2] bg-[#061E39] lg:min-h-[525px]">
+      <section className="relative min-h-[460px] overflow-hidden border-b border-[#CBD6E2] bg-[#07182F] lg:min-h-[490px]">
+        {/* Full-width Train Photo spanning entire hero background */}
         <BrandAsset
-          name="vande_bharat_hero.jpg"
+          name="hero2.png"
           alt="Vande Bharat train on an Indian railway corridor"
-          className="absolute inset-0 h-full w-full object-cover object-[64%_center]"
+          className="absolute inset-0 h-full w-full object-cover object-[35%_center]"
           fallback={null}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.62)_0%,rgba(0,0,0,.32)_25%,rgba(0,0,0,.06)_52%,rgba(0,0,0,.01)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.02)_0%,transparent_60%,rgba(0,0,0,.62)_100%)]" />
-        <div className="absolute left-0 top-0 h-full w-[3px] bg-[#F2C94C]" />
 
-        <div className="absolute right-7 top-6 z-20 lg:right-10 lg:top-7">
-          <BrandAsset
-            name="viksit_bharat_railways.png"
-            alt="Viksit Bharat Viksit Railways"
-            className="max-h-[88px] max-w-[205px] object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,.45)]"
-            fallback={null}
-          />
-        </div>
+        {/* Soft, gentle dark fade behind text (lowered black effect so train remains clearly visible) */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 via-[42%] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
 
-        <div className="relative z-10 flex min-h-[500px] flex-col justify-between px-6 py-7 sm:px-8 lg:min-h-[525px] lg:px-14 lg:py-8">
-          <div className="max-w-[700px] pt-1">
-            <div className="mb-4 flex items-center gap-3">
-              <span className="h-8 w-[3px] bg-[#F2C94C]" />
-              <span className="text-[10px] font-extrabold uppercase tracking-[.26em] text-white/90">Pune Division (CR)</span>
-            </div>
+        {/* Official Indian Railways Yellow Accent Line on left border */}
+        <div className="absolute left-0 top-0 h-full w-[4px] bg-[#F2C94C]" />
 
-            <div className="flex flex-col items-start">
-              <h1 className="m-0 text-[66px] font-black leading-[.82] tracking-[-.07em] text-[#F39A24] drop-shadow-[0_4px_12px_rgba(0,0,0,.45)] sm:text-[76px] lg:text-[92px]">MARS 2.0</h1>
-              <div className="mt-3 font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[24px] font-semibold leading-[1.12] tracking-[-.02em] text-white drop-shadow-[0_2px_7px_rgba(0,0,0,.55)] sm:text-[27px] lg:text-[30px]">
-                सुरक्षित पथ<br />सशक्त भारत
-              </div>
+
+        {/* Content Area */}
+        <div className="relative z-10 flex min-h-[460px] max-w-[660px] flex-col justify-between p-7 sm:p-9 lg:min-h-[490px] lg:p-11">
+          {/* Top Brand Stack */}
+          <div>
+            {/* MARS Primary Title */}
+            <h1 className="m-0 text-[64px] font-black leading-none tracking-[-0.04em] text-[#F39A24] sm:text-[76px] lg:text-[88px] drop-shadow-[0_3px_10px_rgba(0,0,0,0.85)]">
+              MARS
+            </h1>
+
+            {/* Full Form */}
+            <p className="mt-2.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-white sm:text-[12px] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+              Maintenance Allocation and Resource Scheduling
+            </p>
+
+            {/* Hindi Motto */}
+            <div className="mt-4 border-l-[3px] border-[#F2C94C] pl-3.5 py-0.5">
+              <p className="font-[Noto_Sans_Devanagari,Arial,sans-serif] text-[22px] font-bold leading-tight tracking-[-0.01em] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] sm:text-[25px]">
+                सुरक्षित पथ, सशक्त भारत
+              </p>
             </div>
           </div>
 
-          <div className="relative flex items-end justify-between gap-5 pt-8">
-            <BrandAsset
-              name="india-pencil.png"
-              alt="Indian railway heritage line illustration"
-              className="pointer-events-none absolute bottom-[-90px] left-[-55px] z-0 h-[175px] w-[430px] object-contain object-left-bottom opacity-75 drop-shadow-[0_3px_5px_rgba(0,0,0,.18)]"
-              fallback={null}
-            />
-            <div className="relative z-10 w-[390px] border-l-[3px] border-[#F2C94C] pl-4 py-1 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,.7)]">
-              <div className="flex items-center gap-2 text-[14px] font-extrabold"><TrainFront className="h-4 w-4" /> Pune Division (CR)</div>
-              <div className="mt-2 flex items-center gap-2 text-[10px] font-semibold text-white/90">
-                <span>People</span><span className="text-white/45">|</span><span>Performance</span><span className="text-white/45">|</span><span className="font-bold text-[#57D6A8]">Progress</span>
+          {/* Integrated Bottom Division Status Bar */}
+          <div className="border-t border-white/20 pt-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-[14px] font-extrabold text-white drop-shadow-sm">
+                <TrainFront className="h-4 w-4 text-[#F2C94C]" />
+                <span>Pune Division (CR)</span>
               </div>
-              <div className="mt-2.5 flex h-[5px] w-[245px] overflow-hidden rounded-full bg-white/20 shadow-sm">
-                <span className="w-[34%] bg-[#F2C94C]" /><span className="w-[33%] bg-white/85" /><span className="w-[33%] bg-[#16A878]" />
-              </div>
-              <div className="mt-1.5 flex w-[245px] justify-between text-[8px] font-bold uppercase tracking-wider text-white/80"><span>Division</span><span>Operational</span><span>On Track</span></div>
+              <span className="rounded bg-black/40 px-2 py-0.5 text-[9px] font-mono font-bold tracking-wider text-[#57D6A8] border border-[#16A878]/50 backdrop-blur-xs">
+                AUTO-SYNC
+              </span>
+            </div>
+
+            <div className="mt-2 flex items-center gap-2 text-[10.5px] font-semibold text-white/90 drop-shadow-sm">
+              <span>People</span>
+              <span className="text-white/40">|</span>
+              <span>Performance</span>
+              <span className="text-white/40">|</span>
+              <span className="font-bold text-[#57D6A8]">Progress</span>
+            </div>
+
+            {/* Official Indian Railways Tricolor Indicator */}
+            <div className="mt-2 flex h-[4px] w-[260px] overflow-hidden rounded-full bg-white/30 shadow-xs">
+              <span className="w-[34%] bg-[#F2C94C]" />
+              <span className="w-[33%] bg-white" />
+              <span className="w-[33%] bg-[#16A878]" />
+            </div>
+
+            <div className="mt-1 flex w-[260px] justify-between text-[8px] font-bold uppercase tracking-wider text-white/80 drop-shadow-sm">
+              <span>Division</span>
+              <span>Operational</span>
+              <span>On Track</span>
             </div>
           </div>
         </div>

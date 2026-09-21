@@ -395,8 +395,8 @@ export default function LoginPage({ onLoginSuccess }) {
               </div>
 
               <div className="mars-full-form">
-                MAINTENANCE ALLOCATION &amp; ROUTING SYSTEM<br />
-                परिरक्षण वाटप और मार्गनियोजन प्रणाली
+                MAINTENANCE ALLOCATION &amp; RESOURCE SCHEDULING<br />
+                परिरक्षण वाटप और संसाधन अनुसूचन प्रणाली
               </div>
             </div>
           </div>

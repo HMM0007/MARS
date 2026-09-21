@@ -1,4 +1,4 @@
-# MARS 2.0 Visual Assets
+# MARS Visual Assets
 
 Place the supplied institutional images in this directory using these filenames so the home dashboard automatically uses them:
 

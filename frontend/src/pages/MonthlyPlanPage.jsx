@@ -1,10 +1,11 @@
 /**
- * MARS 2.0 Monthly Strategic Planning Console
+ * MARS Monthly Strategic Planning Console
  * Four-week section allocation and workload overview.
  */
 
 import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, CheckCircle2, Layers, RefreshCw, AlertTriangle } from 'lucide-react';
+import MonthlyPlanInfographics from '../components/MonthlyPlanInfographics';
 import { fetchMonthlyPlan } from '../services/api';
 
 const WEEK_KEYS = ['week_1', 'week_2', 'week_3', 'week_4'];
@@ -110,59 +111,33 @@ const MonthlyPlanPage = () => {
           ))}
         </section>
 
-        <section className="grid gap-3 xl:grid-cols-[1.55fr_1fr]">
-          <div className="overflow-hidden rounded-md border border-[#D6DEE6] bg-white shadow-sm">
-            <div className="border-b border-[#D6DEE6] bg-[#FAFBFC] px-3.5 py-2.5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-sm font-black uppercase tracking-wide text-[#1E3A5F]">Four-Week Workload</h2>
-                  <p className="mt-0.5 text-[10px] text-[#718294]">How planned work is distributed across the month.</p>
-                </div>
-                <span className="rounded border border-[#D6DEE6] bg-white px-2 py-1 text-[9px] font-bold uppercase text-[#52606D]">{summary.sections_count || 0} sections</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-4 divide-x divide-[#D6DEE6]">
-              {weeklyTotals.map((week, index) => (
-                <div key={WEEK_KEYS[index]} className="min-w-0 px-3 py-3">
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#718294]">{WEEK_LABELS[index]}</div>
-                  <div className="mt-1 font-mono text-xl font-black text-[#1E3A5F]">{loading ? '—' : week.jobs}</div>
-                  <div className="text-[9px] font-semibold text-[#52606D]">jobs planned</div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded bg-[#E9EEF2]">
-                    <div className="h-full rounded bg-[#2F6F7E]" style={{ width: `${week.utilization}%` }} />
-                  </div>
-                  <div className="mt-1 flex justify-between text-[8px] font-bold text-[#718294]">
-                    <span>{formatHours(week.hours)}</span><span>{week.utilization.toFixed(0)}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Interactive Strategic Monthly Infographics */}
+        <MonthlyPlanInfographics monthlyPlan={monthlyPlan} loading={loading} />
 
-          <div className="rounded-md border border-[#D6DEE6] bg-white p-3 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-[#D6DEE6] pb-2">
-              <CheckCircle2 className="h-4 w-4 text-[#2F9E44]" />
-              <h2 className="text-sm font-black uppercase tracking-wide text-[#1E3A5F]">Planner Summary</h2>
+        <div className="rounded-md border border-[#D6DEE6] bg-white p-3 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-[#D6DEE6] pb-2">
+            <CheckCircle2 className="h-4 w-4 text-[#2F9E44]" />
+            <h2 className="text-sm font-black uppercase tracking-wide text-[#1E3A5F]">Planner Operational Summary</h2>
+          </div>
+          <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-[10px]">
+            <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
+              <span className="text-[#718294]">Sections covered</span>
+              <span className="font-mono font-black text-[#1E3A5F]">{summary.sections_count || 0}</span>
             </div>
-            <div className="mt-3 space-y-2.5 text-[10px]">
-              <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
-                <span className="text-[#718294]">Sections covered</span>
-                <span className="font-mono font-black text-[#1E3A5F]">{summary.sections_count || 0}</span>
-              </div>
-              <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
-                <span className="text-[#718294]">Planned work</span>
-                <span className="font-mono font-black text-[#2F9E44]">{summary.scheduled_this_month || 0} jobs</span>
-              </div>
-              <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
-                <span className="text-[#718294]">Next-month carryover</span>
-                <span className="font-mono font-black text-[#C9842A]">{summary.deferred_next_month || 0} jobs</span>
-              </div>
-              <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
-                <span className="text-[#718294]">Largest planned section</span>
-                <span className="font-mono font-black text-[#1E3A5F]">{highestLoadSection?.section_id || '—'}</span>
-              </div>
+            <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
+              <span className="text-[#718294]">Planned work</span>
+              <span className="font-mono font-black text-[#2F9E44]">{summary.scheduled_this_month || 0} jobs</span>
+            </div>
+            <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
+              <span className="text-[#718294]">Next-month carryover</span>
+              <span className="font-mono font-black text-[#C9842A]">{summary.deferred_next_month || 0} jobs</span>
+            </div>
+            <div className="flex items-center justify-between rounded border border-[#D6DEE6] bg-[#FAFBFC] px-2.5 py-2">
+              <span className="text-[#718294]">Largest planned section</span>
+              <span className="font-mono font-black text-[#1E3A5F]">{highestLoadSection?.section_id || '—'}</span>
             </div>
           </div>
-        </section>
+        </div>
 
         <section className="overflow-hidden rounded-md border border-[#D6DEE6] bg-white shadow-sm">
           <div className="border-b border-[#D6DEE6] bg-[#FAFBFC] px-3.5 py-2.5">

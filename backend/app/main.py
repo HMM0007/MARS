@@ -35,7 +35,7 @@ app.include_router(what_if_router)
 @app.get("/")
 def root():
     return {
-        "system": "MARS 2.0",
+        "system": "MARS",
         "status": "online",
         "division": settings.default_division,
         "message": "Automatic Block Planning Decision-Support Layer",

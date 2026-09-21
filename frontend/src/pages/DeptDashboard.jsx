@@ -584,7 +584,7 @@ export default function DeptDashboard({
                 <div className="text-[10px] font-bold uppercase text-[#718294]">Connected Adapter</div>
                 <div className="mt-1 font-mono text-xs font-extrabold text-[#16865F]">● LIVE SYNCHRONIZED</div>
                 <div className="mt-2 text-[10px] text-[#60748A]">
-                  Auto-synced with MARS 2.0 CP-SAT Solver & Indian Railway Rules (IRPWM / G&SR)
+                  Auto-synced with MARS CP-SAT Solver & Indian Railway Rules (IRPWM / G&SR)
                 </div>
               </div>
             </div>
@@ -1417,7 +1417,7 @@ export default function DeptDashboard({
               <div>
                 <h3 className="text-sm font-bold">New {department} Maintenance Request</h3>
                 <p className="text-[10px] text-white/70">
-                  Field Requisition Form • Operator Specified Condition • MARS 2.0 Queue
+                  Field Requisition Form • Operator Specified Condition • MARS Queue
                 </p>
               </div>
               <button onClick={() => setShowAddModal(false)} className="text-white/80 hover:text-white">

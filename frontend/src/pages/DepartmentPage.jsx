@@ -1,5 +1,5 @@
 /**
- * MARS 2.0 Department Operational Console
+ * MARS Department Operational Console
  * Specialized views for Engineering (Civil), S&T (Signals), and Traction (OHE)
  * Features Own Jobs, Priority Scoring, and Interactive Ghost Block Co-Scheduling.
  */

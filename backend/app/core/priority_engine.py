@@ -1,4 +1,4 @@
-"""MARS 2.0 maintenance priority intelligence.
+"""MARS maintenance priority intelligence.
 
 The priority engine keeps the Railway-approved categorical criticality input as
 its baseline, then uses a real XGBoost regressor to learn the nonlinear

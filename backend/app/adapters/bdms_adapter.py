@@ -40,7 +40,7 @@ class BDMSAdapter:
     """
 
     MODEL_VERSION = "bdms-outbound-adapter-v1"
-    SOURCE_SYSTEM = "MARS_2.0"
+    SOURCE_SYSTEM = "MARS"
 
     @classmethod
     def _load_transactions(cls) -> List[Dict[str, Any]]:

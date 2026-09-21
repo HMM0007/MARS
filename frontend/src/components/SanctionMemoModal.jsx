@@ -184,7 +184,7 @@ export default function SanctionMemoModal({
               </div>
               <div className="text-right">
                 <span className="font-bold text-[#57534E]">प्रणाली संदर्भ / REF:</span>{' '}
-                <span className="font-mono font-bold text-[#1E3A5F]">CRIS-BDMS / MARS-2.0-SANCTION</span>
+                <span className="font-mono font-bold text-[#1E3A5F]">CRIS-BDMS / MARS-SANCTION</span>
               </div>
             </div>
 
@@ -388,7 +388,7 @@ export default function SanctionMemoModal({
               <div className="mt-5 flex items-center justify-between border-2 border-[#15803D] bg-[#F0FDF4] px-3 py-1.5 text-[9px] text-[#166534]">
                 <div className="flex items-center gap-2 font-bold uppercase tracking-wider">
                   <span className="h-2 w-2 rounded-full bg-[#16A34A]" />
-                  <span>प्रमाणित एवं अधिकृत • SANCTIONED & SECURED VIA CRIS-BDMS & MARS 2.0</span>
+                  <span>प्रमाणित एवं अधिकृत • SANCTIONED & SECURED VIA CRIS-BDMS & MARS</span>
                 </div>
                 <div className="font-mono font-bold">
                   SURAKSHA PROTOCOL AUDITED • 2026-09-11

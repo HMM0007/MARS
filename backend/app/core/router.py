@@ -92,7 +92,7 @@ def _load_unified_jobs() -> List[MaintenanceJob]:
 
 
 def _current_week_monday() -> datetime:
-    # MARS 2.0 September 2026 planning horizon Week 1 starts on Monday 2026-09-07
+    # MARS September 2026 planning horizon Week 1 starts on Monday 2026-09-07
     # Exactly matches the COA train timetable in trains.json (07 Sept - 13 Sept)
     return datetime(2026, 9, 7, 0, 0, 0)
 

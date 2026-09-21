@@ -1,7 +1,50 @@
-import { useEffect, useState } from 'react';
-import { Bell, CalendarDays, ChevronDown, Check } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { Bell, CalendarDays, ChevronDown, Check, AlertTriangle, CheckCircle2, Info, X, ExternalLink, ShieldAlert, CheckCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import BrandAsset from './BrandAsset';
+
+const INITIAL_NOTIFICATIONS = [
+  {
+    id: 'notif-1',
+    title: 'Emergency Block Request Queued',
+    message: 'ENG-2026-092: Rail weld crack near Lonavala Down Line (KM 124/6). Urgent 90-min possession requested.',
+    dept: 'Engineering',
+    type: 'critical',
+    time: '5m ago',
+    read: false,
+    link: '/dept/engineering'
+  },
+  {
+    id: 'notif-2',
+    title: 'CP-SAT Master Schedule Optimized',
+    message: 'Week 38 maintenance blocks scheduled with 0 safety conflicts across Pune–Lonavala corridor.',
+    dept: 'Optimization',
+    type: 'success',
+    time: '25m ago',
+    read: false,
+    link: '/weekly'
+  },
+  {
+    id: 'notif-3',
+    title: 'CRIS-BDMS Handshake Confirmed',
+    message: 'Sanction Memo #CR-PUNE-26027 successfully secured and cryptographically signed on central server.',
+    dept: 'Integration',
+    type: 'info',
+    time: '1h ago',
+    read: false,
+    link: '/preview-sanction-memo'
+  },
+  {
+    id: 'notif-4',
+    title: 'Monsoon Speed Restriction Advisory',
+    message: 'Bhor Ghat section (KM 119 - 138) flagged for rainfall runoff. Auto-enforcing 30 km/h precautionary rule.',
+    dept: 'Safety',
+    type: 'warning',
+    time: '2h ago',
+    read: true,
+    link: '/impact'
+  }
+];
 
 const divisions = [
   { id: 'pune-cr', name: 'Pune Division (CR)', code: 'PUNE-CR' },
@@ -18,7 +61,49 @@ const roles = [
 
 export default function Header({ selectedDivision, selectedRole, onDivisionChange, onRoleChange, onLogout }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [now, setNow] = useState(new Date());
+
+  const notifRef = useRef(null);
+  const userMenuRef = useRef(null);
+  const navigate = useNavigate();
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotificationsOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const markAsRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleNotificationClick = (notif) => {
+    markAsRead(notif.id);
+    if (notif.link) {
+      setNotificationsOpen(false);
+      navigate(notif.link);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -113,7 +198,7 @@ export default function Header({ selectedDivision, selectedRole, onDivisionChang
           </Link>
         </div>
 
-        {/* ================= CENTER: Stylized Train, MARS 2.0 & Slogan ================= */}
+        {/* ================= CENTER: Stylized Train, MARS & Slogan ================= */}
         <div className="relative z-10 hidden md:flex items-center">
           <Link to="/" className="flex items-center gap-3.5 group">
             {/* Front locomotive icon with tracks and sleepers */}
@@ -147,13 +232,13 @@ export default function Header({ selectedDivision, selectedRole, onDivisionChang
               </svg>
             </div>
 
-            {/* MARS 2.0 Typography */}
+            {/* MARS Typography */}
             <div className="text-left">
               <div className="text-[30px] font-black tracking-tight leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                MARS 2.0
+                MARS
               </div>
               <div className="mt-1 text-[11px] font-medium tracking-normal text-white/90 leading-none">
-                Maintenance Allocation & Routing System
+                Maintenance Allocation & Resource Scheduling
               </div>
             </div>
           </Link>
@@ -186,21 +271,149 @@ export default function Header({ selectedDivision, selectedRole, onDivisionChang
           {/* Thin Vertical Divider */}
           <div className="hidden sm:block h-6 w-[1px] bg-white/30 mx-1" />
 
-          {/* Notification Bell with Badge */}
-          <button
-            type="button"
-            className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10 transition-colors"
-            title="3 Operational alerts"
-            aria-label="Operational alerts"
-          >
-            <Bell className="h-5 w-5 text-white" strokeWidth={1.9} />
-            <span className="absolute top-1 right-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#E5252A] px-1 text-[8.5px] font-black text-white shadow-sm ring-1 ring-white/50">
-              3
-            </span>
-          </button>
+          {/* Actionable Notification Bell with Operational Alerts Dropdown */}
+          <div ref={notifRef} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setNotificationsOpen(!notificationsOpen);
+                setUserMenuOpen(false);
+              }}
+              className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                notificationsOpen ? 'bg-white/20' : 'hover:bg-white/10'
+              }`}
+              title={`${unreadCount} operational alerts`}
+              aria-label="Operational alerts"
+            >
+              <Bell className="h-5 w-5 text-white" strokeWidth={1.9} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-[#E5252A] px-1 text-[9px] font-black text-white shadow-sm ring-1 ring-white/60 animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown Panel */}
+            {notificationsOpen && (
+              <div className="absolute right-0 top-12 z-[100] w-80 sm:w-96 overflow-hidden rounded-xl border border-[#CBD5E1] bg-white text-[#17345C] shadow-2xl animate-in fade-in zoom-in-95 duration-100">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-[#0F2942]">
+                      Operational Alerts
+                    </span>
+                    {unreadCount > 0 && (
+                      <span className="rounded-full bg-[#E0EDFD] px-2 py-0.5 text-[10px] font-black text-[#1E40AF]">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </div>
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={markAllAsRead}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-[#1E40AF] hover:text-[#1D4ED8] transition-colors"
+                    >
+                      <CheckCheck className="h-3.5 w-3.5" />
+                      <span>Mark all read</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Notifications List */}
+                <div className="max-h-[380px] overflow-y-auto divide-y divide-[#F1F5F9]">
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-[#64748B]">
+                      No active operational notifications
+                    </div>
+                  ) : (
+                    notifications.map(item => {
+                      const isCritical = item.type === 'critical';
+                      const isSuccess = item.type === 'success';
+                      const isWarning = item.type === 'warning';
+
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => handleNotificationClick(item)}
+                          className={`group relative flex items-start gap-3 p-3.5 transition-colors cursor-pointer ${
+                            !item.read ? 'bg-[#F0F7FF] hover:bg-[#E4F0FD]' : 'bg-white hover:bg-[#F8FAFC]'
+                          }`}
+                        >
+                          {/* Unread Indicator Bar */}
+                          {!item.read && (
+                            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#2563EB]" />
+                          )}
+
+                          {/* Type Icon */}
+                          <div
+                            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-xs ${
+                              isCritical
+                                ? 'bg-[#FEE2E2] text-[#DC2626]'
+                                : isSuccess
+                                ? 'bg-[#DCFCE7] text-[#16A34A]'
+                                : isWarning
+                                ? 'bg-[#FEF3C7] text-[#D97706]'
+                                : 'bg-[#DBEAFE] text-[#2563EB]'
+                            }`}
+                          >
+                            {isCritical && <AlertTriangle className="h-4 w-4" />}
+                            {isSuccess && <CheckCircle2 className="h-4 w-4" />}
+                            {isWarning && <ShieldAlert className="h-4 w-4" />}
+                            {!isCritical && !isSuccess && !isWarning && <Info className="h-4 w-4" />}
+                          </div>
+
+                          {/* Content */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <span
+                                className={`text-[9.5px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                                  isCritical
+                                    ? 'bg-[#FEE2E2] text-[#B91C1C]'
+                                    : isSuccess
+                                    ? 'bg-[#DCFCE7] text-[#15803D]'
+                                    : isWarning
+                                    ? 'bg-[#FEF3C7] text-[#B45309]'
+                                    : 'bg-[#DBEAFE] text-[#1D4ED8]'
+                                }`}
+                              >
+                                {item.dept}
+                              </span>
+                              <span className="text-[10px] text-[#64748B] font-medium">{item.time}</span>
+                            </div>
+
+                            <p className="mt-1 text-xs font-bold text-[#0F2942] leading-snug group-hover:text-[#1E40AF] transition-colors">
+                              {item.title}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-[#475569] leading-relaxed line-clamp-2">
+                              {item.message}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="border-t border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2 flex items-center justify-between text-[11px]">
+                  <span className="text-[#64748B] text-[10.5px]">
+                    Pune Control Room Feed
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setNotifications([])}
+                    className="text-[#64748B] hover:text-[#0F2942] font-semibold text-[10.5px] transition-colors"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* User Profile Avatar & Dropdown */}
-          <div className="relative">
+          <div ref={userMenuRef} className="relative">
             <button
               type="button"
               onClick={() => setUserMenuOpen(!userMenuOpen)}

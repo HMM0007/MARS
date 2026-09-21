@@ -6,13 +6,15 @@ const plannerItems = [
   { to: '/', icon: Home, label: 'Home', end: true },
   { to: '/command-center', icon: Gauge, label: 'Command Center' },
   { key: 'planning', icon: CalendarDays, label: 'Planning', children: [{ to: '/monthly', label: 'Monthly Plan' }, { to: '/weekly', label: 'Weekly Plan' }] },
-  { key: 'jobs', icon: Wrench, label: 'Maintenance Jobs', children: [
-    { to: '/jobs', label: 'All Jobs' },
-    { to: '/jobs/department/engineering', label: 'Engineering Work Centre' },
-    { to: '/jobs/department/snt', label: 'S&T Work Centre' },
-    { to: '/jobs/department/traction', label: 'Traction Work Centre' },
-    { to: '/jobs/priority-risk', label: 'Priority & Risk' },
-  ] },
+  {
+    key: 'jobs', icon: Wrench, label: 'Maintenance Jobs', children: [
+      { to: '/jobs', label: 'All Jobs' },
+      { to: '/jobs/department/engineering', label: 'Engineering Work Centre' },
+      { to: '/jobs/department/snt', label: 'S&T Work Centre' },
+      { to: '/jobs/department/traction', label: 'Traction Work Centre' },
+      { to: '/jobs/priority-risk', label: 'Priority & Risk' },
+    ]
+  },
   { to: '/corridor', icon: Map, label: 'Corridor Map' },
   { to: '/what-if', icon: SlidersHorizontal, label: 'What-If Simulator' },
   { to: '/compliance', icon: ShieldCheck, label: 'Compliance & Safety' },
@@ -76,9 +78,8 @@ function SectionNavItem({ item, expanded, onToggle }) {
         type="button"
         onClick={onToggle}
         aria-expanded={expanded}
-        className={`group flex h-[40px] w-full items-center justify-between rounded-lg px-3 text-left text-[12px] font-semibold transition-all ${
-          expanded ? 'bg-[#F1F5F8] text-[#173E6C]' : 'text-[#40546A] hover:bg-[#F4F7FA] hover:text-[#1769D4]'
-        }`}
+        className={`group flex h-[40px] w-full items-center justify-between rounded-lg px-3 text-left text-[12px] font-semibold transition-all ${expanded ? 'bg-[#F1F5F8] text-[#173E6C]' : 'text-[#40546A] hover:bg-[#F4F7FA] hover:text-[#1769D4]'
+          }`}
       >
         <span className="flex min-w-0 items-center gap-3">
           <Icon className="h-[17px] w-[17px] shrink-0 text-[#60748A]" strokeWidth={1.9} />
@@ -106,8 +107,7 @@ function SectionNavItem({ item, expanded, onToggle }) {
                 key={child.label}
                 to={child.to}
                 className={({ isActive }) =>
-                  `relative flex h-[34px] items-center rounded-md px-3 text-[11px] font-medium transition-colors ${
-                    isActive ? 'bg-[#E7F0FC] font-semibold text-[#145DA8]' : 'text-[#60748A] hover:bg-[#F4F7FA] hover:text-[#1769D4]'
+                  `relative flex h-[34px] items-center rounded-md px-3 text-[11px] font-medium transition-colors ${isActive ? 'bg-[#E7F0FC] font-semibold text-[#145DA8]' : 'text-[#60748A] hover:bg-[#F4F7FA] hover:text-[#1769D4]'
                   }`
                 }
               >
@@ -158,8 +158,7 @@ export default function Sidebar({ currentRole }) {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `group mb-1 flex h-[40px] items-center rounded-lg px-3 text-[12px] font-semibold transition-all ${
-                  isActive ? 'bg-[#E8F1FB] text-[#145DA8] shadow-[inset_3px_0_0_#1769D4]' : 'text-[#40546A] hover:bg-[#F4F7FA] hover:text-[#1769D4]'
+                `group mb-1 flex h-[40px] items-center rounded-lg px-3 text-[12px] font-semibold transition-all ${isActive ? 'bg-[#E8F1FB] text-[#145DA8] shadow-[inset_3px_0_0_#1769D4]' : 'text-[#40546A] hover:bg-[#F4F7FA] hover:text-[#1769D4]'
                 }`
               }
             >
@@ -180,12 +179,12 @@ export default function Sidebar({ currentRole }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-[#8796A5]">System</p>
-            <p className="mt-0.5 text-[10px] font-bold text-[#173E6C]">MARS 2.0 Online</p>
+            <p className="mt-0.5 text-[10px] font-bold text-[#173E6C]">MARS Online</p>
           </div>
           <span className="h-2 w-2 rounded-full bg-[#19A974] shadow-[0_0_0_3px_#E6F7EF]" />
         </div>
         <div className="mt-2 flex gap-1.5 text-[8px] font-mono font-bold text-[#718294]">
-          <span className="rounded bg-white px-1.5 py-1 ring-1 ring-[#E3E8ED]">CP-SAT READY</span>
+
           <span className="rounded bg-white px-1.5 py-1 ring-1 ring-[#E3E8ED]">ADAPTER SYNC</span>
         </div>
       </div>

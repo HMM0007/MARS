@@ -1,4 +1,4 @@
-"""Monthly maintenance-demand forecasting for MARS 2.0.
+"""Monthly maintenance-demand forecasting for MARS.
 
 Prophet is used only for strategic workload forecasting. It does not alter
 train timetables, block feasibility, job criticality, or the weekly CP-SAT

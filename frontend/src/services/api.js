@@ -1,6 +1,6 @@
 /**
- * MARS 2.0 API Service Client
- * Multi-department AI-based Railway Scheduling System 2.0
+ * MARS API Service Client
+ * Maintenance Allocation and Resource Scheduling System
  */
 
 const getBaseUrl = () => {

@@ -240,7 +240,7 @@ export default function WhatIfScenarioPage() {
   const handleCopyBriefing = () => {
     if (!result) return;
     const reportText = [
-      `=== MARS 2.0 OPERATIONAL CONTINGENCY BRIEFING ===`,
+      `=== MARS OPERATIONAL CONTINGENCY BRIEFING ===`,
       `Scenario: ${SCENARIO_LABELS[result.scenario?.scenario_type] || result.scenario?.scenario_type}`,
       `Section: ${result.scenario?.section_id} | Blocked Tracks: ${(result.scenario?.blocked_tracks || []).join(', ')}`,
       `Disruption Window: ${result.scenario?.start_time} to ${result.scenario?.end_time}`,
@@ -291,7 +291,7 @@ export default function WhatIfScenarioPage() {
       <main className="min-h-full bg-[#F4F6F8] p-6 font-sans flex items-center justify-center">
         <div className="flex items-center space-x-3 bg-white p-5 rounded-lg border border-[#D6DEE6] shadow-xs">
           <Loader2 className="w-5 h-5 text-[#1E3A5F] animate-spin" />
-          <span className="text-xs font-bold text-[#1E3A5F]">Loading MARS 2.0 What-If Disruption Engine...</span>
+          <span className="text-xs font-bold text-[#1E3A5F]">Loading MARS What-If Disruption Engine...</span>
         </div>
       </main>
     );

@@ -1,5 +1,5 @@
 /**
- * MARS 2.0 Corridor Geospatial Helper
+ * MARS Corridor Geospatial Helper
  * Station coordinates and high-resolution track points are fixed to the real
  * Pune–Lonavala railway alignment from OpenStreetMap / Central Railway survey.
  * Maintenance work is rendered along the true track curve by railway chainage;

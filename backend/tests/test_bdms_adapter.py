@@ -39,7 +39,7 @@ def approved_plan():
 def test_build_bdms_payload_is_translated_and_idempotent():
     payload = BDMSAdapter.build_bdms_payload(approved_plan())
 
-    assert payload["source_system"] == "MARS_2.0"
+    assert payload["source_system"] == "MARS"
     assert payload["request_type"] == "CREATE_OR_UPDATE_BLOCK_PLAN"
     assert payload["division"] == "Pune Division (CR)"
     assert payload["blocks"][0]["block_reference"] == "BLK-W1-001"

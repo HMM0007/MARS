@@ -14,7 +14,7 @@ html { background: #EEF2F6; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: #EEF2F6; }
 button, a { -webkit-tap-highlight-color: transparent; }
 
-/* MARS 2.0 — institutional command-centre scrollbar */
+/* MARS — institutional command-centre scrollbar */
 * { scrollbar-width: thin; scrollbar-color: #B8C5D2 #EEF2F6; }
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-track { background: #EEF2F6; }

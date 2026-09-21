@@ -3,7 +3,7 @@ import os
 
 
 class Settings(BaseModel):
-    app_name: str = "MARS 2.0"
+    app_name: str = "MARS"
     env: str = os.getenv("ENV", "development")
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./data/mars.db")
     cors_origins: list[str] = [

@@ -1,7 +1,7 @@
 import { Building2, CheckCircle2, Clock3, FileText, Link2, TrainFront } from 'lucide-react';
 
 const items = [
-  { key: 'assets', label: 'Total Assets', fallback: '3,55,249', icon: TrainFront, tone: 'blue' },
+  { key: 'assets', label: 'Total Assets', fallback: '1,23,456', icon: TrainFront, tone: 'blue' },
   { key: 'jobs', label: 'Jobs Evaluated', fallback: '150', icon: FileText, tone: 'purple' },
   { key: 'scheduled', label: 'Scheduled (This Month)', fallback: '116', icon: CheckCircle2, tone: 'green' },
   { key: 'deferred', label: 'Deferred', fallback: '34', icon: Clock3, tone: 'amber' },
