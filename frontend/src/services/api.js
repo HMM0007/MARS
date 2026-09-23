@@ -4,8 +4,13 @@
  */
 
 const getBaseUrl = () => {
+  if (import.meta.env?.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/+$/, '');
+  }
   if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost') return 'http://localhost:8000';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8000';
+    }
     return `http://${window.location.hostname}:8000`;
   }
   return 'http://127.0.0.1:8000';
@@ -15,7 +20,9 @@ const BASE_URL = getBaseUrl();
 const requestJson = async (url, options = {}) => {
   try {
     let response = await fetch(url, options).catch(async (err) => {
-      if (url.startsWith('http://')) return fetch(url.replace(/^http:\/\/[^/]+/, ''), options);
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return fetch(url.replace(/^https?:\/\/[^/]+/, ''), options);
+      }
       throw err;
     });
     if (!response.ok) {
