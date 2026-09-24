@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://marsrail.vercel.app">🌐 Live Prototype</a> |
-    <a href="[https://marsrail.vercel.app](https://drive.google.com/drive/folders/1sG9Iyj5gJ_HsyWpSx8zLt35o48CWrWyP?usp=sharing)"> Documentation</a> |
+    <a href="https://drive.google.com/drive/folders/1sG9Iyj5gJ_HsyWpSx8zLt35o48CWrWyP?usp=sharing"> Documentation</a> |
   <a href="https://github.com/HMM0007/MARS">GitHub Repository</a>
 </p>
 
