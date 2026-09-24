@@ -2,6 +2,10 @@
 ### Maintenance Allocation and Resource Scheduling
 
 <p align="center">
+  <img src="mars-cover.png" alt="MARS — Maintenance Allocation and Resource Scheduling" width="100%">
+</p>
+
+<p align="center">
   <strong>AI-Assisted Maintenance Block Planning & Optimization for Indian Railways</strong>
 </p>
 
